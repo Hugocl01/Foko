@@ -4,8 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
+return new class extends Migration {
     /**
      * Run the migrations.
      */
@@ -17,7 +16,9 @@ return new class extends Migration
             $table->string('title', 255);
             $table->text('description')->nullable();
             $table->timestamp('creation_date')->useCurrent();
-            $table->foreignId('preset_id')->nullable()->constrained('presets')->nullOnDelete();
+
+            // Sin FK circular a presets
+            $table->unsignedBigInteger('preset_id')->nullable();
             $table->timestamps();
         });
     }

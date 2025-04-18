@@ -15,8 +15,9 @@ return new class extends Migration
             $table->id();
             $table->string('name', 100);
             $table->string('email', 255)->unique();
+            $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
-            $table->foreignId('plan_id')->nullable()->constrained('plans');
+            $table->foreignId('plan_id')->nullable()->constrained('plans')->nullOnDelete();
             $table->string('profile_picture_url')->nullable();
             $table->text('description')->nullable();
             $table->rememberToken();

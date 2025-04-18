@@ -12,7 +12,7 @@ return new class extends Migration {
     {
         Schema::create('images', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('publication_id')->nullable()->constrained('publications')->nullOnDelete();
+            $table->foreignId('publication_id')->nullable()->constrained()->nullOnDelete();
             $table->string('url', 2083); // Máximo recomendado para URLs
             $table->timestamps();
         });

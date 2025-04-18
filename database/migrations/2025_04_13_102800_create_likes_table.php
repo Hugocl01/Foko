@@ -11,11 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('purchases', function (Blueprint $table) {
+        Schema::create('likes', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
-            $table->foreignId('preset_id')->constrained('presets')->onDelete('cascade');
-            $table->timestamp('purchase_date')->useCurrent();
+            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->foreignId('publication_id')->constrained()->onDelete('cascade');
+            $table->timestamp('like_date')->useCurrent();
+            $table->unique(['user_id', 'publication_id']);
             $table->timestamps();
         });
     }
@@ -25,6 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('purchases');
+        Schema::dropIfExists('likes');
     }
 };

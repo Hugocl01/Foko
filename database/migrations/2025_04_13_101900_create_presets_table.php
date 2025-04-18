@@ -4,8 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
+return new class extends Migration {
     /**
      * Run the migrations.
      */
@@ -16,9 +15,11 @@ return new class extends Migration
             $table->string('name', 255);
             $table->text('description')->nullable();
             $table->decimal('price', 10, 2);
-            $table->foreignId('before_image_id')->nullable()->constrained('images')->nullOnDelete();
-            $table->foreignId('after_image_id')->nullable()->constrained('images')->nullOnDelete();
-            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
+
+            // Sin FK circular a images
+            $table->unsignedBigInteger('before_image_id')->nullable();
+            $table->unsignedBigInteger('after_image_id')->nullable();
+            $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->timestamps();
         });
     }
