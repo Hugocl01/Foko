@@ -1,143 +1,150 @@
+-- Create planes table
 CREATE TABLE plans (
-  id BIGINT PRIMARY KEY AUTO_INCREMENT,
+  id BIGINT AUTO_INCREMENT PRIMARY KEY,
   name VARCHAR(100) NOT NULL,
   price DECIMAL(10,2) NOT NULL
 );
 
+-- Create users table
 CREATE TABLE users (
-  id BIGINT PRIMARY KEY AUTO_INCREMENT,
+  id BIGINT AUTO_INCREMENT PRIMARY KEY,
   name VARCHAR(100) NOT NULL,
-  email VARCHAR(320) NOT NULL UNIQUE,
+  email VARCHAR(255) NOT NULL UNIQUE,
   plan_id BIGINT,
-  password_hash TEXT NOT NULL,
-  profile_link VARCHAR(2083),
-  profile_description TEXT,
-  FOREIGN KEY (plan_id) REFERENCES plans (id)
+  user_id BIGINT UNIQUE,
+  profile_picture_url VARCHAR(2083),
+  password TEXT NOT NULL,
+  FOREIGN KEY (plan_id) REFERENCES plans(id)
 );
 
-CREATE TABLE posts (
-  id BIGINT PRIMARY KEY AUTO_INCREMENT,
+-- Create publications table
+CREATE TABLE publications (
+  id BIGINT AUTO_INCREMENT PRIMARY KEY,
   user_id BIGINT,
   title VARCHAR(255) NOT NULL,
   description TEXT,
   creation_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   preset_id BIGINT,
-  FOREIGN KEY (user_id) REFERENCES users (id),
-  FOREIGN KEY (preset_id) REFERENCES presets (id)
+  FOREIGN KEY (user_id) REFERENCES users(id),
+  FOREIGN KEY (preset_id) REFERENCES presets(id)
 );
 
+-- Create images table
 CREATE TABLE images (
-  id BIGINT PRIMARY KEY AUTO_INCREMENT,
-  post_id BIGINT,
+  id BIGINT AUTO_INCREMENT PRIMARY KEY,
+  publication_id BIGINT,
   url VARCHAR(2083) NOT NULL,
-  FOREIGN KEY (post_id) REFERENCES posts (id)
+  FOREIGN KEY (publication_id) REFERENCES publications(id)
 );
 
+-- Create features table
 CREATE TABLE features (
-  id BIGINT PRIMARY KEY AUTO_INCREMENT,
+  id BIGINT AUTO_INCREMENT PRIMARY KEY,
   name VARCHAR(100) NOT NULL,
   description TEXT
 );
 
+-- Relationship between plans and features
 CREATE TABLE plan_features (
   plan_id BIGINT,
   feature_id BIGINT,
   PRIMARY KEY (plan_id, feature_id),
-  FOREIGN KEY (plan_id) REFERENCES plans (id),
-  FOREIGN KEY (feature_id) REFERENCES features (id)
+  FOREIGN KEY (plan_id) REFERENCES plans(id),
+  FOREIGN KEY (feature_id) REFERENCES features(id)
 );
 
+-- Create chats table
 CREATE TABLE chats (
-  id BIGINT PRIMARY KEY AUTO_INCREMENT,
-  name VARCHAR(255),
-  type VARCHAR(50) NOT NULL
+  id BIGINT AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(100)
 );
 
+-- Create messages table
 CREATE TABLE messages (
-  id BIGINT PRIMARY KEY AUTO_INCREMENT,
+  id BIGINT AUTO_INCREMENT PRIMARY KEY,
   sender_id BIGINT,
   content TEXT NOT NULL,
   send_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   chat_id BIGINT,
-  FOREIGN KEY (sender_id) REFERENCES users (id),
-  FOREIGN KEY (chat_id) REFERENCES chats (id)
+  FOREIGN KEY (sender_id) REFERENCES users(id),
+  FOREIGN KEY (chat_id) REFERENCES chats(id)
 );
 
+-- Create presets table
 CREATE TABLE presets (
-  id BIGINT PRIMARY KEY AUTO_INCREMENT,
+  id BIGINT AUTO_INCREMENT PRIMARY KEY,
   name VARCHAR(100) NOT NULL,
   description TEXT,
   price DECIMAL(10,2) NOT NULL,
   before_image_id BIGINT,
   after_image_id BIGINT,
   user_id BIGINT,
-  FOREIGN KEY (before_image_id) REFERENCES images (id),
-  FOREIGN KEY (after_image_id) REFERENCES images (id),
-  FOREIGN KEY (user_id) REFERENCES users (id)
+  FOREIGN KEY (before_image_id) REFERENCES images(id),
+  FOREIGN KEY (after_image_id) REFERENCES images(id),
+  FOREIGN KEY (user_id) REFERENCES users(id)
 );
 
+-- Create purchases table
 CREATE TABLE purchases (
-  id BIGINT PRIMARY KEY AUTO_INCREMENT,
+  id BIGINT AUTO_INCREMENT PRIMARY KEY,
   user_id BIGINT,
   preset_id BIGINT,
   purchase_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (user_id) REFERENCES users (id),
-  FOREIGN KEY (preset_id) REFERENCES presets (id)
+  FOREIGN KEY (user_id) REFERENCES users(id),
+  FOREIGN KEY (preset_id) REFERENCES presets(id)
 );
 
+-- Relationship between users and chats
 CREATE TABLE users_chats (
   chat_id BIGINT,
   user_id BIGINT,
   PRIMARY KEY (chat_id, user_id),
-  FOREIGN KEY (chat_id) REFERENCES chats (id),
-  FOREIGN KEY (user_id) REFERENCES users (id)
+  FOREIGN KEY (chat_id) REFERENCES chats(id),
+  FOREIGN KEY (user_id) REFERENCES users(id)
 );
 
+-- Create tags table
 CREATE TABLE tags (
-  id BIGINT PRIMARY KEY AUTO_INCREMENT,
+  id BIGINT AUTO_INCREMENT PRIMARY KEY,
   name VARCHAR(100) NOT NULL UNIQUE
 );
 
+-- Relationship between presets and tags
 CREATE TABLE presets_tags (
   preset_id BIGINT,
   tag_id BIGINT,
   PRIMARY KEY (preset_id, tag_id),
-  FOREIGN KEY (preset_id) REFERENCES presets (id),
-  FOREIGN KEY (tag_id) REFERENCES tags (id)
+  FOREIGN KEY (preset_id) REFERENCES presets(id),
+  FOREIGN KEY (tag_id) REFERENCES tags(id)
 );
 
+-- Relationship between images and tags
 CREATE TABLE images_tags (
   media_id BIGINT,
   tag_id BIGINT,
   PRIMARY KEY (media_id, tag_id),
-  FOREIGN KEY (media_id) REFERENCES images (id),
-  FOREIGN KEY (tag_id) REFERENCES tags (id)
+  FOREIGN KEY (media_id) REFERENCES images(id),
+  FOREIGN KEY (tag_id) REFERENCES tags(id)
 );
 
-CREATE TABLE profiles (
-  id BIGINT PRIMARY KEY AUTO_INCREMENT,
-  user_id BIGINT UNIQUE,
-  profile_picture_url VARCHAR(2083),
-  description TEXT,
-  FOREIGN KEY (user_id) REFERENCES users (id)
-);
-
+-- Create likes table
 CREATE TABLE likes (
-  id BIGINT PRIMARY KEY AUTO_INCREMENT,
+  id BIGINT AUTO_INCREMENT PRIMARY KEY,
   user_id BIGINT NOT NULL,
-  post_id BIGINT NOT NULL,
+  publication_id BIGINT NOT NULL,
   like_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (user_id) REFERENCES users (id),
-  FOREIGN KEY (post_id) REFERENCES posts (id),
-  UNIQUE (user_id, post_id)
+  FOREIGN KEY (user_id) REFERENCES users(id),
+  FOREIGN KEY (publication_id) REFERENCES publications(id),
+  UNIQUE (user_id, publication_id)
 );
 
-CREATE TABLE saved (
-  id BIGINT PRIMARY KEY AUTO_INCREMENT,
+-- Create saved posts table
+CREATE TABLE saved_posts (
+  id BIGINT AUTO_INCREMENT PRIMARY KEY,
   user_id BIGINT NOT NULL,
-  post_id BIGINT NOT NULL,
+  publication_id BIGINT NOT NULL,
   saved_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (user_id) REFERENCES users (id),
-  FOREIGN KEY (post_id) REFERENCES posts (id),
-  UNIQUE (user_id, post_id)
+  FOREIGN KEY (user_id) REFERENCES users(id),
+  FOREIGN KEY (publication_id) REFERENCES publications(id),
+  UNIQUE (user_id, publication_id)
 );
