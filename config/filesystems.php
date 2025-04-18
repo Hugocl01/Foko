@@ -41,7 +41,7 @@ return [
         'public' => [
             'driver' => 'local',
             'root' => storage_path('app/public'),
-            'url' => env('APP_URL').'/storage',
+            'url' => env('APP_URL') . '/storage',
             'visibility' => 'public',
             'throw' => false,
             'report' => false,
@@ -60,6 +60,22 @@ return [
             'report' => false,
         ],
 
+        'images' => [
+            'driver' => 'local',
+            // Carpeta donde se guardarán las imágenes
+            'root' => storage_path('app/public/images'),
+            // URL pública (acceso vía navegador)
+            'url' => env('APP_URL') . '/storage/images',
+            'visibility' => 'public',
+        ],
+
+        'presets' => [
+            'driver' => 'local',
+            // Carpeta para almacenar presets (por ejemplo antes/después)
+            'root' => storage_path('app/public/presets'),
+            'url' => env('APP_URL') . '/storage/presets',
+            'visibility' => 'public',
+        ],
     ],
 
     /*
