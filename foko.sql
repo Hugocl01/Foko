@@ -17,6 +17,15 @@ CREATE TABLE users (
   FOREIGN KEY (plan_id) REFERENCES plans(id)
 );
 
+-- Create followers table
+CREATE TABLE followers (
+  follower_id BIGINT NOT NULL,
+  followed_id BIGINT NOT NULL,
+  PRIMARY KEY (follower_id, followed_id),
+  FOREIGN KEY (follower_id) REFERENCES users(id) ON DELETE CASCADE,
+  FOREIGN KEY (followed_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
 -- Create publications table
 CREATE TABLE publications (
   id BIGINT AUTO_INCREMENT PRIMARY KEY,
