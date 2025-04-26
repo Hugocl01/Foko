@@ -1,4 +1,4 @@
--- Create planes table
+-- Create plans table
 CREATE TABLE plans (
   id BIGINT AUTO_INCREMENT PRIMARY KEY,
   name VARCHAR(100) NOT NULL,
@@ -11,9 +11,9 @@ CREATE TABLE users (
   name VARCHAR(100) NOT NULL,
   email VARCHAR(255) NOT NULL UNIQUE,
   plan_id BIGINT,
-  user_id BIGINT UNIQUE,
   profile_picture_url VARCHAR(2083),
   password TEXT NOT NULL,
+  role ENUM('user', 'admin') DEFAULT 'user',
   FOREIGN KEY (plan_id) REFERENCES plans(id)
 );
 
@@ -156,4 +156,37 @@ CREATE TABLE saved_posts (
   FOREIGN KEY (user_id) REFERENCES users(id),
   FOREIGN KEY (publication_id) REFERENCES publications(id),
   UNIQUE (user_id, publication_id)
+);
+
+-- Comments on publications
+CREATE TABLE comments (
+  id BIGINT AUTO_INCREMENT PRIMARY KEY,
+  user_id BIGINT NOT NULL,
+  publication_id BIGINT NOT NULL,
+  content TEXT NOT NULL,
+  comment_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (user_id) REFERENCES users(id),
+  FOREIGN KEY (publication_id) REFERENCES publications(id)
+);
+
+-- Reports system (for users or publications)
+CREATE TABLE reports (
+  id BIGINT AUTO_INCREMENT PRIMARY KEY,
+  reporter_id BIGINT NOT NULL,
+  target_type ENUM('user', 'publication') NOT NULL,
+  target_id BIGINT NOT NULL,
+  reason TEXT NOT NULL,
+  status ENUM('pending', 'reviewed', 'resolved') DEFAULT 'pending',
+  report_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (reporter_id) REFERENCES users(id)
+);
+
+-- Notifications
+CREATE TABLE notifications (
+  id BIGINT AUTO_INCREMENT PRIMARY KEY,
+  user_id BIGINT NOT NULL,
+  message TEXT NOT NULL,
+  is_read BOOLEAN DEFAULT FALSE,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (user_id) REFERENCES users(id)
 );
