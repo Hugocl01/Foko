@@ -20,6 +20,7 @@ return new class extends Migration
             $table->foreignId('plan_id')->nullable()->constrained('plans')->nullOnDelete();
             $table->string('profile_picture_url')->nullable();
             $table->text('description')->nullable();
+            $table->enum('role', ['user', 'admin'])->default('user'); // ENUM('user', 'admin') DEFAULT 'user'
             $table->rememberToken();
             $table->timestamps();
         });

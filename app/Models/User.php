@@ -27,6 +27,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'plan_id',
         'profile_picture_url',
         'description',
+        'role',
     ];
 
     /**
@@ -57,6 +58,16 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->belongsTo(Plan::class);
     }
 
+    public function followers()
+    {
+        return $this->belongsToMany(User::class, 'followers', 'followed_id', 'follower_id');
+    }
+
+    public function following()
+    {
+        return $this->belongsToMany(User::class, 'followers', 'follower_id', 'followed_id');
+    }
+
     public function publications(): HasMany
     {
         return $this->hasMany(Publication::class);
@@ -80,5 +91,10 @@ class User extends Authenticatable implements MustVerifyEmail
     public function messages(): HasMany
     {
         return $this->hasMany(Message::class, 'sender_id');
+    }
+
+    public function notifications()
+    {
+        return $this->hasMany(Notification::class);
     }
 }
