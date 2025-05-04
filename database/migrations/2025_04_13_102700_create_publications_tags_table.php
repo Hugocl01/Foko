@@ -15,7 +15,7 @@ return new class extends Migration
             $table->foreignId('publication_id')->constrained('publications')->onDelete('cascade');
             $table->foreignId('tag_id')->constrained()->onDelete('cascade');
 
-            $table->primary(['publications_id', 'tag_id']);
+            $table->primary(['publication_id', 'tag_id']);
         });
     }
 
