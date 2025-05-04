@@ -4,14 +4,14 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Relations\Pivot;
 
-class Follower extends Pivot
+class PublicationTag extends Pivot
 {
-    protected $table = 'followers';
+    protected $table = 'publications_tags';
 
     public $timestamps = false;
 
     protected $fillable = [
-        'follower_id',
-        'followed_id',
+        'publication_id',
+        'tag_id',
     ];
 }

@@ -18,6 +18,17 @@ class Like extends Model
         'like_date',
     ];
 
+    /**
+     * Get the attributes that should be cast.
+     *
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return [
+            "like_date" => "datetime"
+        ];
+    }
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);

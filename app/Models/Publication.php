@@ -19,6 +19,18 @@ class Publication extends Model
         'preset_id',
     ];
 
+    /**
+     * Get the attributes that should be cast.
+     *
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return [
+            "creation_date" => "datetime"
+        ];
+    }
+
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
@@ -47,5 +59,15 @@ class Publication extends Model
     public function comments()
     {
         return $this->hasMany(Comment::class);
+    }
+
+    public function savedPosts()
+    {
+        return $this->hasMany(SavedPost::class);
+    }
+
+    public function tags()
+    {
+        return $this->belongsToMany(Tag::class, 'publication_tag')->withTimestamps();
     }
 }

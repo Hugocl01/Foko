@@ -23,4 +23,9 @@ class Tag extends Model
     {
         return $this->belongsToMany(Image::class, 'images_tags', 'tag_id', 'image_id');
     }
+
+    public function publications()
+    {
+        return $this->belongsToMany(Publication::class, 'publication_tag')->withTimestamps();
+    }
 }

@@ -4,14 +4,15 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Relations\Pivot;
 
-class ImageTag extends Pivot
+class PlanFeature extends Pivot
 {
-    protected $table = 'images_tags';
+    protected $table = 'planfeatures';
 
     public $timestamps = false;
 
     protected $fillable = [
-        'image_id',
-        'tag_id',
+        "plan_id",
+        "feature_id"
     ];
+
 }

@@ -127,12 +127,12 @@ CREATE TABLE presets_tags (
   FOREIGN KEY (tag_id) REFERENCES tags(id)
 );
 
--- Relationship between images and tags
-CREATE TABLE images_tags (
-  media_id BIGINT,
+-- Relationship between pubications and tags
+CREATE TABLE publications_tags (
+  publication_id BIGINT,
   tag_id BIGINT,
-  PRIMARY KEY (media_id, tag_id),
-  FOREIGN KEY (media_id) REFERENCES images(id),
+  PRIMARY KEY (publication_id, tag_id),
+  FOREIGN KEY (publication_id) REFERENCES publications(id),
   FOREIGN KEY (tag_id) REFERENCES tags(id)
 );
 

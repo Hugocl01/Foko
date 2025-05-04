@@ -17,7 +17,19 @@ class Message extends Model
         'chat_id',
     ];
 
-    public function sender(): BelongsTo
+    /**
+     * Get the attributes that should be cast.
+     *
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return [
+            "send_date" => "datetime"
+        ];
+    }
+
+    public function user(): BelongsTo
     {
         return $this->belongsTo(User::class, 'sender_id');
     }

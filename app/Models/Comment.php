@@ -9,7 +9,24 @@ class Comment extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['user_id', 'publication_id', 'content', 'comment_date'];
+    protected $fillable = [
+        'user_id',
+        'publication_id',
+        'content',
+        'comment_date'
+    ];
+
+    /**
+     * Get the attributes that should be cast.
+     *
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return [
+            'comment_date' => 'datetime',
+        ];
+    }
 
     public $timestamps = false;
 

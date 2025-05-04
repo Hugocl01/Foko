@@ -17,7 +17,7 @@ class Chat extends Model
 
     public function users(): BelongsToMany
     {
-        return $this->belongsToMany(User::class, 'users_chats');
+        return $this->belongsToMany(User::class, 'users_chats')->withTimestamps();
     }
 
     public function messages(): HasMany
