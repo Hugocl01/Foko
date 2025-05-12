@@ -143,17 +143,17 @@ export default function Welcome() {
                         </div>
                         <div className="relative hidden md:block h-[500px]">
                             <img
-                                src="images/image1.jpg"
+                                src="images/image1.webp"
                                 alt="Ejemplo 1"
                                 className="absolute left-0 top-24 h-64 w-48 rounded-lg object-cover shadow-lg"
                             />
                             <img
-                                src="images/image2.jpg"
+                                src="images/image2.webp"
                                 alt="Ejemplo 2"
                                 className="absolute left-[25%] top-1/2 h-72 w-56 -translate-y-1/2 rounded-lg object-cover shadow-lg"
                             />
                             <img
-                                src="images/image3.jpg"
+                                src="images/image3.webp"
                                 alt="Ejemplo 3"
                                 className="absolute right-0 top-1/3 h-80 w-64 rounded-lg object-cover shadow-lg"
                             />
