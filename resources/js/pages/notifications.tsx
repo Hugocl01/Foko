@@ -47,7 +47,7 @@ export default function Notifications({ notifications: initialNotifications }: {
                     {notifications.map((notif) => (
                         <div
                             key={notif.id}
-                            className="bg-card border border-border rounded-lg p-4 shadow-md flex justify-between items-center"
+                            className="bg-card border border-border rounded-lg p-4 shadow-md flex justify-between items-center gap-4"
                         >
                             <div>
                                 <p className="text-card-foreground">{notif.message}</p>
