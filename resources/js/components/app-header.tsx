@@ -11,9 +11,11 @@ import { useInitials } from '@/hooks/use-initials';
 import { cn } from '@/lib/utils';
 import { type BreadcrumbItem, type NavItem, type SharedData } from '@/types';
 import { Link, usePage } from '@inertiajs/react';
-import { House, Camera, Aperture, Menu, Search, MessageSquare, MessageSquareDot, Bell, BellDot } from 'lucide-react';
+import { HomeIcon as House, Camera, Aperture, Menu, Search, MessageSquare, MessageSquareDot, Bell, BellDot } from 'lucide-react';
 import AppLogo from './app-logo';
 import AppLogoIcon from './app-logo-icon';
+import { SearchDialog } from './search-dialog';
+import { useState } from 'react';
 
 const mainNavItems: NavItem[] = [
     {
@@ -56,6 +58,8 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
     const page = usePage<SharedData>();
     const { auth } = page.props;
     const getInitials = useInitials();
+    const [searchOpen, setSearchOpen] = useState(false);
+
     return (
         <>
             <div className="border-sidebar-border/80 border-b">
@@ -138,7 +142,13 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
 
                     <div className="ml-auto flex items-center space-x-2">
                         <div className="relative flex items-center space-x-1">
-                            <Button variant="ghost" size="icon" className="group h-9 w-9 cursor-pointer">
+                            <Button
+                                variant="ghost"
+                                size="icon"
+                                className="group h-9 w-9 cursor-pointer"
+                                onClick={() => setSearchOpen(true)}
+                                aria-label="Buscar"
+                            >
                                 <Search className="!size-5 opacity-80 group-hover:opacity-100" />
                             </Button>
                             <div className="hidden lg:flex">
@@ -166,7 +176,7 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
                             <DropdownMenuTrigger asChild>
                                 <Button variant="ghost" className="size-10 rounded-full p-1">
                                     <Avatar className="size-8 overflow-hidden rounded-full">
-                                        <AvatarImage src={auth.user.avatar} alt={auth.user.name} />
+                                        <AvatarImage src={auth.user.avatar || "/placeholder.svg"} alt={auth.user.name} />
                                         <AvatarFallback className="rounded-lg bg-neutral-200 text-black dark:bg-neutral-700 dark:text-white">
                                             {getInitials(auth.user.name)}
                                         </AvatarFallback>
@@ -187,6 +197,9 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
                     </div>
                 </div>
             )}
+
+            {/* Search Dialog */}
+            <SearchDialog open={searchOpen} onOpenChange={setSearchOpen} />
         </>
     );
 }
