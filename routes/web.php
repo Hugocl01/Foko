@@ -3,38 +3,53 @@
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
-// Ruta Welcome (Landin Page)
+// Página pública (Landing Page)
 Route::get('/', function () {
-    return Inertia::render('welcome');
+    return Inertia::
+    render('welcome');
 })->name('home');
 
-// Rutas protegidas por middleware
+// Rutas protegidas por autenticación
 Route::middleware(['auth', 'verified'])->group(function () {
-    // Ruta Inicio
-    Route::get('dashboard', function () {
-        return Inertia::render('dashboard');
-    })->name('dashboard');
 
-    // Ruta Publicaciones
-    Route::get('publications', function () {
+    // Dashboard
+    Route::get('/home', function () {
+        return Inertia::render('home');
+    })->name('home');
+
+    // Publicaciones
+    Route::get('/publications', function () {
         return Inertia::render('publications');
-    })->name('publications');
+    })->name('publications.index');
 
-    // Ruta Presets
-    Route::get('presets', function () {
+    Route::get('/publications/{id}', function ($id) {
+        return Inertia::render('publication', ['id' => $id]);
+    })->name('publications.show');
+
+    // Presets
+    Route::get('/presets', function () {
         return Inertia::render('presets');
-    })->name('presets');
+    })->name('presets.index');
 
-    // Ruta Chats
-    Route::get('chats', function () {
+    Route::get('/presets/{id}', function ($id) {
+        return Inertia::render('preset', ['id' => $id]);
+    })->name('presets.show');
+
+    // Chats
+    Route::get('/chats', function () {
         return Inertia::render('chats');
-    })->name('chats');
+    })->name('chats.index');
 
-    // Ruta Notificaciones
-    Route::get('notifications', function () {
+    Route::get('/chats/{id}', function ($id) {
+        return Inertia::render('chat', ['id' => $id]);
+    })->name('chats.show');
+
+    // Notificaciones
+    Route::get('/notifications', function () {
         return Inertia::render('notifications');
-    })->name('notifications');
+    })->name('notifications.index');
 });
 
-require __DIR__.'/settings.php';
-require __DIR__.'/auth.php';
+// Archivos adicionales
+require __DIR__ . '/settings.php';
+require __DIR__ . '/auth.php';

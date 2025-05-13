@@ -19,8 +19,8 @@ import { useState } from 'react';
 
 const mainNavItems: NavItem[] = [
     {
-        title: 'Dashboard',
-        href: '/dashboard',
+        title: 'Inicio',
+        href: '/home',
         icon: House,
     },
     {
@@ -110,7 +110,7 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
                         </Sheet>
                     </div>
 
-                    <Link href="/dashboard" prefetch className="flex items-center space-x-2">
+                    <Link href="/home" prefetch className="flex items-center space-x-2">
                         <AppLogo />
                     </Link>
 
