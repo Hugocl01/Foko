@@ -2,11 +2,12 @@
 
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
+use App\Http\Controllers\NotificationController;
 
 // Página pública (Landing Page)
 Route::get('/', function () {
     return Inertia::
-    render('welcome');
+        render('welcome');
 })->name('home');
 
 // Rutas protegidas por autenticación
@@ -45,9 +46,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
     })->name('chats.show');
 
     // Notificaciones
-    Route::get('/notifications', function () {
-        return Inertia::render('notifications');
-    })->name('notifications.index');
+    Route::get('/notifications', [NotificationController::class, 'index'])
+        ->name('notifications.index');
+
+    Route::delete('/notifications/{notification}', [NotificationController::class, 'destroy'])
+        ->name('notifications.destroy');
 });
 
 // Archivos adicionales
