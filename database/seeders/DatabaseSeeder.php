@@ -36,6 +36,7 @@ class DatabaseSeeder extends Seeder
             UserSeeder::class,          // Crea los usuarios
             PlanSeeder::class,          // Crea los planes
             FeatureSeeder::class,       // Crea las características
+            PlanFeatureSeeder::class,
             TagSeeder::class,           // Crea las etiquetas
             PresetSeeder::class,        // Crea los presets
             ChatSeeder::class,          // Crea los chats

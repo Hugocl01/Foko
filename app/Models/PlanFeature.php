@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Relations\Pivot;
 
 class PlanFeature extends Pivot
 {
-    protected $table = 'planfeatures';
+    protected $table = 'plan_features';
 
     public $timestamps = false;
 

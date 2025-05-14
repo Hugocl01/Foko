@@ -29,6 +29,20 @@ class UserSeeder extends Seeder
                 'role' => 'admin',
                 'description' => 'Administrador de la plataforma.',
             ],
+            [
+                'name' => 'Ana López',
+                'email' => 'ana@example.com',
+                'password' => 'ana2025',
+                'role' => 'user',
+                'description' => 'Amante de la fotografía y los presets vintage.',
+            ],
+            [
+                'name' => 'Carlos Ruiz',
+                'email' => 'carlos@example.com',
+                'password' => 'carlos2025',
+                'role' => 'user',
+                'description' => 'Explorando la edición digital y compartiendo ideas.',
+            ],
         ];
 
         foreach ($users as $userData) {
