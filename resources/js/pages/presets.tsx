@@ -1,5 +1,3 @@
-"use client"
-
 import { useState } from "react"
 import {
     Heart,
@@ -400,7 +398,7 @@ export default function PresetsPage() {
                                                 {/* Price Badge */}
                                                 <div className="absolute top-3 right-3">
                                                     <Badge className="bg-primary hover:bg-primary/90 text-white border-none font-bold">
-                                                        ${preset.price.toFixed(2)}
+                                                        {preset.price.toFixed(2)} €
                                                     </Badge>
                                                 </div>
 
@@ -441,7 +439,7 @@ export default function PresetsPage() {
                                                         )}
                                                         <Button variant="default" className="mt-4 bg-primary hover:bg-primary/90">
                                                             <Download className="h-4 w-4 mr-2" />
-                                                            Comprar por ${preset.price.toFixed(2)}
+                                                            Comprar por {preset.price.toFixed(2)} €
                                                         </Button>
                                                     </div>
                                                 )}
@@ -482,7 +480,7 @@ export default function PresetsPage() {
                                                 <div className="font-medium text-lg">{preset.name}</div>
                                                 <div className="mt-1 text-sm text-muted-foreground line-clamp-2">{preset.description}</div>
                                                 <div className="mt-2 flex justify-between items-center">
-                                                    <div className="font-bold text-lg">${preset.price.toFixed(2)}</div>
+                                                    <div className="font-bold text-lg">{preset.price.toFixed(2)} €</div>
                                                     <Button size="sm" className="bg-primary hover:bg-primary/90">
                                                         <Download className="h-4 w-4 mr-2" />
                                                         Comprar
@@ -573,7 +571,7 @@ export default function PresetsPage() {
                                                 {/* Price Badge */}
                                                 <div className="absolute top-3 right-3">
                                                     <Badge className="bg-primary hover:bg-primary/90 text-white border-none font-bold">
-                                                        ${preset.price.toFixed(2)}
+                                                        {preset.price.toFixed(2)} €
                                                     </Badge>
                                                 </div>
                                             </div>
@@ -656,7 +654,7 @@ export default function PresetsPage() {
 
                                                 <Button className="ml-auto bg-primary hover:bg-primary/90">
                                                     <Download className="h-4 w-4 mr-2" />
-                                                    Comprar por ${preset.price.toFixed(2)}
+                                                    Comprar por {preset.price.toFixed(2)} €
                                                 </Button>
                                             </div>
 
