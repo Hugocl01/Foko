@@ -4,16 +4,18 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
 use App\Models\Publication;
+use App\Models\Tag;
 
-class PublicationSeeder extends Seeder
+class PublicationTagSeeder extends Seeder
 {
     /**
      * Run the database seeds.
      */
     public function run(): void
     {
-        $publications = [
+        Publication::insert([
             [
                 'user_id' => 1,
                 'title' => 'Atardecer en la playa',
@@ -26,10 +28,6 @@ class PublicationSeeder extends Seeder
                 'description' => 'Fotografía nocturna urbana.',
                 'preset_id' => 2,
             ],
-        ];
-
-        foreach ($publications as $pub) {
-            Publication::create($pub);
-        }
+        ]);
     }
 }

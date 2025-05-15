@@ -30,6 +30,12 @@ class DatabaseSeeder extends Seeder
         DB::table('reports')->delete();
         DB::table('notifications')->delete();
         DB::table('users')->delete();
+        DB::table('plan_features')->delete();
+        DB::table('presets_tags')->delete();
+        DB::table('publications_tags')->delete();
+        DB::table('followers')->delete();
+        DB::table('users_chats')->delete();
+        DB::table('messages')->delete();
 
         // Llama a los seeders
         $this->call([
@@ -39,6 +45,8 @@ class DatabaseSeeder extends Seeder
             PlanFeatureSeeder::class,
             TagSeeder::class,           // Crea las etiquetas
             PresetSeeder::class,        // Crea los presets
+            PublicationSeeder::class,   // Crea las publicaciones
+            PublicationTagSeeder::class,
             ChatSeeder::class,          // Crea los chats
             ImageSeeder::class,         // Crea las imágenes
             PurchaseSeeder::class,      // Crea las compras
