@@ -129,13 +129,6 @@ export default function Welcome() {
                                 >
                                     Ver presets <ArrowRight className="ml-2 h-4 w-4" />
                                 </Link>
-                                <Link
-                                    href={route("gallery")}
-                                    className="inline-flex items-center justify-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium shadow-sm hover:bg-accent hover:text-accent-foreground h-11 select-none"
-                                    draggable={false}
-                                >
-                                    Galería de creadores
-                                </Link>
                             </div>
                         </div>
                         <div className="relative hidden md:block h-[500px]">

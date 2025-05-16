@@ -163,6 +163,32 @@ export default function PresetsPage() {
                 temperature: 0,
             },
         },
+        {
+            id: 5,
+            name: "B & W lightning",
+            description: "Efecto blanco y negro con altas luces",
+            price: 17.99,
+            before_image_id: "/placeholder.svg?height=500&width=500&text=Original",
+            after_image_id: "/placeholder.svg?height=500&width=500&text=Vintage",
+            user_id: 1,
+            user: {
+                name: "Hugo Cayón",
+                avatar: "/placeholder.svg?height=40&width=40",
+                username: "hugocayon",
+            },
+            likes: 88,
+            downloads: 56,
+            liked: true,
+            saved: false,
+            settings: {
+                contrast: 10,
+                brightness: -5,
+                saturation: -10,
+                temperature: 15,
+                grain: 20,
+                vignette: 15,
+            },
+        },
     ])
 
     // State to track if preset details are shown
