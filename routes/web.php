@@ -51,6 +51,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::delete('/notifications/{notification}', [NotificationController::class, 'destroy'])
         ->name('notifications.destroy');
+
+    // Compras
+    Route::get('/purchases', function () {
+        return Inertia::render('purchases');
+    })->name('purchases.index');
 });
 
 // Archivos adicionales
