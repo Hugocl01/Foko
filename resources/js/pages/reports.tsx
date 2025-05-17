@@ -1,5 +1,3 @@
-"use client"
-
 import { useState } from "react"
 import { Head, useForm, route } from "@inertiajs/react"
 import AppLayout from "@/layouts/app-layout"

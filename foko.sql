@@ -9,8 +9,10 @@ CREATE TABLE plans (
 CREATE TABLE users (
   id BIGINT AUTO_INCREMENT PRIMARY KEY,
   name VARCHAR(100) NOT NULL,
+  username VARCHAR(45) NOT NULL,
   email VARCHAR(255) NOT NULL UNIQUE,
   plan_id BIGINT,
+  status TINYINT(1) DEFAULT 1,
   profile_picture_url VARCHAR(2083),
   password TEXT NOT NULL,
   role ENUM('user', 'admin') DEFAULT 'user',
