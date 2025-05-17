@@ -249,7 +249,7 @@ export default function PresetsPage() {
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title="Presets Fotográficos" />
+            <Head title="Presets" />
             <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">
                 <h1 className="text-2xl font-bold">Presets</h1>
 

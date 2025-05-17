@@ -56,6 +56,15 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/purchases', function () {
         return Inertia::render('purchases');
     })->name('purchases.index');
+
+    // Usuarios
+    Route::get('/users', function () {
+        return Inertia::render('users');
+    })->name('users.index');
+
+    // Reportes
+    Route::get('/reports', [NotificationController::class, 'index'])
+        ->name('reports.index');
 });
 
 // Archivos adicionales
