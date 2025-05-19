@@ -114,30 +114,6 @@ CREATE TABLE users_chats (
   FOREIGN KEY (user_id) REFERENCES users(id)
 );
 
--- Create tags table
-CREATE TABLE tags (
-  id BIGINT AUTO_INCREMENT PRIMARY KEY,
-  name VARCHAR(100) NOT NULL UNIQUE
-);
-
--- Relationship between presets and tags
-CREATE TABLE presets_tags (
-  preset_id BIGINT,
-  tag_id BIGINT,
-  PRIMARY KEY (preset_id, tag_id),
-  FOREIGN KEY (preset_id) REFERENCES presets(id),
-  FOREIGN KEY (tag_id) REFERENCES tags(id)
-);
-
--- Relationship between pubications and tags
-CREATE TABLE publications_tags (
-  publication_id BIGINT,
-  tag_id BIGINT,
-  PRIMARY KEY (publication_id, tag_id),
-  FOREIGN KEY (publication_id) REFERENCES publications(id),
-  FOREIGN KEY (tag_id) REFERENCES tags(id)
-);
-
 -- Create likes table
 CREATE TABLE likes (
   id BIGINT AUTO_INCREMENT PRIMARY KEY,
@@ -172,7 +148,7 @@ CREATE TABLE comments (
 );
 
 -- Reports system (for users or publications)
-CREATE TABLE reports (
+CREATE TABLE notifications (
   id BIGINT AUTO_INCREMENT PRIMARY KEY,
   reporter_id BIGINT NOT NULL,
   target_type ENUM('user', 'publication') NOT NULL,
@@ -181,14 +157,4 @@ CREATE TABLE reports (
   status ENUM('pending', 'reviewed', 'resolved') DEFAULT 'pending',
   report_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (reporter_id) REFERENCES users(id)
-);
-
--- Notifications
-CREATE TABLE notifications (
-  id BIGINT AUTO_INCREMENT PRIMARY KEY,
-  user_id BIGINT NOT NULL,
-  message TEXT NOT NULL,
-  is_read BOOLEAN DEFAULT FALSE,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (user_id) REFERENCES users(id)
 );
