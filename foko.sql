@@ -3,6 +3,8 @@ CREATE TABLE plans (
   id BIGINT AUTO_INCREMENT PRIMARY KEY,
   name VARCHAR(100) NOT NULL,
   price DECIMAL(10,2) NOT NULL
+  created_at TIMESTAMP DEFAULT NULL,
+  updated_at TIMESTAMP DEFAULT NULL,
 );
 
 -- Create users table
@@ -16,6 +18,8 @@ CREATE TABLE users (
   profile_picture_url VARCHAR(2083),
   password TEXT NOT NULL,
   role ENUM('user', 'admin') DEFAULT 'user',
+  created_at TIMESTAMP DEFAULT NULL,
+  updated_at TIMESTAMP DEFAULT NULL,
   FOREIGN KEY (plan_id) REFERENCES plans(id)
 );
 
@@ -23,6 +27,8 @@ CREATE TABLE users (
 CREATE TABLE followers (
   follower_id BIGINT NOT NULL,
   followed_id BIGINT NOT NULL,
+  created_at TIMESTAMP DEFAULT NULL,
+  updated_at TIMESTAMP DEFAULT NULL,
   PRIMARY KEY (follower_id, followed_id),
   FOREIGN KEY (follower_id) REFERENCES users(id) ON DELETE CASCADE,
   FOREIGN KEY (followed_id) REFERENCES users(id) ON DELETE CASCADE
@@ -34,8 +40,9 @@ CREATE TABLE publications (
   user_id BIGINT,
   title VARCHAR(255) NOT NULL,
   description TEXT,
-  creation_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   preset_id BIGINT,
+  created_at TIMESTAMP DEFAULT NULL,
+  updated_at TIMESTAMP DEFAULT NULL,
   FOREIGN KEY (user_id) REFERENCES users(id),
   FOREIGN KEY (preset_id) REFERENCES presets(id)
 );
@@ -45,6 +52,8 @@ CREATE TABLE images (
   id BIGINT AUTO_INCREMENT PRIMARY KEY,
   publication_id BIGINT,
   url VARCHAR(2083) NOT NULL,
+  created_at TIMESTAMP DEFAULT NULL,
+  updated_at TIMESTAMP DEFAULT NULL,
   FOREIGN KEY (publication_id) REFERENCES publications(id)
 );
 
@@ -59,6 +68,8 @@ CREATE TABLE features (
 CREATE TABLE plan_features (
   plan_id BIGINT,
   feature_id BIGINT,
+  created_at TIMESTAMP DEFAULT NULL,
+  updated_at TIMESTAMP DEFAULT NULL,
   PRIMARY KEY (plan_id, feature_id),
   FOREIGN KEY (plan_id) REFERENCES plans(id),
   FOREIGN KEY (feature_id) REFERENCES features(id)
@@ -67,7 +78,9 @@ CREATE TABLE plan_features (
 -- Create chats table
 CREATE TABLE chats (
   id BIGINT AUTO_INCREMENT PRIMARY KEY,
-  name VARCHAR(100) NOT NULL
+  name VARCHAR(100) NOT NULL,
+  created_at TIMESTAMP DEFAULT NULL,
+  updated_at TIMESTAMP DEFAULT NULL,
 );
 
 -- Create messages table
@@ -75,8 +88,9 @@ CREATE TABLE messages (
   id BIGINT AUTO_INCREMENT PRIMARY KEY,
   sender_id BIGINT,
   content TEXT NOT NULL,
-  send_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   chat_id BIGINT,
+  created_at TIMESTAMP DEFAULT NULL,
+  updated_at TIMESTAMP DEFAULT NULL,
   FOREIGN KEY (sender_id) REFERENCES users(id),
   FOREIGN KEY (chat_id) REFERENCES chats(id)
 );
@@ -90,6 +104,8 @@ CREATE TABLE presets (
   before_image_id BIGINT,
   after_image_id BIGINT,
   user_id BIGINT,
+  created_at TIMESTAMP DEFAULT NULL,
+  updated_at TIMESTAMP DEFAULT NULL,
   FOREIGN KEY (before_image_id) REFERENCES images(id),
   FOREIGN KEY (after_image_id) REFERENCES images(id),
   FOREIGN KEY (user_id) REFERENCES users(id)
@@ -100,6 +116,8 @@ CREATE TABLE purchases (
   id BIGINT AUTO_INCREMENT PRIMARY KEY,
   user_id BIGINT,
   preset_id BIGINT,
+  created_at TIMESTAMP DEFAULT NULL,
+  updated_at TIMESTAMP DEFAULT NULL,
   FOREIGN KEY (user_id) REFERENCES users(id),
   FOREIGN KEY (preset_id) REFERENCES presets(id)
 );
@@ -108,6 +126,8 @@ CREATE TABLE purchases (
 CREATE TABLE users_chats (
   chat_id BIGINT,
   user_id BIGINT,
+  created_at TIMESTAMP DEFAULT NULL,
+  updated_at TIMESTAMP DEFAULT NULL,
   PRIMARY KEY (chat_id, user_id),
   FOREIGN KEY (chat_id) REFERENCES chats(id),
   FOREIGN KEY (user_id) REFERENCES users(id)
@@ -118,6 +138,8 @@ CREATE TABLE likes (
   id BIGINT AUTO_INCREMENT PRIMARY KEY,
   user_id BIGINT NOT NULL,
   publication_id BIGINT NOT NULL,
+  created_at TIMESTAMP DEFAULT NULL,
+  updated_at TIMESTAMP DEFAULT NULL,
   FOREIGN KEY (user_id) REFERENCES users(id),
   FOREIGN KEY (publication_id) REFERENCES publications(id),
   UNIQUE (user_id, publication_id)
@@ -129,6 +151,8 @@ CREATE TABLE saved_publications (
   user_id BIGINT NOT NULL,
   publication_id BIGINT NOT NULL,
   saved_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  created_at TIMESTAMP DEFAULT NULL,
+  updated_at TIMESTAMP DEFAULT NULL,
   FOREIGN KEY (user_id) REFERENCES users(id),
   FOREIGN KEY (publication_id) REFERENCES publications(id),
   UNIQUE (user_id, publication_id)
@@ -140,6 +164,8 @@ CREATE TABLE comments (
   user_id BIGINT NOT NULL,
   publication_id BIGINT NOT NULL,
   content TEXT NOT NULL,
+  created_at TIMESTAMP DEFAULT NULL,
+  updated_at TIMESTAMP DEFAULT NULL,
   FOREIGN KEY (user_id) REFERENCES users(id),
   FOREIGN KEY (publication_id) REFERENCES publications(id)
 );
@@ -151,6 +177,8 @@ CREATE TABLE notifications (
   target_type ENUM('user', 'publication') NOT NULL,
   target_id BIGINT NOT NULL,
   reason TEXT NOT NULL,
+  created_at TIMESTAMP DEFAULT NULL,
+  updated_at TIMESTAMP DEFAULT NULL,
   status ENUM('pending', 'reviewed', 'resolved') DEFAULT 'pending',
   FOREIGN KEY (reporter_id) REFERENCES users(id)
 );
