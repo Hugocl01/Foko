@@ -9,7 +9,7 @@ CREATE TABLE plans (
 CREATE TABLE users (
   id BIGINT AUTO_INCREMENT PRIMARY KEY,
   name VARCHAR(100) NOT NULL,
-  username VARCHAR(45) NOT NULL,
+  username VARCHAR(45) NOT NULL UNIQUE,
   email VARCHAR(255) NOT NULL UNIQUE,
   plan_id BIGINT,
   status TINYINT(1) DEFAULT 1,
@@ -67,7 +67,7 @@ CREATE TABLE plan_features (
 -- Create chats table
 CREATE TABLE chats (
   id BIGINT AUTO_INCREMENT PRIMARY KEY,
-  name VARCHAR(100) NOT NULL UNIQUE
+  name VARCHAR(100) NOT NULL
 );
 
 -- Create messages table
@@ -100,7 +100,6 @@ CREATE TABLE purchases (
   id BIGINT AUTO_INCREMENT PRIMARY KEY,
   user_id BIGINT,
   preset_id BIGINT,
-  purchase_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (user_id) REFERENCES users(id),
   FOREIGN KEY (preset_id) REFERENCES presets(id)
 );
@@ -119,14 +118,13 @@ CREATE TABLE likes (
   id BIGINT AUTO_INCREMENT PRIMARY KEY,
   user_id BIGINT NOT NULL,
   publication_id BIGINT NOT NULL,
-  like_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (user_id) REFERENCES users(id),
   FOREIGN KEY (publication_id) REFERENCES publications(id),
   UNIQUE (user_id, publication_id)
 );
 
 -- Create saved posts table
-CREATE TABLE saved_posts (
+CREATE TABLE saved_publications (
   id BIGINT AUTO_INCREMENT PRIMARY KEY,
   user_id BIGINT NOT NULL,
   publication_id BIGINT NOT NULL,
@@ -142,12 +140,11 @@ CREATE TABLE comments (
   user_id BIGINT NOT NULL,
   publication_id BIGINT NOT NULL,
   content TEXT NOT NULL,
-  comment_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (user_id) REFERENCES users(id),
   FOREIGN KEY (publication_id) REFERENCES publications(id)
 );
 
--- Reports system (for users or publications)
+-- Notifications system (for users or publications)
 CREATE TABLE notifications (
   id BIGINT AUTO_INCREMENT PRIMARY KEY,
   reporter_id BIGINT NOT NULL,
@@ -155,6 +152,5 @@ CREATE TABLE notifications (
   target_id BIGINT NOT NULL,
   reason TEXT NOT NULL,
   status ENUM('pending', 'reviewed', 'resolved') DEFAULT 'pending',
-  report_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (reporter_id) REFERENCES users(id)
 );

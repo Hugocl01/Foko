@@ -15,7 +15,6 @@ return new class extends Migration
             $table->id();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->foreignId('publication_id')->constrained()->onDelete('cascade');
-            $table->timestamp('saved_date')->useCurrent();
             $table->unique(['user_id', 'publication_id']);
             $table->timestamps();
         });

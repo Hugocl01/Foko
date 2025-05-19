@@ -17,7 +17,8 @@ return new class extends Migration
             $table->enum('target_type', ['user', 'publication']);
             $table->unsignedBigInteger('target_id');
             $table->text('reason');
-            $table->enum('status', ['pending', 'reviewed', 'resolved'])->default('pending');            $table->timestamps();
+            $table->enum('status', ['pending', 'reviewed', 'resolved'])->default('pending');
+            $table->timestamps();
         });
     }
 
