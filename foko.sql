@@ -67,7 +67,7 @@ CREATE TABLE plan_features (
 -- Create chats table
 CREATE TABLE chats (
   id BIGINT AUTO_INCREMENT PRIMARY KEY,
-  name VARCHAR(100)
+  name VARCHAR(100) NOT NULL UNIQUE
 );
 
 -- Create messages table
