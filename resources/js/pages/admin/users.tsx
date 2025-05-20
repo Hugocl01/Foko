@@ -1,5 +1,5 @@
 import type React from "react"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import {
     Search,
     Filter,
@@ -41,40 +41,44 @@ import AppLayout from "@/layouts/app-layout"
 import AdminLayout from "@/layouts/admin/layout"
 import { Head } from "@inertiajs/react"
 import type { BreadcrumbItem } from "@/types"
+import { router } from "@inertiajs/react"
+import { toast } from 'sonner'
+import { usePage } from '@inertiajs/react';
 
 // Tipos de datos
+interface Plan {
+    id: number
+    name: "basico" | "premium"
+    price: string
+}
+
 interface User {
     id: number
     name: string
     username: string
-    plan: "free" | "basic" | "pro" | "enterprise"
-    role: "user" | "admin" | "editor" | "viewer"
+    plan: Plan | null
+    role: "user" | "admin"
     avatar: string
     email: string
-    status: "active" | "inactive" | "suspended"
+    status: "activo" | "inactivo"
 }
 
 // Colores para los planes
 const planColors = {
-    free: "bg-gray-500",
-    basic: "bg-blue-500",
-    pro: "bg-purple-500",
-    enterprise: "bg-amber-500",
+    basico: "bg-blue-500",
+    premium: "bg-amber-500",
 }
 
 // Colores para los roles
 const roleColors = {
     user: "bg-gray-500",
     admin: "bg-red-500",
-    editor: "bg-green-500",
-    viewer: "bg-blue-500",
 }
 
 // Colores para los estados
 const statusColors = {
     active: "bg-green-500",
     inactive: "bg-gray-500",
-    suspended: "bg-red-500",
 }
 
 // Breadcrumbs para la navegación
@@ -85,90 +89,10 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ]
 
-export default function Users() {
+export default function Users({ users: initialUsers }: { users: User[] | { data: User[] } }) {
+
     // Estado para los usuarios
-    const [users, setUsers] = useState<User[]>([
-        {
-            id: 1,
-            name: "Carlos Mendez",
-            username: "carlosmendez",
-            plan: "pro",
-            role: "admin",
-            avatar: "/placeholder.svg?height=40&width=40",
-            email: "carlos@example.com",
-            status: "active",
-        },
-        {
-            id: 2,
-            name: "Laura Sánchez",
-            username: "laurasanchez",
-            plan: "basic",
-            role: "editor",
-            avatar: "/placeholder.svg?height=40&width=40",
-            email: "laura@example.com",
-            status: "active",
-        },
-        {
-            id: 3,
-            name: "Miguel Torres",
-            username: "migueltorres",
-            plan: "enterprise",
-            role: "admin",
-            avatar: "/placeholder.svg?height=40&width=40",
-            email: "miguel@example.com",
-            status: "active",
-        },
-        {
-            id: 4,
-            name: "Ana Gómez",
-            username: "anagomez",
-            plan: "free",
-            role: "user",
-            avatar: "/placeholder.svg?height=40&width=40",
-            email: "ana@example.com",
-            status: "inactive",
-        },
-        {
-            id: 5,
-            name: "Hugo Cayón",
-            username: "hugocayon",
-            plan: "pro",
-            role: "editor",
-            avatar: "/placeholder.svg?height=40&width=40",
-            email: "hugo@example.com",
-            status: "active",
-        },
-        {
-            id: 6,
-            name: "Elena Martínez",
-            username: "elenamartinez",
-            plan: "basic",
-            role: "viewer",
-            avatar: "/placeholder.svg?height=40&width=40",
-            email: "elena@example.com",
-            status: "suspended",
-        },
-        {
-            id: 7,
-            name: "Javier Rodríguez",
-            username: "javierrodriguez",
-            plan: "pro",
-            role: "user",
-            avatar: "/placeholder.svg?height=40&width=40",
-            email: "javier@example.com",
-            status: "active",
-        },
-        {
-            id: 8,
-            name: "Sofía López",
-            username: "sofialopez",
-            plan: "enterprise",
-            role: "admin",
-            avatar: "/placeholder.svg?height=40&width=40",
-            email: "sofia@example.com",
-            status: "active",
-        },
-    ])
+    const [users, setUsers] = useState<User[]>(Array.isArray(initialUsers) ? initialUsers : (initialUsers?.data || []));
 
     // Estado para la paginación
     const [currentPage, setCurrentPage] = useState(1)
@@ -191,9 +115,9 @@ export default function Users() {
         name: "",
         username: "",
         email: "",
-        plan: "basic",
+        plan: "basico", // Usa nombres que vengan en user.plan.name
         role: "user",
-        status: "active",
+        status: "activo", // Consistente con tu modelo
     })
 
     // Filtrar usuarios
@@ -203,12 +127,13 @@ export default function Users() {
             user.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
             user.email.toLowerCase().includes(searchTerm.toLowerCase())
 
-        const matchesPlan = filterPlan === "all" ? true : user.plan === filterPlan
+        const matchesPlan = filterPlan === "all" ? true : user.plan?.name === filterPlan
         const matchesRole = filterRole === "all" ? true : user.role === filterRole
         const matchesStatus = filterStatus === "all" ? true : user.status === filterStatus
 
         return matchesSearch && matchesPlan && matchesRole && matchesStatus
     })
+
 
     // Calcular paginación
     const totalPages = Math.ceil(filteredUsers.length / itemsPerPage)
@@ -244,7 +169,7 @@ export default function Users() {
             name: user.name,
             username: user.username,
             email: user.email,
-            plan: user.plan,
+            plan: user.plan?.name ?? "basico",
             role: user.role,
             status: user.status,
         })
@@ -296,7 +221,7 @@ export default function Users() {
                 name: formData.name,
                 username: formData.username,
                 email: formData.email,
-                plan: formData.plan as any,
+                plan: { id: 0, name: formData.plan as any, price: "0.00" }, // Dummy plan object
                 role: formData.role as any,
                 avatar: "/placeholder.svg?height=40&width=40",
                 status: formData.status as any,
@@ -309,11 +234,18 @@ export default function Users() {
 
     // Eliminar usuario
     const deleteUser = () => {
-        if (currentUser) {
-            setUsers(users.filter((user) => user.id !== currentUser.id))
-            setIsDeleteDialogOpen(false)
-        }
-    }
+        if (!currentUser) return;
+
+        router.delete(route('users.destroy', currentUser.id), {
+            onSuccess: () => {
+                setUsers(users.filter(u => u.id !== currentUser.id));
+                setIsDeleteDialogOpen(false);
+            },
+            onError: () => {
+                setIsDeleteDialogOpen(false);
+            },
+        });
+    };
 
     // Limpiar todos los filtros
     const clearFilters = () => {
@@ -322,6 +254,16 @@ export default function Users() {
         setFilterRole("all")
         setFilterStatus("all")
     }
+
+    const { flash } = usePage().props;
+
+    useEffect(() => {
+        if (flash?.success) {
+            toast.success(flash.success);
+        } else if (flash?.error) {
+            toast.error(flash.error);
+        }
+    }, [flash]);
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -497,7 +439,9 @@ export default function Users() {
                                                             </div>
                                                         </TableCell>
                                                         <TableCell>
-                                                            <Badge className={`${planColors[user.plan]} text-white`}>{user.plan}</Badge>
+                                                            <Badge className={`${planColors[user.plan?.name ?? "basico"]} text-white`}>
+                                                                {user.plan?.name ?? "Sin plan"}
+                                                            </Badge>
                                                         </TableCell>
                                                         <TableCell>
                                                             <Badge variant="outline" className={`${roleColors[user.role]} text-white`}>
@@ -669,16 +613,6 @@ export default function Users() {
                                                             <Badge variant="outline" className={`${statusColors[user.status]} text-white mt-1`}>
                                                                 {user.status}
                                                             </Badge>
-                                                        </div>
-                                                    </div>
-                                                    <div className="flex gap-4">
-                                                        <div>
-                                                            <div className="text-sm text-muted-foreground">Fecha de registro</div>
-                                                            <div>{user.createdAt}</div>
-                                                        </div>
-                                                        <div>
-                                                            <div className="text-sm text-muted-foreground">Último acceso</div>
-                                                            <div>{user.lastLogin}</div>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -874,7 +808,7 @@ export default function Users() {
                                     puede deshacer.
                                 </DialogDescription>
                             </DialogHeader>
-                            <DialogFooter className="gap-2 sm:gap-0">
+                            <DialogFooter className="flex flex-wrap gap-2">
                                 <Button variant="outline" onClick={() => setIsDeleteDialogOpen(false)}>
                                     Cancelar
                                 </Button>

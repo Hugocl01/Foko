@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use App\Http\Controllers\NotificationController;
@@ -58,9 +59,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     })->name('purchases.index');
 
     // Usuarios
-    Route::get('admin/users', function () {
-        return Inertia::render('admin/users');
-    })->name('users.index');
+    Route::get('admin/users', [UserController::class, 'index'])->name('users.index');
+
+    Route::delete('/users/{user}', [UserController::class, 'destroy'])->name('users.destroy');
 
     // Reportes
     Route::get('admin/reports', function () {
