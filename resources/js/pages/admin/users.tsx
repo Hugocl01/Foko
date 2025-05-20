@@ -413,7 +413,7 @@ export default function Users({ users: initialUsers }: { users: User[] | { data:
                                 <CardContent className="p-0">
                                     <Table>
                                         <TableHeader>
-                                            <TableRow>
+                                            <TableRow className="hover:bg-transparent">
                                                 <TableHead>Usuario</TableHead>
                                                 <TableHead>Plan</TableHead>
                                                 <TableHead>Rol</TableHead>
