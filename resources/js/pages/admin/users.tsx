@@ -418,7 +418,7 @@ export default function Users({ users: initialUsers }: { users: User[] | { data:
                                                 <TableHead>Plan</TableHead>
                                                 <TableHead>Rol</TableHead>
                                                 <TableHead>Estado</TableHead>
-                                                <TableHead className="text-right">Acciones</TableHead>
+                                                <TableHead>Acciones</TableHead>
                                             </TableRow>
                                         </TableHeader>
                                         <TableBody>
@@ -454,11 +454,14 @@ export default function Users({ users: initialUsers }: { users: User[] | { data:
                                                             </Badge>
                                                         </TableCell>
                                                         <TableCell className="text-right">
-                                                            <div className="flex justify-end gap-2">
+                                                            <div className="flex gap-2">
                                                                 <TooltipProvider>
                                                                     <Tooltip>
                                                                         <TooltipTrigger asChild>
-                                                                            <Button variant="ghost" size="icon" onClick={() => openEditDialog(user)}>
+                                                                            <Button variant="secondary"
+                                                                                size="icon"
+                                                                                onClick={() => openEditDialog(user)}
+                                                                            >
                                                                                 <Edit className="h-4 w-4" />
                                                                             </Button>
                                                                         </TooltipTrigger>
@@ -472,9 +475,8 @@ export default function Users({ users: initialUsers }: { users: User[] | { data:
                                                                     <Tooltip>
                                                                         <TooltipTrigger asChild>
                                                                             <Button
-                                                                                variant="ghost"
+                                                                                variant="destructive"
                                                                                 size="icon"
-                                                                                className="text-destructive"
                                                                                 onClick={() => openDeleteDialog(user)}
                                                                             >
                                                                                 <Trash2 className="h-4 w-4" />
