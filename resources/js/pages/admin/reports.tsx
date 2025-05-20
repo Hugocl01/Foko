@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { Head, useForm, route } from "@inertiajs/react"
+import { Head, useForm } from "@inertiajs/react"
 import AppLayout from "@/layouts/app-layout"
 import AdminLayout from "@/layouts/admin/layout"
 import type { BreadcrumbItem } from "@/types"
@@ -30,7 +30,7 @@ export default function Reports({ reports: initialReports }: { reports: Report[]
     const form = useForm()
 
     const handleDelete = (id: number) => {
-        form.delete(route("reports.destroy", id), {
+        form.delete(`/reports/${id}`, {
             preserveScroll: true,
             onSuccess: () => {
                 setReports((prev) => prev.filter((report) => report.id !== id))
@@ -92,7 +92,7 @@ export default function Reports({ reports: initialReports }: { reports: Report[]
                                                     <Button
                                                         variant="outline"
                                                         size="icon"
-                                                        onClick={() => (window.location.href = route("publications.show", report.publication_id))}
+                                                        onClick={() => (window.location.href = `/publications/${report.publication_id}`)}
                                                     >
                                                         <Eye className="w-5 h-5" />
                                                     </Button>
