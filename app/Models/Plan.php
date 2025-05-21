@@ -23,6 +23,6 @@ class Plan extends Model
 
     public function features(): BelongsToMany
     {
-        return $this->belongsToMany(Feature::class, 'plan_features');
+        return $this->belongsToMany(Feature::class, 'plan_features')->withTimestamps();
     }
 }

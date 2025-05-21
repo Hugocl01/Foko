@@ -19,8 +19,8 @@ class PlanSeeder extends Seeder
             ['name' => 'Premium', 'price' => 9.99],
         ];
 
-        foreach ($plans as $plan) {
-            Plan::create($plan);
+        foreach ($plans as $planData) {
+            Plan::updateOrCreate(['name' => $planData['name']], $planData);
         }
     }
 }
