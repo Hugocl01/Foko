@@ -10,8 +10,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 use Inertia\Response;
-use Illuminate\Support\Facades\Storage;
-use Intervention\Image\Facades\Image;
 
 class ProfileController extends Controller
 {
@@ -31,45 +29,13 @@ class ProfileController extends Controller
      */
     public function update(ProfileUpdateRequest $request): RedirectResponse
     {
+        $request->user()->fill($request->validated());
 
-        $user = $request->user();
-
-        // Llenar campos excepto la imagen
-        $user->fill($request->safe()->except('profile_image_url'));
-
-        // Si se cargó una imagen
-        if ($request->hasFile('profile_image_url')) {
-            $image = $request->file('profile_image_url');
-
-            // Eliminar imagen anterior si existe
-            if ($user->profile_image_url && Storage::disk('images')->exists(basename($user->profile_image_url))) {
-                Storage::disk('images')->delete(basename($user->profile_image_url));
-            }
-
-            // Crear nombre único con .webp
-            $filename = 'avatar_' . $user->id . '_' . time() . '.webp';
-
-            // Procesar imagen: redimensionar a ancho 600px, mantener proporción, codificar a WebP
-            $resizedImage = Image::make($image)
-                ->resize(600, null, function ($constraint) {
-                    $constraint->aspectRatio();
-                    $constraint->upsize();
-                })
-                ->encode('webp', 80); // <-- convierte a WebP con calidad 80
-
-            // Guardar en disco 'images'
-            Storage::disk('images')->put($filename, $resizedImage);
-
-            // Guardar ruta relativa
-            $user->profile_image_url = "images/{$filename}";
+        if ($request->user()->isDirty('email')) {
+            $request->user()->email_verified_at = null;
         }
 
-        // Si cambió el email, se invalida la verificación
-        if ($user->isDirty('email')) {
-            $user->email_verified_at = null;
-        }
-
-        $user->save();
+        $request->user()->save();
 
         return to_route('profile.edit');
     }
