@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Password;
 use Inertia\Inertia;
 use Inertia\Response;
+use App\Models\User;
 
 class PasswordResetLinkController extends Controller
 {
@@ -32,10 +33,18 @@ class PasswordResetLinkController extends Controller
             'email' => 'required|email',
         ]);
 
+        $user = User::where('email', $request->email)->first();
+
+        if (!$user) {
+            return back()->withErrors([
+                'email' => 'No hay ninguna cuenta registrada con ese correo electrónico.',
+            ]);
+        }
+
         Password::sendResetLink(
             $request->only('email')
         );
 
-        return back()->with('status', __('Se enviará un enlace de restablecimiento si la cuenta existe.'));
+        return back()->with('status', __('Te hemos enviado un enlace para restablecer tu contraseña.'));
     }
 }
