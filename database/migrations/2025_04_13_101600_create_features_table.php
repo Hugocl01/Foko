@@ -16,7 +16,9 @@ return new class extends Migration
             $table->string('name', 100);
             $table->text('description')->nullable();
             $table->timestamps();
-        });
+        Schema::enableForeignKeyConstraints();
+    });
+        Schema::enableForeignKeyConstraints();
     }
 
     /**

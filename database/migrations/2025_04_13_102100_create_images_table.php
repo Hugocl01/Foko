@@ -15,7 +15,9 @@ return new class extends Migration {
             $table->foreignId('publication_id')->nullable()->constrained()->nullOnDelete();
             $table->string('url', 2083); // Máximo recomendado para URLs
             $table->timestamps();
-        });
+        Schema::enableForeignKeyConstraints();
+    });
+        Schema::enableForeignKeyConstraints();
     }
 
     /**

@@ -17,7 +17,9 @@ return new class extends Migration
             $table->foreignId('publication_id')->constrained()->onDelete('cascade');
             $table->text('content');
             $table->timestamps();
-        });
+        Schema::enableForeignKeyConstraints();
+    });
+        Schema::enableForeignKeyConstraints();
     }
 
     /**

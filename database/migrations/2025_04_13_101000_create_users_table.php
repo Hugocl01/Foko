@@ -4,51 +4,40 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
+class CreateUsersTable extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::create('users', function (Blueprint $table) {
-            $table->id();
+            $table->bigIncrements('id');
             $table->string('name', 100);
-            $table->string('username', 45)->unique();
-            $table->string('email', 255)->unique();
-            $table->timestamp('email_verified_at')->nullable();
-            $table->string('password');
-            $table->foreignId('plan_id')->nullable()->constrained('plans')->nullOnDelete();
+            $table->string('username', 191)->unique();
+            $table->string('email', 191)->unique();
+            $table->string('password', 255);
             $table->string('profile_image_url')->nullable();
-            $table->text('description')->nullable();
-            $table->enum('role', ['user', 'admin'])->default('user'); // ENUM('user', 'admin') DEFAULT 'user'
-            $table->rememberToken();
+            $table->tinyInteger('status')->default(1);
+            $table->unsignedBigInteger('plan_id')->nullable();
+
+            // Reemplaza el ENUM role por role_id
+            $table->unsignedBigInteger('role_id')->default(1);
+
             $table->timestamps();
-        });
 
-        Schema::create('password_reset_tokens', function (Blueprint $table) {
-            $table->string('email')->primary();
-            $table->string('token');
-            $table->timestamp('created_at')->nullable();
-        });
+            // Foreign keys
+            $table->foreign('plan_id')
+                ->references('id')->on('plans')
+                ->onDelete('set null')
+                ->onUpdate('cascade');
 
-        Schema::create('sessions', function (Blueprint $table) {
-            $table->string('id')->primary();
-            $table->foreignId('user_id')->nullable()->index()->constrained('users');
-            $table->string('ip_address', 45)->nullable();
-            $table->text('user_agent')->nullable();
-            $table->longText('payload');
-            $table->integer('last_activity')->index();
+            $table->foreign('role_id')
+                ->references('id')->on('roles')
+                ->onDelete('restrict')
+                ->onUpdate('cascade');
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('users');
-        Schema::dropIfExists('password_reset_tokens');
-        Schema::dropIfExists('sessions');
     }
-};
+}

@@ -17,7 +17,9 @@ return new class extends Migration
             $table->text('content');
             $table->foreignId('chat_id')->constrained('chats')->onDelete('cascade');
             $table->timestamps();
-        });
+        Schema::enableForeignKeyConstraints();
+    });
+        Schema::enableForeignKeyConstraints();
     }
 
     /**

@@ -16,7 +16,9 @@ return new class extends Migration
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
 
             $table->primary(['chat_id', 'user_id']);
-        });
+        Schema::enableForeignKeyConstraints();
+    });
+        Schema::enableForeignKeyConstraints();
     }
 
     /**

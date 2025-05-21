@@ -17,7 +17,9 @@ return new class extends Migration
             $table->foreignId('preset_id')->constrained()->onDelete('cascade');
             $table->timestamp('purchase_date')->useCurrent();
             $table->timestamps();
-        });
+        Schema::enableForeignKeyConstraints();
+    });
+        Schema::enableForeignKeyConstraints();
     }
 
     /**

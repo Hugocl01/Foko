@@ -19,7 +19,9 @@ return new class extends Migration {
             // Sin FK circular a presets
             $table->unsignedBigInteger('preset_id')->nullable();
             $table->timestamps();
-        });
+        Schema::enableForeignKeyConstraints();
+    });
+        Schema::enableForeignKeyConstraints();
     }
 
     /**

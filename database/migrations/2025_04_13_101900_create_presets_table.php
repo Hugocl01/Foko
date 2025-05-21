@@ -21,7 +21,9 @@ return new class extends Migration {
             $table->unsignedBigInteger('after_image_id')->nullable();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->timestamps();
-        });
+        Schema::enableForeignKeyConstraints();
+    });
+        Schema::enableForeignKeyConstraints();
     }
 
     /**

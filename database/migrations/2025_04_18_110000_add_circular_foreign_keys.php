@@ -18,13 +18,16 @@ return new class extends Migration {
             $table->foreign('after_image_id')
                 ->references('id')->on('images')
                 ->nullOnDelete();
-        });
+        Schema::enableForeignKeyConstraints();
+    });
 
         Schema::table('publications', function (Blueprint $table) {
             $table->foreign('preset_id')
                 ->references('id')->on('presets')
                 ->nullOnDelete();
-        });
+        Schema::enableForeignKeyConstraints();
+    });
+        Schema::enableForeignKeyConstraints();
     }
 
     /**
