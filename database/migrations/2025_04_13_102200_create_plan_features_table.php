@@ -13,6 +13,7 @@ return new class extends Migration {
         Schema::create('plan_features', function (Blueprint $table) {
             $table->foreignId('plan_id')->constrained()->onDelete('cascade');
             $table->foreignId('feature_id')->constrained()->onDelete('cascade');
+            $table->timestamps();
 
             $table->primary(['plan_id', 'feature_id']);
 

@@ -14,24 +14,18 @@ class FeatureSeeder extends Seeder
     public function run(): void
     {
         $features = [
-            // Plan Básico
-            'Subir publicaciones con hasta 3 imágenes' => 'Permite subir hasta 3 imágenes por publicación.',
-            'Interacción social básica' => 'Me gusta, comentarios y guardado de publicaciones.',
-            'Publicaciones mensuales limitadas' => 'Máximo 10 publicaciones por mensuales.',
-
-            // Plan Premium
-            'Subidas y publicaciones ilimitadas' => 'Sin restricciones para publicar.',
-            'Venta de presets' => 'Puede poner presets a la venta.',
-            'Estadísticas avanzadas' => 'Acceso a métricas de interacciones y compras.',
-            'Cuenta verificada' => 'Opción de obtener verificación como profesional.',
-            'Soporte prioritario' => 'Atención más rápida a problemas y dudas.',
+            ['name' => 'Subir publicaciones con 1 imágen', 'description' => 'Límite de 1 imágen por publicación.'],
+            ['name' => 'Interacción social básica', 'description' => 'Likes, comentarios y seguir usuarios.'],
+            ['name' => 'Subir publicaciones con hasta 3 imágenes', 'description' => 'Límite de 3 imágenes por publicación.'],
+            ['name' => 'Publicaciones semanales limitadas', 'description' => 'Restricción de publicaciones por semana.'],
+            ['name' => 'Subidas y publicaciones ilimitadas', 'description' => 'Sin límite en cantidad de publicaciones.'],
+            ['name' => 'Venta de presets', 'description' => 'Permite crear y vender presets personalizados.'],
+            ['name' => 'Cuenta verificada', 'description' => 'Verificación oficial del perfil.'],
+            ['name' => 'Soporte prioritario', 'description' => 'Atención preferente al cliente.'],
         ];
 
-        foreach ($features as $name => $description) {
-            Feature::create([
-                'name' => $name,
-                'description' => $description,
-            ]);
+        foreach ($features as $featureData) {
+            Feature::updateOrCreate(['name' => $featureData['name']], $featureData);
         }
     }
 }

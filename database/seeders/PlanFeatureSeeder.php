@@ -12,35 +12,47 @@ class PlanFeatureSeeder extends Seeder
 {
     public function run(): void
     {
-        // Obtener IDs de planes
-        $basicPlanId = Plan::where('name', 'Básico')->value('id');
-        $proPlanId = Plan::where('name', 'Premium')->value('id');
-
-        // Obtener features por nombre
-        $features = Feature::pluck('id', 'name');
-
-        // Relaciones
         $planFeatures = [
-            // Foko Básico
-            [$basicPlanId, $features['Subir publicaciones con hasta 3 imágenes']],
-            [$basicPlanId, $features['Interacción social básica']],
-            [$basicPlanId, $features['Publicaciones mensuales limitadas']],
-
-            // Foko Premium
-            [$proPlanId, $features['Subidas y publicaciones ilimitadas']],
-            [$proPlanId, $features['Venta de presets']],
-            [$proPlanId, $features['Estadísticas avanzadas']],
-            [$proPlanId, $features['Cuenta verificada']],
-            [$proPlanId, $features['Soporte prioritario']],
+            'Básico' => [
+                'Subir publicaciones con 1 imágen',
+                'Interacción social básica',
+                'Publicaciones semanales limitadas',
+            ],
+            'Premium' => [
+                'Subir publicaciones con hasta 3 imágenes',
+                'Subidas y publicaciones ilimitadas',
+                'Venta de presets',
+                'Cuenta verificada',
+                'Soporte prioritario',
+            ],
         ];
 
-        foreach ($planFeatures as [$planId, $featureId]) {
-            PlanFeature::create([
-                'plan_id' => $planId,
-                'feature_id' => $featureId,
-            ]);
-        }
+        foreach ($planFeatures as $planName => $featureNames) {
+            $plan = Plan::where('name', $planName)->first();
 
-        $this->command->info('✅ Se insertaron los planes con sus caracteristicas');
+            if (!$plan) {
+                $this->command->warn("❌ Plan no encontrado: {$planName}");
+                continue;
+            }
+
+            $this->command->info("✅ Plan encontrado: {$planName}");
+
+            $featureIds = [];
+            foreach ($featureNames as $featureName) {
+                $feature = Feature::where('name', $featureName)->first();
+                if ($feature) {
+                    $featureIds[] = $feature->id;
+                } else {
+                    $this->command->warn("   ⚠️ Feature no encontrada: {$featureName}");
+                }
+            }
+
+            if (count($featureIds)) {
+                $plan->features()->syncWithoutDetaching($featureIds);
+                $this->command->info("   ➕ Features asociadas: " . implode(', ', $featureIds));
+            } else {
+                $this->command->warn("   ⚠️ No se asociaron features al plan: {$planName}");
+            }
+        }
     }
 }

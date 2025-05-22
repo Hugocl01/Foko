@@ -18,11 +18,15 @@ class DatabaseSeeder extends Seeder
         // Limpia todas las tablas antes de hacer el seeding
         DB::table('roles')->delete();
         DB::table('plans')->delete();
+        DB::table('features')->delete();
+        DB::table('plan_features')->delete();
 
         // Llama a los seeders
         $this->call([
             RoleSeeder::class,          // Crea los roles
             PlanSeeder::class,          // Crea los planes
+            FeatureSeeder::class,          // Crea los Caracteristicas
+            PlanFeatureSeeder::class,          // Crea los datos de la tabla intermedia
 
         ]);
     }
