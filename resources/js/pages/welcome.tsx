@@ -32,7 +32,7 @@ const pricingPlans = [
         price: "Gratis",
         description: "Perfecto para comenzar tu viaje creativo",
         features: [
-            "Subir publicaciones con hasta 3 imágenes",
+            "Subir publicaciones con 1 imágen",
             "Interacción social básica",
             "Publicaciones semanales limitadas",
         ],
@@ -46,9 +46,9 @@ const pricingPlans = [
         period: "/mes",
         description: "Para creadores que buscan llevar su estilo al siguiente nivel",
         features: [
+            "Subir publicaciones con hasta 3 imágenes",
             "Subidas y publicaciones ilimitadas",
             "Venta de presets",
-            "Estadísticas avanzadas",
             "Cuenta verificada",
             "Soporte prioritario",
         ],
