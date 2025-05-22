@@ -14,7 +14,7 @@ class UserController extends Controller
 {
     public function index()
     {
-        $users = User::with(['plan', 'followers', 'following'])->paginate(10);
+        $users = User::with(['plan', 'followers', 'following'])->get();
 
         return Inertia::render('admin/users', [
             'users' => $users,

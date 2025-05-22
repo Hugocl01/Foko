@@ -19,6 +19,7 @@ class CreateUsersTable extends Migration
             $table->unsignedBigInteger('plan_id')->nullable();
             $table->unsignedBigInteger('role_id')->default(1);
             $table->string('description', 255)->nullable();
+            $table->timestamp('email_verified_at')->nullable();
             $table->timestamps();
 
             // Foreign keys
