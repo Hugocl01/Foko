@@ -17,10 +17,8 @@ class CreateUsersTable extends Migration
             $table->string('profile_image_url')->nullable();
             $table->tinyInteger('status')->default(1);
             $table->unsignedBigInteger('plan_id')->nullable();
-
-            // Reemplaza el ENUM role por role_id
             $table->unsignedBigInteger('role_id')->default(1);
-
+            $table->string('description', 255)->nullable();
             $table->timestamps();
 
             // Foreign keys

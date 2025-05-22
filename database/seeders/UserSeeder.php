@@ -20,7 +20,7 @@ class UserSeeder extends Seeder
                 'username' => 'hugo_cl01',
                 'email' => 'hugocayon@gmail.com',
                 'password' => '1234',
-                'role' => 'user',
+                'role' => 2,
                 'description' => 'Hola soy Hugo, el creador de esta web, espero que os guste.',
             ],
             [
@@ -28,37 +28,25 @@ class UserSeeder extends Seeder
                 'username' => 'admin',
                 'email' => 'admin@gmail.com',
                 'password' => 'admin1234',
-                'role' => 'admin',
+                'role' => 1,
                 'description' => 'Administrador de la plataforma.',
-            ],
-            [
-                'name' => 'Ana López',
-                'username' => 'ana_lp',
-                'email' => 'ana@example.com',
-                'password' => 'ana2025',
-                'role' => 'user',
-                'description' => 'Amante de la fotografía y los presets vintage.',
-            ],
-            [
-                'name' => 'Carlos Ruiz',
-                'username' => 'carlos_ruiz',
-                'email' => 'carlos@example.com',
-                'password' => 'carlos2025',
-                'role' => 'user',
-                'description' => 'Explorando la edición digital y compartiendo ideas.',
-            ],
+            ]
         ];
 
         foreach ($users as $userData) {
             User::create([
                 'name' => $userData['name'],
+                'username' => $userData['username'],
                 'email' => $userData['email'],
                 'password' => Hash::make($userData['password']),
-                'role' => $userData['role'],
+                'role_id' => $userData['role'],
                 'plan_id' => null,
-                'profile_picture_url' => null,
+                'profile_image_url' => null,
                 'description' => $userData['description'],
             ]);
         }
+
+        // Usuarios de prueba adiccionales
+        User::factory(50)->create();
     }
 }

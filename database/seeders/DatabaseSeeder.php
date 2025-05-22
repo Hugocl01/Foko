@@ -20,6 +20,7 @@ class DatabaseSeeder extends Seeder
         DB::table('plans')->delete();
         DB::table('features')->delete();
         DB::table('plan_features')->delete();
+        DB::table('users')->delete();
 
         // Llama a los seeders
         $this->call([
@@ -27,6 +28,7 @@ class DatabaseSeeder extends Seeder
             PlanSeeder::class,          // Crea los planes
             FeatureSeeder::class,          // Crea los Caracteristicas
             PlanFeatureSeeder::class,          // Crea los datos de la tabla intermedia
+            UserSeeder::class,          // Crea los usuarios
 
         ]);
     }

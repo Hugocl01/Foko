@@ -15,12 +15,12 @@ class RoleSeeder extends Seeder
     {
         $roles = [
             [
-                'name' => 'user',
-                'description' => 'Usuario básico con permisos estándar'
-            ],
-            [
                 'name' => 'admin',
                 'description' => 'Administrador con permisos completos'
+            ],
+            [
+                'name' => 'user',
+                'description' => 'Usuario básico con permisos estándar'
             ],
         ];
 
