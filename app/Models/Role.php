@@ -15,4 +15,9 @@ class Role extends Model
     {
         return $this->hasMany(User::class);
     }
+
+    public static function getLista(): array
+    {
+        return self::orderBy('name')->pluck('name', 'id')->toArray();
+    }
 }
