@@ -78,7 +78,7 @@ const roleColors = {
 // Colores para los estados
 const statusColors = {
     1: "bg-green-500",
-    0: "bg-gray-500",
+    0: "bg-red-500",
 }
 
 // Breadcrumbs para la navegación
