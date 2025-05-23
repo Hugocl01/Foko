@@ -60,7 +60,7 @@ interface User {
     role: "user" | "admin"
     avatar: string
     email: string
-    status: int
+    status: number
 }
 
 // Colores para los planes
@@ -76,10 +76,10 @@ const roleColors = {
 }
 
 // Colores para los estados
-const statusColors = {
-    1: "bg-green-500",
+const statusColors: { [key: number]: string } = {
     0: "bg-red-500",
-}
+    1: "bg-green-500",
+};
 
 // Breadcrumbs para la navegación
 const breadcrumbs: BreadcrumbItem[] = [
@@ -212,7 +212,7 @@ export default function Users({ users: initialUsers }: { users: User[] | { data:
                             email: formData.email,
                             plan: formData.plan as any,
                             role: formData.role as any,
-                            status: formData.status as any,
+                            status: formData.status,
                         }
                         : user,
                 ),
@@ -227,7 +227,7 @@ export default function Users({ users: initialUsers }: { users: User[] | { data:
                 plan: { id: 0, name: formData.plan as any, price: "0.00" }, // Dummy plan object
                 role: formData.role as any,
                 avatar: "/placeholder.svg?height=40&width=40",
-                status: formData.status as any,
+                status: formData.status,
             }
             setUsers([...users, newUser])
         }
