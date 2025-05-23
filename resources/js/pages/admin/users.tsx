@@ -60,13 +60,13 @@ interface User {
     role: "user" | "admin"
     avatar: string
     email: string
-    status: "activo" | "inactivo"
+    status: int
 }
 
 // Colores para los planes
 const planColors = {
     basico: "bg-blue-500",
-    premium: "bg-amber-500",
+    premium: "bg-green-500",
 }
 
 // Colores para los roles
@@ -77,8 +77,8 @@ const roleColors = {
 
 // Colores para los estados
 const statusColors = {
-    active: "bg-green-500",
-    inactive: "bg-gray-500",
+    1: "bg-green-500",
+    0: "bg-gray-500",
 }
 
 // Breadcrumbs para la navegación
@@ -117,7 +117,7 @@ export default function Users({ users: initialUsers }: { users: User[] | { data:
         email: "",
         plan: "basico", // Usa nombres que vengan en user.plan.name
         role: "user",
-        status: "activo", // Consistente con tu modelo
+        status: 1, // Consistente con tu modelo
     })
 
     // Filtrar usuarios
@@ -129,7 +129,7 @@ export default function Users({ users: initialUsers }: { users: User[] | { data:
 
         const matchesPlan = filterPlan === "all" ? true : user.plan?.name === filterPlan
         const matchesRole = filterRole === "all" ? true : user.role === filterRole
-        const matchesStatus = filterStatus === "all" ? true : user.status === filterStatus
+        const matchesStatus = filterStatus === "all" ? true : user.status === parseInt(filterStatus, 10)
 
         return matchesSearch && matchesPlan && matchesRole && matchesStatus
     })
@@ -156,7 +156,7 @@ export default function Users({ users: initialUsers }: { users: User[] | { data:
             email: "",
             plan: "basic",
             role: "user",
-            status: "active",
+            status: 1,
         })
         setIsEditing(false)
         setCurrentUser(null)
@@ -192,7 +192,10 @@ export default function Users({ users: initialUsers }: { users: User[] | { data:
 
     // Manejar cambios en selects
     const handleSelectChange = (name: string, value: string) => {
-        setFormData((prev) => ({ ...prev, [name]: value }))
+        setFormData((prev) => ({
+            ...prev,
+            [name]: name === "status" ? parseInt(value, 10) : value,
+        }))
     }
 
     // Guardar usuario (crear o editar)
@@ -336,15 +339,17 @@ export default function Users({ users: initialUsers }: { users: User[] | { data:
 
                                         <div className="space-y-2 mt-3">
                                             <Label htmlFor="filter-status">Estado</Label>
-                                            <Select value={filterStatus} onValueChange={(value) => setFilterStatus(value)}>
+                                            <Select
+                                                value={filterStatus}
+                                                onValueChange={(value) => setFilterStatus(value)}
+                                            >
                                                 <SelectTrigger id="filter-status">
                                                     <SelectValue placeholder="Todos los estados" />
                                                 </SelectTrigger>
                                                 <SelectContent>
                                                     <SelectItem value="all">Todos los estados</SelectItem>
-                                                    <SelectItem value="active">Activo</SelectItem>
-                                                    <SelectItem value="inactive">Inactivo</SelectItem>
-                                                    <SelectItem value="suspended">Suspendido</SelectItem>
+                                                    <SelectItem value="1">Activo</SelectItem>
+                                                    <SelectItem value="0">Inactivo</SelectItem>
                                                 </SelectContent>
                                             </Select>
                                         </div>
@@ -392,7 +397,7 @@ export default function Users({ users: initialUsers }: { users: User[] | { data:
                             )}
                             {filterStatus !== "all" && (
                                 <Badge variant="secondary" className="flex items-center gap-1">
-                                    Estado: {filterStatus}
+                                    Estado: {filterStatus == "1" ? "Activo" : "Inactivo"}
                                     <Button variant="ghost" size="icon" className="h-4 w-4 p-0 ml-1" onClick={() => setFilterStatus("all")}>
                                         <X className="h-3 w-3" />
                                     </Button>
@@ -411,14 +416,14 @@ export default function Users({ users: initialUsers }: { users: User[] | { data:
                         <TabsContent value="table" className="mt-4">
                             <Card>
                                 <CardContent className="p-0">
-                                    <Table>
+                                    <Table >
                                         <TableHeader>
                                             <TableRow className="hover:bg-transparent">
                                                 <TableHead>Usuario</TableHead>
                                                 <TableHead>Plan</TableHead>
                                                 <TableHead>Rol</TableHead>
                                                 <TableHead>Estado</TableHead>
-                                                <TableHead>Acciones</TableHead>
+                                                <TableHead className="text-right">Acciones</TableHead>
                                             </TableRow>
                                         </TableHeader>
                                         <TableBody>
@@ -450,11 +455,11 @@ export default function Users({ users: initialUsers }: { users: User[] | { data:
                                                         </TableCell>
                                                         <TableCell>
                                                             <Badge variant="outline" className={`${statusColors[user.status]} text-white`}>
-                                                                {user.status}
+                                                                {user.status == 1 ? "Activo" : "Inactivo"}
                                                             </Badge>
                                                         </TableCell>
                                                         <TableCell className="text-right">
-                                                            <div className="flex gap-2">
+                                                            <div className="flex justify-end gap-2">
                                                                 <TooltipProvider>
                                                                     <Tooltip>
                                                                         <TooltipTrigger asChild>
@@ -602,7 +607,9 @@ export default function Users({ users: initialUsers }: { users: User[] | { data:
                                                     <div className="flex flex-wrap gap-2">
                                                         <div>
                                                             <div className="text-sm text-muted-foreground">Plan</div>
-                                                            <Badge className={`${planColors[user.plan]} text-white mt-1`}>{user.plan}</Badge>
+                                                            <Badge variant="outline" className={`${statusColors[user.status]} text-white mt-1`}>
+                                                                {user.status == 1 ? "Activo" : "Inactivo"}
+                                                            </Badge>
                                                         </div>
                                                         <div>
                                                             <div className="text-sm text-muted-foreground">Rol</div>
@@ -771,14 +778,16 @@ export default function Users({ users: initialUsers }: { users: User[] | { data:
 
                                     <div className="space-y-2">
                                         <Label htmlFor="status">Estado</Label>
-                                        <Select value={formData.status} onValueChange={(value) => handleSelectChange("status", value)}>
+                                        <Select
+                                            value={formData.status.toString()}
+                                            onValueChange={(value) => handleSelectChange("status", value)}
+                                        >
                                             <SelectTrigger id="status">
                                                 <SelectValue placeholder="Seleccionar estado" />
                                             </SelectTrigger>
                                             <SelectContent>
-                                                <SelectItem value="active">Activo</SelectItem>
-                                                <SelectItem value="inactive">Inactivo</SelectItem>
-                                                <SelectItem value="suspended">Suspendido</SelectItem>
+                                                <SelectItem value="1">Activo</SelectItem>
+                                                <SelectItem value="0">Inactivo</SelectItem>
                                             </SelectContent>
                                         </Select>
                                     </div>
