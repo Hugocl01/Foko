@@ -110,8 +110,8 @@ export default function Users({ users: initialUsers, plans: initialPlans, roles:
         name: "",
         username: "",
         email: "",
-        plan: "basico",
-        role: "user",
+        plan_id: 0,
+        role_id: 0,
         status: 1,
     })
 
@@ -141,14 +141,28 @@ export default function Users({ users: initialUsers, plans: initialPlans, roles:
 
     // Diálogos
     const openCreateDialog = () => {
-        setFormData({ name: "", username: "", email: "", plan: "basico", role: "user", status: 1 })
+        setFormData({
+            name: "",
+            username: "",
+            email: "",
+            plan_id: 0,
+            role_id: 0,
+            status: 1
+        })
         setIsEditing(false)
         setCurrentUser(null)
         setIsDialogOpen(true)
     }
 
     const openEditDialog = (user: UserData) => {
-        setFormData({ name: user.name, username: user.username, email: user.email, plan: user.plan.name, role: user.role.name, status: user.status })
+        setFormData({
+            name: user.name,
+            username: user.username,
+            email: user.email,
+            plan_id: user.plan.id,
+            role_id: user.role.id,
+            status: user.status
+        })
         setIsEditing(true)
         setCurrentUser(user)
         setIsDialogOpen(true)
@@ -166,7 +180,10 @@ export default function Users({ users: initialUsers, plans: initialPlans, roles:
     }
 
     const handleSelectChange = (name: string, value: string) => {
-        setFormData((prev) => ({ ...prev, [name]: name === "status" ? parseInt(value, 10) : value }))
+        setFormData(prev => ({
+            ...prev,
+            [name]: parseInt(value, 10),
+        }))
     }
 
     const saveUser = () => {
@@ -179,8 +196,8 @@ export default function Users({ users: initialUsers, plans: initialPlans, roles:
                             name: formData.name,
                             username: formData.username,
                             email: formData.email,
-                            plan: initialPlans.find((p) => p.name === formData.plan)!,
-                            role: initialRoles.find((r) => r.name === formData.role)!,
+                            plan_id: formData.plan_id,
+                            role_id: formData.role_id,
                             status: formData.status,
                         }
                         : u
@@ -192,8 +209,8 @@ export default function Users({ users: initialUsers, plans: initialPlans, roles:
                 name: formData.name,
                 username: formData.username,
                 email: formData.email,
-                plan: initialPlans.find((p) => p.name === formData.plan) || initialPlans[0],
-                role: initialRoles.find((r) => r.name === formData.role) || initialRoles[0],
+                plan_id: formData.plan_id,
+                role_id: formData.role_id,
                 profile_image: "/placeholder.svg?height=40&width=40",
                 status: formData.status,
             }
@@ -267,32 +284,35 @@ export default function Users({ users: initialUsers, plans: initialPlans, roles:
                                     <div className="p-2">
                                         <div className="space-y-2">
                                             <Label htmlFor="filter-plan">Plan</Label>
-                                            <Select value={filterPlan} onValueChange={(value) => setFilterPlan(value)}>
+                                            <Select value={filterPlan} onValueChange={setFilterPlan}>
                                                 <SelectTrigger id="filter-plan">
                                                     <SelectValue placeholder="Todos los planes" />
                                                 </SelectTrigger>
                                                 <SelectContent>
-                                                    <SelectItem value="all">Todos los planes</SelectItem>
-                                                    <SelectItem value="free">Free</SelectItem>
-                                                    <SelectItem value="basic">Basic</SelectItem>
-                                                    <SelectItem value="pro">Pro</SelectItem>
-                                                    <SelectItem value="enterprise">Enterprise</SelectItem>
+                                                    <SelectItem value="all" disabled >Todos los planes</SelectItem>
+                                                    {initialPlans.map(plan => (
+                                                        <SelectItem key={plan.id} value={plan.name}>{plan.name}</SelectItem>
+                                                    ))}
                                                 </SelectContent>
                                             </Select>
                                         </div>
 
                                         <div className="space-y-2 mt-3">
                                             <Label htmlFor="filter-role">Rol</Label>
-                                            <Select value={filterRole} onValueChange={(value) => setFilterRole(value)}>
+                                            <Select
+                                                value={filterRole}
+                                                onValueChange={setFilterRole}
+                                            >
                                                 <SelectTrigger id="filter-role">
-                                                    <SelectValue placeholder="Todos los roles" />
+                                                    <SelectValue placeholder="Seleccionar rol" />
                                                 </SelectTrigger>
                                                 <SelectContent>
-                                                    <SelectItem value="all">Todos los roles</SelectItem>
-                                                    <SelectItem value="user">Usuario</SelectItem>
-                                                    <SelectItem value="admin">Administrador</SelectItem>
-                                                    <SelectItem value="editor">Editor</SelectItem>
-                                                    <SelectItem value="viewer">Visualizador</SelectItem>
+                                                    <SelectItem value="all" disabled>Todos los roles</SelectItem>
+                                                    {initialRoles.map((role) => (
+                                                        <SelectItem key={role.id} value={role.name}>
+                                                            {role.name}
+                                                        </SelectItem>
+                                                    ))}
                                                 </SelectContent>
                                             </Select>
                                         </div>
@@ -713,30 +733,38 @@ export default function Users({ users: initialUsers, plans: initialPlans, roles:
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                         <div className="space-y-2">
                                             <Label htmlFor="plan">Plan</Label>
-                                            <Select value={formData.plan} onValueChange={(value) => handleSelectChange("plan", value)}>
-                                                <SelectTrigger id="plan">
-                                                    <SelectValue placeholder="Seleccionar plan" />
+                                            <Select
+                                                value={formData.plan_id.toString()}
+                                                onValueChange={val => handleSelectChange('plan_id', val)}
+                                            >
+                                                <SelectTrigger id="filter-plan">
+                                                    <SelectValue placeholder="Todos los planes" />
                                                 </SelectTrigger>
                                                 <SelectContent>
-                                                    <SelectItem value="free">Free</SelectItem>
-                                                    <SelectItem value="basic">Basic</SelectItem>
-                                                    <SelectItem value="pro">Pro</SelectItem>
-                                                    <SelectItem value="enterprise">Enterprise</SelectItem>
+                                                    <SelectItem value="0" disabled >Todos los planes</SelectItem>
+                                                    {initialPlans.map(plan => (
+                                                        <SelectItem key={plan.id} value={plan.id.toString()}>{plan.name}</SelectItem>
+                                                    ))}
                                                 </SelectContent>
                                             </Select>
                                         </div>
 
                                         <div className="space-y-2">
                                             <Label htmlFor="role">Rol</Label>
-                                            <Select value={formData.role} onValueChange={(value) => handleSelectChange("role", value)}>
+                                            <Select
+                                                value={formData.role_id.toString()}
+                                                onValueChange={(val) => handleSelectChange("role_id", val)}
+                                            >
                                                 <SelectTrigger id="role">
                                                     <SelectValue placeholder="Seleccionar rol" />
                                                 </SelectTrigger>
                                                 <SelectContent>
-                                                    <SelectItem value="user">Usuario</SelectItem>
-                                                    <SelectItem value="admin">Administrador</SelectItem>
-                                                    <SelectItem value="editor">Editor</SelectItem>
-                                                    <SelectItem value="viewer">Visualizador</SelectItem>
+                                                    <SelectItem value="0" disabled >Todos los roles</SelectItem>
+                                                    {initialRoles.map((role) => (
+                                                        <SelectItem key={role.id} value={role.id.toString()}>
+                                                            {role.name}
+                                                        </SelectItem>
+                                                    ))}
                                                 </SelectContent>
                                             </Select>
                                         </div>
