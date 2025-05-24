@@ -28,7 +28,6 @@ export default function Profile() {
     // 1) Sacamos el usuario de Inertia
     const { auth } = usePage<SharedData>().props;
     const user = auth.user;
-console.log(auth)
 
     // 2) Estado del formulario con Inertia
     const { data, setData, errors, processing, recentlySuccessful } = useForm({
