@@ -11,22 +11,24 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use App\Http\Requests\UserStoreRequest;
+use App\Http\Requests\UserUpdateRequest;
 
 class UserController extends Controller
 {
     public function index()
     {
         // Trae todos los usuarios, con plan y rol
-        $users = User::with(['plan','role'])->get()
-            ->map(function($user) {
+        $users = User::with(['plan', 'role'])->get()
+            ->map(function ($user) {
                 return [
-                    'id'                => $user->id,
-                    'name'              => $user->name,
-                    'username'          => $user->username,
-                    'email'             => $user->email,
-                    'plan'              => $user->plan,
-                    'role'              => $user->role,
-                    'status'            => $user->status,
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'username' => $user->username,
+                    'email' => $user->email,
+                    'plan' => $user->plan,
+                    'role' => $user->role,
+                    'status' => $user->status,
                     'profile_image' => $user->getProfileImageUrlAttribute(),
                 ];
             });
@@ -47,24 +49,12 @@ class UserController extends Controller
         ]);
     }
 
-    public function store(Request $request)
+    public function store(UserStoreRequest $request)
     {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'username' => 'required|string|max:255|unique:users',
-            'email' => 'required|email|max:255|unique:users',
-            'password' => 'required|string|min:8|confirmed',
-            'plan_id' => 'nullable|exists:plans,id',
-            'profile_picture' => 'nullable|url',
-            'description' => 'nullable|string',
-            'role' => 'nullable|string',
-        ]);
+        User::create($request->validated());
 
-        $validated['password'] = Hash::make($validated['password']);
-
-        User::create($validated);
-
-        return redirect()->route('users.index')->with('success', 'Usuario creado con éxito.');
+        return redirect()->route('users.index')
+            ->with('success', 'Usuario creado correctamente.');
     }
 
     public function show(User $user)
@@ -86,28 +76,15 @@ class UserController extends Controller
         ]);
     }
 
-    public function update(Request $request, User $user)
+    /**
+     * Update the specified user in storage.
+     */
+    public function update(UserUpdateRequest $request, User $user)
     {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'username' => ['required', 'string', 'max:255', Rule::unique('users')->ignore($user->id)],
-            'email' => ['required', 'email', 'max:255', Rule::unique('users')->ignore($user->id)],
-            'password' => 'nullable|string|min:8|confirmed',
-            'plan_id' => 'nullable|exists:plans,id',
-            'profile_picture' => 'nullable|url',
-            'description' => 'nullable|string',
-            'role' => 'nullable|string',
-        ]);
+        $user->update($request->validated());
 
-        if ($validated['password']) {
-            $validated['password'] = Hash::make($validated['password']);
-        } else {
-            unset($validated['password']);
-        }
-
-        $user->update($validated);
-
-        return redirect()->route('users.index')->with('success', 'Usuario actualizado con éxito.');
+        return redirect()->route('users.index')
+            ->with('success', 'Usuario actualizado correctamente.');
     }
 
     public function destroy(User $user)

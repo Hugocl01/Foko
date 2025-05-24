@@ -39,11 +39,9 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Label } from "@/components/ui/label"
 import AppLayout from "@/layouts/app-layout"
 import AdminLayout from "@/layouts/admin/layout"
-import { Head } from "@inertiajs/react"
 import type { BreadcrumbItem } from "@/types"
-import { router } from "@inertiajs/react"
+import { router, usePage, Head } from "@inertiajs/react"
 import { toast } from 'sonner'
-import { usePage } from '@inertiajs/react'
 import { User } from "@/types/User"
 import { Plan } from "@/types/Plan"
 import { Role } from "@/types/Role"
@@ -86,10 +84,9 @@ const breadcrumbs: BreadcrumbItem[] = [
 ]
 
 export default function Users({ users: initialUsers, plans: initialPlans, roles: initialRoles }: UsersPageProps) {
-    // Inicializar datos
-    // justo tras desestructurar las props
+    const { props } = usePage<{ users: UserData[] | { data: UserData[] } }>()
     const [users, setUsers] = useState<UserData[]>(
-        Array.isArray(initialUsers) ? initialUsers : initialUsers.data
+        Array.isArray(props.users) ? props.users : props.users.data
     )
 
     const [filterPlan, setFilterPlan] = useState<string>("all")
@@ -109,6 +106,7 @@ export default function Users({ users: initialUsers, plans: initialPlans, roles:
     const [formData, setFormData] = useState({
         name: "",
         username: "",
+        password: null,
         email: "",
         plan_id: 0,
         role_id: 0,
@@ -144,6 +142,7 @@ export default function Users({ users: initialUsers, plans: initialPlans, roles:
         setFormData({
             name: "",
             username: "",
+            password: null,
             email: "",
             plan_id: 0,
             role_id: 0,
@@ -158,6 +157,7 @@ export default function Users({ users: initialUsers, plans: initialPlans, roles:
         setFormData({
             name: user.name,
             username: user.username,
+            password: null,
             email: user.email,
             plan_id: user.plan.id,
             role_id: user.role.id,
@@ -187,37 +187,57 @@ export default function Users({ users: initialUsers, plans: initialPlans, roles:
     }
 
     const saveUser = () => {
-        if (isEditing && currentUser) {
-            setUsers(
-                users.map((u) =>
-                    u.id === currentUser.id
-                        ? {
-                            ...u,
-                            name: formData.name,
-                            username: formData.username,
-                            email: formData.email,
-                            plan_id: formData.plan_id,
-                            role_id: formData.role_id,
-                            status: formData.status,
-                        }
-                        : u
-                )
-            )
-        } else {
-            const newUser: UserData = {
-                id: Math.max(...users.map((u) => u.id)) + 1,
-                name: formData.name,
-                username: formData.username,
-                email: formData.email,
-                plan_id: formData.plan_id,
-                role_id: formData.role_id,
-                profile_image: "/placeholder.svg?height=40&width=40",
-                status: formData.status,
+        // 1) Payload base
+        let payload: Record<string, any> = {
+            name: formData.name,
+            username: formData.username,
+            email: formData.email,
+            plan_id: formData.plan_id,
+            role_id: formData.role_id,
+            status: formData.status,
+        };
+
+        // 2) Si es creación, añade la contraseña
+        if (!isEditing) {
+            if (!formData.password) {
+                toast.error('La contraseña es obligatoria al crear un usuario');
+                return;
             }
-            setUsers([...users, newUser])
+            payload.password = formData.password;
         }
-        setIsDialogOpen(false)
-    }
+
+        // 3) Opciones compartidas de Inertia
+        const inertiaOptions = {
+            forceFormData: true,
+            preserveScroll: true,
+            onSuccess: () => {
+                setIsDialogOpen(false);
+            },
+            onError: () => {
+                // Queda abierto para mostrar errores en `errors`
+            },
+        };
+
+        // 4) Dispara la petición
+        if (isEditing && currentUser) {
+            // Para update usamos POST + método PATCH
+            router.post(
+                route('users.update', currentUser.id),
+                {
+                    _method: 'patch',
+                    ...payload,
+                },
+                inertiaOptions
+            );
+        } else {
+            // Para creación, POST directo
+            router.post(
+                route('users.store'),
+                payload,
+                inertiaOptions
+            );
+        }
+    };
 
     const deleteUser = () => {
         if (!currentUser) return;
@@ -236,7 +256,7 @@ export default function Users({ users: initialUsers, plans: initialPlans, roles:
 
     const clearFilters = () => { setSearchTerm(""); setFilterPlan("all"); setFilterRole("all"); setFilterStatus("all") }
 
-    const { flash } = usePage().props
+    const { flash, errors } = usePage().props
     useEffect(() => {
         if (flash?.success) {
             toast.success(flash.success);
@@ -244,6 +264,12 @@ export default function Users({ users: initialUsers, plans: initialPlans, roles:
             toast.error(flash.error);
         }
     }, [flash]);
+
+    // sincroniza cuando Inertia actualice props.users
+    useEffect(() => {
+        const list = Array.isArray(props.users) ? props.users : props.users.data
+        setUsers(list)
+    }, [props.users])
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -685,122 +711,164 @@ export default function Users({ users: initialUsers, plans: initialPlans, roles:
 
                     {/* Diálogo para crear/editar usuario */}
                     <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-                        <DialogContent className="sm:max-w-[500px]">
-                            <DialogHeader>
-                                <DialogTitle>{isEditing ? "Editar Usuario" : "Crear Nuevo Usuario"}</DialogTitle>
-                                <DialogDescription>
-                                    {isEditing
-                                        ? "Modifica los datos del usuario y guarda los cambios."
-                                        : "Completa los datos para crear un nuevo usuario."}
-                                </DialogDescription>
-                            </DialogHeader>
-                            <div className="grid gap-4 py-4">
-                                <div className="grid grid-cols-1 gap-3">
-                                    <div className="space-y-2">
-                                        <Label htmlFor="name">Nombre completo</Label>
-                                        <Input
-                                            id="name"
-                                            name="name"
-                                            value={formData.name}
-                                            onChange={handleFormChange}
-                                            placeholder="Nombre completo"
-                                        />
-                                    </div>
-
-                                    <div className="space-y-2">
-                                        <Label htmlFor="username">Nombre de usuario</Label>
-                                        <Input
-                                            id="username"
-                                            name="username"
-                                            value={formData.username}
-                                            onChange={handleFormChange}
-                                            placeholder="username"
-                                        />
-                                    </div>
-
-                                    <div className="space-y-2">
-                                        <Label htmlFor="email">Email</Label>
-                                        <Input
-                                            id="email"
-                                            name="email"
-                                            type="email"
-                                            value={formData.email}
-                                            onChange={handleFormChange}
-                                            placeholder="email@ejemplo.com"
-                                        />
-                                    </div>
-
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <form
+                            onSubmit={(e) => {
+                                e.preventDefault();
+                                saveUser();
+                            }}
+                            className="sm:max-w-[500px]"
+                        >
+                            <DialogContent className="sm:max-w-[500px]">
+                                <DialogHeader>
+                                    <DialogTitle>{isEditing ? "Editar Usuario" : "Crear Nuevo Usuario"}</DialogTitle>
+                                    <DialogDescription>
+                                        {isEditing
+                                            ? "Modifica los datos del usuario y guarda los cambios."
+                                            : "Completa los datos para crear un nuevo usuario."}
+                                    </DialogDescription>
+                                </DialogHeader>
+                                <div className="grid gap-4 py-4">
+                                    <div className="grid grid-cols-1 gap-3">
                                         <div className="space-y-2">
-                                            <Label htmlFor="plan">Plan</Label>
-                                            <Select
-                                                value={formData.plan_id.toString()}
-                                                onValueChange={val => handleSelectChange('plan_id', val)}
-                                            >
-                                                <SelectTrigger id="filter-plan">
-                                                    <SelectValue placeholder="Todos los planes" />
-                                                </SelectTrigger>
-                                                <SelectContent>
-                                                    <SelectItem value="0" disabled >Todos los planes</SelectItem>
-                                                    {initialPlans.map(plan => (
-                                                        <SelectItem key={plan.id} value={plan.id.toString()}>{plan.name}</SelectItem>
-                                                    ))}
-                                                </SelectContent>
-                                            </Select>
+                                            <Label htmlFor="name">Nombre completo</Label>
+                                            <Input
+                                                id="name"
+                                                name="name"
+                                                value={formData.name}
+                                                onChange={handleFormChange}
+                                                placeholder="Nombre completo"
+                                            />
+                                            {errors.name && (
+                                                <p className="text-destructive text-sm mt-1">{errors.name}</p>
+                                            )}
                                         </div>
 
                                         <div className="space-y-2">
-                                            <Label htmlFor="role">Rol</Label>
+                                            <Label htmlFor="username">Nombre de usuario</Label>
+                                            <Input
+                                                id="username"
+                                                name="username"
+                                                value={formData.username}
+                                                onChange={handleFormChange}
+                                                placeholder="username"
+                                            />
+                                            {errors.username && (
+                                                <p className="text-destructive text-sm mt-1">{errors.username}</p>
+                                            )}
+                                        </div>
+
+                                        {!isEditing ? (
+                                            <div className="space-y-2">
+                                                <Label htmlFor="name">Contraseña</Label>
+                                                <Input
+                                                    id="password"
+                                                    name="password"
+                                                    type="password"
+                                                    value={formData.password}
+                                                    onChange={handleFormChange}
+                                                />
+                                                {errors.password && (
+                                                    <p className="text-destructive text-sm mt-1">{errors.password}</p>
+                                                )}
+                                            </div>
+                                        ) : ''}
+
+                                        <div className="space-y-2">
+                                            <Label htmlFor="email">Email</Label>
+                                            <Input
+                                                id="email"
+                                                name="email"
+                                                type="email"
+                                                value={formData.email}
+                                                onChange={handleFormChange}
+                                                placeholder="email@ejemplo.com"
+                                            />
+                                            {errors.email && (
+                                                <p className="text-destructive text-sm mt-1">{errors.email}</p>
+                                            )}
+                                        </div>
+
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                            <div className="space-y-2">
+                                                <Label htmlFor="plan">Plan</Label>
+                                                <Select
+                                                    value={formData.plan_id.toString()}
+                                                    onValueChange={val => handleSelectChange('plan_id', val)}
+                                                >
+                                                    <SelectTrigger id="filter-plan">
+                                                        <SelectValue placeholder="Todos los planes" />
+                                                    </SelectTrigger>
+                                                    <SelectContent>
+                                                        <SelectItem value="0" disabled >Todos los planes</SelectItem>
+                                                        {initialPlans.map(plan => (
+                                                            <SelectItem key={plan.id} value={plan.id.toString()}>{plan.name}</SelectItem>
+                                                        ))}
+                                                    </SelectContent>
+                                                </Select>
+                                                {errors.plan_id && (
+                                                    <p className="text-destructive text-sm mt-1">{errors.plan_id}</p>
+                                                )}
+                                            </div>
+
+                                            <div className="space-y-2">
+                                                <Label htmlFor="role">Rol</Label>
+                                                <Select
+                                                    value={formData.role_id.toString()}
+                                                    onValueChange={(val) => handleSelectChange("role_id", val)}
+                                                >
+                                                    <SelectTrigger id="role">
+                                                        <SelectValue placeholder="Seleccionar rol" />
+                                                    </SelectTrigger>
+                                                    <SelectContent>
+                                                        <SelectItem value="0" disabled >Todos los roles</SelectItem>
+                                                        {initialRoles.map((role) => (
+                                                            <SelectItem key={role.id} value={role.id.toString()}>
+                                                                {role.name}
+                                                            </SelectItem>
+                                                        ))}
+                                                    </SelectContent>
+                                                </Select>
+                                                {errors.role_id && (
+                                                    <p className="text-destructive text-sm mt-1">{errors.role_id}</p>
+                                                )}
+                                            </div>
+                                        </div>
+
+                                        <div className="space-y-2">
+                                            <Label htmlFor="status">Estado</Label>
                                             <Select
-                                                value={formData.role_id.toString()}
-                                                onValueChange={(val) => handleSelectChange("role_id", val)}
+                                                value={formData.status.toString()}
+                                                onValueChange={(value) => handleSelectChange("status", value)}
                                             >
-                                                <SelectTrigger id="role">
-                                                    <SelectValue placeholder="Seleccionar rol" />
+                                                <SelectTrigger id="status">
+                                                    <SelectValue placeholder="Seleccionar estado" />
                                                 </SelectTrigger>
                                                 <SelectContent>
-                                                    <SelectItem value="0" disabled >Todos los roles</SelectItem>
-                                                    {initialRoles.map((role) => (
-                                                        <SelectItem key={role.id} value={role.id.toString()}>
-                                                            {role.name}
-                                                        </SelectItem>
-                                                    ))}
+                                                    <SelectItem value="1">Activo</SelectItem>
+                                                    <SelectItem value="0">Inactivo</SelectItem>
                                                 </SelectContent>
                                             </Select>
+                                            {errors.status && (
+                                                <p className="text-destructive text-sm mt-1">{errors.status}</p>
+                                            )}
                                         </div>
-                                    </div>
-
-                                    <div className="space-y-2">
-                                        <Label htmlFor="status">Estado</Label>
-                                        <Select
-                                            value={formData.status.toString()}
-                                            onValueChange={(value) => handleSelectChange("status", value)}
-                                        >
-                                            <SelectTrigger id="status">
-                                                <SelectValue placeholder="Seleccionar estado" />
-                                            </SelectTrigger>
-                                            <SelectContent>
-                                                <SelectItem value="1">Activo</SelectItem>
-                                                <SelectItem value="0">Inactivo</SelectItem>
-                                            </SelectContent>
-                                        </Select>
                                     </div>
                                 </div>
-                            </div>
-                            <DialogFooter>
-                                <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
-                                    Cancelar
-                                </Button>
-                                <Button
-                                    onClick={saveUser}
-                                    disabled={!formData.name || !formData.username || !formData.email}
-                                    className="bg-primary hover:bg-primary/90"
-                                >
-                                    <Save className="h-4 w-4 mr-2" />
-                                    {isEditing ? "Guardar cambios" : "Crear usuario"}
-                                </Button>
-                            </DialogFooter>
-                        </DialogContent>
+                                <DialogFooter>
+                                    <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
+                                        Cancelar
+                                    </Button>
+                                    <Button
+                                        onClick={saveUser}
+                                        disabled={!formData.name || !formData.username || !formData.email}
+                                        className="bg-primary hover:bg-primary/90"
+                                    >
+                                        <Save className="h-4 w-4 mr-2" />
+                                        {isEditing ? "Guardar cambios" : "Crear usuario"}
+                                    </Button>
+                                </DialogFooter>
+                            </DialogContent>
+                        </form>
                     </Dialog>
 
                     {/* Diálogo para confirmar eliminación */}
@@ -826,6 +894,6 @@ export default function Users({ users: initialUsers, plans: initialPlans, roles:
                     </Dialog>
                 </div>
             </AdminLayout>
-        </AppLayout>
+        </AppLayout >
     )
 }
