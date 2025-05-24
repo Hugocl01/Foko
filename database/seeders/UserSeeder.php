@@ -43,7 +43,7 @@ class UserSeeder extends Seeder
                 'password' => Hash::make($userData['password']),
                 'plan_id' => $userData['plan_id'],
                 'role_id' => $userData['role_id'],
-                'profile_image_url' => null,
+                'profile_image' => null,
                 'description' => $userData['description'],
             ]);
         }

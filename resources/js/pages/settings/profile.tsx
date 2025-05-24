@@ -1,140 +1,146 @@
-import { type BreadcrumbItem, type SharedData } from '@/types';
-import { Transition } from '@headlessui/react';
-import { Head, Link, useForm, usePage } from '@inertiajs/react';
-import { FormEventHandler } from 'react';
-
-import DeleteUser from '@/components/delete-user';
-import HeadingSmall from '@/components/heading-small';
-import InputError from '@/components/input-error';
+import { useState, useEffect, FormEventHandler } from 'react';
+import { Head, useForm, usePage, router } from '@inertiajs/react';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import InputError from '@/components/input-error';
+import HeadingSmall from '@/components/heading-small';
+import DeleteUser from '@/components/delete-user';
 import AppLayout from '@/layouts/app-layout';
 import SettingsLayout from '@/layouts/settings/layout';
 
-const breadcrumbs: BreadcrumbItem[] = [
-    {
-        title: 'Configuración de perfil',
-        href: '/settings/profile',
-    },
-];
-
-type ProfileForm = {
-    name: string;
-    email: string;
-    description: string;
+type SharedData = {
+    auth: {
+        user: {
+            id: number;
+            name: string;
+            email: string;
+            description: string;
+            profile_image_url: string | null;
+        };
+    };
+    flash: { success?: string; error?: string };
 };
 
-export default function Profile({ mustVerifyEmail, status }: { mustVerifyEmail: boolean; status?: string }) {
+export default function Profile() {
+    // 1) Sacamos el usuario de Inertia
     const { auth } = usePage<SharedData>().props;
+    const user = auth.user;
+console.log(auth)
 
-    const { data, setData, patch, errors, processing, recentlySuccessful } = useForm<Required<ProfileForm>>({
-        name: auth.user.name,
-        email: auth.user.email,
-        description: auth.user.description,
+    // 2) Estado del formulario con Inertia
+    const { data, setData, errors, processing, recentlySuccessful } = useForm({
+        name: user.name,
+        email: user.email,
+        description: user.description || '',
+        profile_image: null as File | null,
     });
 
+    // 3) Estado para la URL de preview
+    const [previewUrl, setPreviewUrl] = useState<string | null>(user.profile_image_url);
+
+    // 4) Cuando cambie `profile_image` en `data`, creamos una URL temporal
+    useEffect(() => {
+        if (data.profile_image) {
+            const url = URL.createObjectURL(data.profile_image);
+            setPreviewUrl(url);
+            return () => URL.revokeObjectURL(url);
+        }
+        // si quita la selección, volvemos al avatar original del servidor
+        setPreviewUrl(user.profile_image_url);
+    }, [data.profile_image, user.profile_image_url]);
+
+    // 5) Al enviar, forzamos FormData para incluir la imagen
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
-
-        patch(route('profile.update'), {
-            preserveScroll: true,
-        });
+        router.post(
+            route('profile.update'),
+            {
+                _method: 'patch',
+                ...data,
+            },
+            {
+                forceFormData: true,
+                preserveScroll: true,
+            }
+        );
     };
 
     return (
-        <AppLayout breadcrumbs={breadcrumbs}>
+        <AppLayout breadcrumbs={[{ title: 'Configuración de perfil', href: '/settings/profile' }]}>
             <Head title="Configuración de perfil" />
 
             <SettingsLayout>
                 <div className="space-y-6">
-                    <HeadingSmall title="Información del perfil" description="Actualiza tu nombre y dirección de correo electrónico" />
+                    <HeadingSmall title="Información de perfil" description="Actualiza tus datos y tu imagen de perfil" />
 
                     <form onSubmit={submit} className="space-y-6">
+                        {/* Avatar + Input file */}
+                        <div className="grid gap-1">
+                            <Label>Imagen de perfil</Label>
+                            <div className="flex items-center space-x-4">
+                                <Avatar className="h-16 w-16">
+                                    {previewUrl ? (
+                                        <AvatarImage src={previewUrl} alt="Avatar actual" />
+                                    ) : (
+                                        <AvatarFallback>{user.name.charAt(0).toUpperCase()}</AvatarFallback>
+                                    )}
+                                </Avatar>
+                                <Input
+                                    id="profile_image"
+                                    type="file"
+                                    accept="image/*"
+                                    onChange={(e) => setData('profile_image', e.currentTarget.files?.[0] ?? null)}
+                                />
+                            </div>
+                            <InputError message={errors.profile_image} />
+                        </div>
+
+                        {/* Nombre */}
                         <div className="grid gap-2">
                             <Label htmlFor="name">Nombre</Label>
-
                             <Input
                                 id="name"
-                                className="mt-1 block w-full"
                                 value={data.name}
                                 onChange={(e) => setData('name', e.target.value)}
                                 required
-                                autoComplete="name"
                                 placeholder="Nombre completo"
                             />
-
-                            <InputError className="mt-2" message={errors.name} />
+                            <InputError message={errors.name} />
                         </div>
 
+                        {/* Correo */}
                         <div className="grid gap-2">
                             <Label htmlFor="email">Correo electrónico</Label>
-
                             <Input
                                 id="email"
                                 type="email"
-                                className="mt-1 block w-full"
                                 value={data.email}
                                 onChange={(e) => setData('email', e.target.value)}
                                 required
-                                autoComplete="username"
-                                placeholder="Correo electrónico"
+                                placeholder="tu@ejemplo.com"
                             />
-
-                            <InputError className="mt-2" message={errors.email} />
+                            <InputError message={errors.email} />
                         </div>
 
+                        {/* Descripción */}
                         <div className="grid gap-2">
                             <Label htmlFor="description">Descripción</Label>
-
                             <Textarea
                                 id="description"
-                                className="mt-1 block w-full"
                                 value={data.description}
                                 onChange={(e) => setData('description', e.target.value)}
-                                autoComplete="off"
-                                placeholder="Descripción"
+                                placeholder="Cuéntanos algo sobre ti"
                             />
-
-                            <InputError className="mt-2" message={errors.description} />
+                            <InputError message={errors.description} />
                         </div>
 
-
-                        {mustVerifyEmail && auth.user.email_verified_at === null && (
-                            <div>
-                                <p className="text-muted-foreground -mt-4 text-sm">
-                                    Tu correo electrónico no está verificado.{' '}
-                                    <Link
-                                        href={route('verification.send')}
-                                        method="post"
-                                        as="button"
-                                        className="text-foreground underline decoration-neutral-300 underline-offset-4 transition-colors duration-300 ease-out hover:decoration-current! dark:decoration-neutral-500"
-                                    >
-                                        Haz clic aquí para reenviar el correo de verificación.
-                                    </Link>
-                                </p>
-
-                                {status === 'verification-link-sent' && (
-                                    <div className="mt-2 text-sm font-medium text-green-600">
-                                        Se ha enviado un nuevo enlace de verificación a tu correo electrónico.
-                                    </div>
-                                )}
-                            </div>
-                        )}
-
+                        {/* Botón Guardar */}
                         <div className="flex items-center gap-4">
                             <Button disabled={processing}>Guardar</Button>
-
-                            <Transition
-                                show={recentlySuccessful}
-                                enter="transition ease-in-out"
-                                enterFrom="opacity-0"
-                                leave="transition ease-in-out"
-                                leaveTo="opacity-0"
-                            >
-                                <p className="text-sm text-neutral-600">Guardado</p>
-                            </Transition>
+                            {recentlySuccessful && <span className="text-sm text-green-600">Guardado</span>}
                         </div>
                     </form>
                 </div>

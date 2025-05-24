@@ -76,6 +76,15 @@ return [
             'url' => env('APP_URL') . '/storage/presets',
             'visibility' => 'public',
         ],
+
+        'profile_images' => [
+            'driver' => 'local',
+            // Carpeta donde se guardarán las imágenes de perfil de usuario
+            'root' => storage_path('app/public/profile_images'),
+            // URL pública (acceso vía navegador)
+            'url' => env('APP_URL') . '/storage/profile_images',
+            'visibility' => 'public',
+        ],
     ],
 
     /*

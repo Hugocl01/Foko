@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use App\Notifications\CustomVerifyEmail;
 use App\Notifications\CustomResetPassword;
+use Illuminate\Support\Facades\Storage;
 
 class User extends Authenticatable implements MustVerifyEmail
 {
@@ -28,7 +29,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'email',
         'password',
         'plan_id',
-        'profile_image_url',
+        'profile_image',
         'description',
         'role',
     ];
@@ -42,6 +43,8 @@ class User extends Authenticatable implements MustVerifyEmail
         'password',
         'remember_token',
     ];
+
+    protected $appends = ['profile_image_url'];
 
     /**
      * Get the attributes that should be cast.
@@ -114,5 +117,15 @@ class User extends Authenticatable implements MustVerifyEmail
     public function role()
     {
         return $this->belongsTo(Role::class);
+    }
+
+    public function getProfileImageUrlAttribute(): ?string
+    {
+        if (!$this->profile_image) {
+            return null;
+        }
+
+        // 2) Pasa el nombre de fichero, no el URL
+         return Storage::url("profile_images/{$this->profile_image}");
     }
 }

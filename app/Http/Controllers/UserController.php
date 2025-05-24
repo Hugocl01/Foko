@@ -43,7 +43,7 @@ class UserController extends Controller
             'email' => 'required|email|max:255|unique:users',
             'password' => 'required|string|min:8|confirmed',
             'plan_id' => 'nullable|exists:plans,id',
-            'profile_picture_url' => 'nullable|url',
+            'profile_picture' => 'nullable|url',
             'description' => 'nullable|string',
             'role' => 'nullable|string',
         ]);
@@ -82,7 +82,7 @@ class UserController extends Controller
             'email' => ['required', 'email', 'max:255', Rule::unique('users')->ignore($user->id)],
             'password' => 'nullable|string|min:8|confirmed',
             'plan_id' => 'nullable|exists:plans,id',
-            'profile_picture_url' => 'nullable|url',
+            'profile_picture' => 'nullable|url',
             'description' => 'nullable|string',
             'role' => 'nullable|string',
         ]);

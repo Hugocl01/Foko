@@ -10,6 +10,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 use Inertia\Response;
+use Illuminate\Support\Facades\Storage;
+use Intervention\Image\Laravel\Facades\Image;
+use Illuminate\Support\Str;
 
 class ProfileController extends Controller
 {
@@ -29,16 +32,47 @@ class ProfileController extends Controller
      */
     public function update(ProfileUpdateRequest $request): RedirectResponse
     {
-        $request->user()->fill($request->validated());
+        $user = $request->user();
 
-        if ($request->user()->isDirty('email')) {
-            $request->user()->email_verified_at = null;
+        // 1) Rellenar datos excepto la imagen
+        $data = $request->validated();
+        unset($data['profile_image']);
+        $user->fill($data);
+
+        // 2) Revocar verificación si cambió el email
+        if ($user->isDirty('email')) {
+            $user->email_verified_at = null;
         }
 
-        $request->user()->save();
+        // 3) Procesar la nueva imagen si se subió
+        if ($request->hasFile('profile_image')) {
+            // Guardamos el nombre antiguo para borrarlo luego
+            $old = $user->getOriginal('profile_image');
+
+            // Leer, recortar+redimensionar a 300×300 y convertir a WebP (80%)
+            $img = Image::read($request->file('profile_image')->getRealPath())
+                ->cover(300, 300)
+                ->encodeByExtension('webp', 80);
+
+            // Generar nombre único y guardar
+            $filename = Str::uuid() . '.webp';
+            Storage::disk('profile_images')->put($filename, (string) $img);
+
+            // Asignamos el nuevo nombre al modelo
+            $user->profile_image = $filename;
+
+            // Ahora borramos el antiguo (si existía y estaba en disco)
+            if ($old && Storage::disk('profile_images')->exists($old)) {
+                Storage::disk('profile_images')->delete($old);
+            }
+        }
+
+        // 4) Guardar usuario
+        $user->save();
 
         return to_route('profile.edit');
     }
+
 
     /**
      * Delete the user's account.

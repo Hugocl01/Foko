@@ -36,6 +36,8 @@ class ProfileUpdateRequest extends FormRequest
             'description' => [
                 'string'
             ],
+
+            'profile_image' => ['nullable', 'image', 'max:2048'],
         ];
     }
 }
