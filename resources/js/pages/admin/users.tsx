@@ -60,15 +60,15 @@ interface UsersPageProps {
 // Colores para los planes
 // Colores para los planes usando plan_id
 const planColors: Record<number, string> = {
-    0: "bg-orange-500", // Ilimitado
-    1: "bg-gray-500",   // Básico
-    2: "bg-green-500",  // Premium
+    1: "bg-orange-500", // Ilimitado
+    2: "bg-zinc-500",   // Básico
+    3: "bg-teal-500",  // Premium
 }
 
 // Colores para los roles
 const roleColors: Record<number, string> = {
-    1: "bg-gray-500",  // user
-    2: "bg-blue-500",   // admin
+    1: "bg-purple-500",  // Amdin
+    2: "bg-blue-500",   // User
 }
 
 // Colores para los estados
@@ -202,17 +202,35 @@ export default function Users({ users: initialUsers, plans: initialPlans, roles:
     }
 
     const deleteUser = () => {
-        if (!currentUser) return
+        if (!currentUser) return;
+
         router.delete(route('users.destroy', currentUser.id), {
-            onSuccess: () => { setUsers(users.filter(u => u.id !== currentUser.id)); setIsDeleteDialogOpen(false) },
-            onError: () => setIsDeleteDialogOpen(false),
-        })
-    }
+            onSuccess: () => {
+                // Actualizamos la lista local solo tras el borrado exitoso
+                setUsers((prev) => prev.filter((u) => u.id !== currentUser.id));
+                toast.success('Usuario eliminado correctamente.');
+            },
+            onError: () => {
+                // No se modifica la lista si falla
+                toast.error('No se pudo eliminar el usuario.');
+            },
+            onFinish: () => {
+                // Cerramos el diálogo en cualquier caso
+                setIsDeleteDialogOpen(false);
+            },
+        });
+    };
 
     const clearFilters = () => { setSearchTerm(""); setFilterPlan("all"); setFilterRole("all"); setFilterStatus("all") }
 
     const { flash } = usePage().props
-    useEffect(() => { if (flash?.success) toast.success(flash.success); else if (flash?.error) toast.error(flash.error) }, [flash])
+    useEffect(() => {
+        if (flash?.success) {
+            toast.success(flash.success);
+        } else if (flash?.error) {
+            toast.error(flash.error);
+        }
+    }, [flash]);
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>

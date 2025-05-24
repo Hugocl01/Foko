@@ -20,7 +20,8 @@ class UserSeeder extends Seeder
                 'username' => 'hugo_cl01',
                 'email' => 'hugocayon@gmail.com',
                 'password' => '1234',
-                'role' => 1,
+                'plan_id' => 1,
+                'role_id' => 1,
                 'description' => 'Hola soy Hugo, el creador de esta web, espero que os guste.',
             ],
             [
@@ -28,7 +29,8 @@ class UserSeeder extends Seeder
                 'username' => 'admin',
                 'email' => 'admin@gmail.com',
                 'password' => 'admin1234',
-                'role' => 1,
+                'plan_id' => 1,
+                'role_id' => 1,
                 'description' => 'Administrador de la plataforma.',
             ]
         ];
@@ -39,14 +41,14 @@ class UserSeeder extends Seeder
                 'username' => $userData['username'],
                 'email' => $userData['email'],
                 'password' => Hash::make($userData['password']),
-                'role_id' => $userData['role'],
-                'plan_id' => null,
+                'plan_id' => $userData['plan_id'],
+                'role_id' => $userData['role_id'],
                 'profile_image_url' => null,
                 'description' => $userData['description'],
             ]);
         }
 
         // Usuarios de prueba adiccionales
-        User::factory(50)->create();
+        User::factory(100)->create();
     }
 }

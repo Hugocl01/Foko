@@ -15,6 +15,7 @@ class PlanSeeder extends Seeder
     {
 
         $plans = [
+            ['name' => 'Ilimitado', 'price' => 0.00],
             ['name' => 'Básico', 'price' => 0.00],
             ['name' => 'Premium', 'price' => 9.99],
         ];
