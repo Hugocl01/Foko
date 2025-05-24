@@ -10,19 +10,31 @@ use Inertia\Inertia;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 
 class UserController extends Controller
 {
     public function index()
     {
-        $users = User::with(['plan', 'role'])->get();
-        $plans = Plan::all();
-        $roles = Role::all();
+        // Trae todos los usuarios, con plan y rol
+        $users = User::with(['plan','role'])->get()
+            ->map(function($user) {
+                return [
+                    'id'                => $user->id,
+                    'name'              => $user->name,
+                    'username'          => $user->username,
+                    'email'             => $user->email,
+                    'plan'              => $user->plan,
+                    'role'              => $user->role,
+                    'status'            => $user->status,
+                    'profile_image' => $user->getProfileImageUrlAttribute(),
+                ];
+            });
 
         return Inertia::render('admin/users', [
-            'users' => $users,
-            'plans' => $plans,
-            'roles' => $roles,
+            'users' => $users,           // ahora es un array plano
+            'plans' => Plan::all(),
+            'roles' => Role::all(),
         ]);
     }
 

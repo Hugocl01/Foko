@@ -91,6 +91,7 @@ export default function Users({ users: initialUsers, plans: initialPlans, roles:
     const [users, setUsers] = useState<UserData[]>(
         Array.isArray(initialUsers) ? initialUsers : initialUsers.data
     )
+    console.log(users)
     const [filterPlan, setFilterPlan] = useState<string>("all")
     const [filterRole, setFilterRole] = useState<string>("all")
     const [filterStatus, setFilterStatus] = useState<string>("all")
