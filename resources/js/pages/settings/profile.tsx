@@ -77,10 +77,9 @@ export default function Profile() {
 
                     <form onSubmit={submit} className="space-y-6">
                         {/* Avatar + Input file */}
-                        <div className="grid gap-1">
+                        <div className="grid gap-2">
                             <Label>Imagen de perfil</Label>
-                            <div className="flex items-center space-x-4">
-                                <Avatar className="h-16 w-16">
+                                <Avatar className="h-32 w-32">
                                     {previewUrl ? (
                                         <AvatarImage src={previewUrl} alt="Avatar actual" />
                                     ) : (
@@ -93,7 +92,6 @@ export default function Profile() {
                                     accept="image/*"
                                     onChange={(e) => setData('profile_image', e.currentTarget.files?.[0] ?? null)}
                                 />
-                            </div>
                             <InputError message={errors.profile_image} />
                         </div>
 
