@@ -20,7 +20,7 @@ class UserSeeder extends Seeder
                 'username' => 'hugo_cl01',
                 'email' => 'hugocayon@gmail.com',
                 'password' => '1234',
-                'role' => 2,
+                'role' => 1,
                 'description' => 'Hola soy Hugo, el creador de esta web, espero que os guste.',
             ],
             [

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use App\Models\Plan;
+use App\Models\Role;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Facades\Hash;
@@ -14,10 +15,14 @@ class UserController extends Controller
 {
     public function index()
     {
-        $users = User::with(['plan', 'followers', 'following'])->get();
+        $users = User::with(['plan', 'role'])->get();
+        $plans = Plan::all();
+        $roles = Role::all();
 
         return Inertia::render('admin/users', [
             'users' => $users,
+            'plans' => $plans,
+            'roles' => $roles,
         ]);
     }
 

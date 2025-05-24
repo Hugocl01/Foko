@@ -43,43 +43,39 @@ import { Head } from "@inertiajs/react"
 import type { BreadcrumbItem } from "@/types"
 import { router } from "@inertiajs/react"
 import { toast } from 'sonner'
-import { usePage } from '@inertiajs/react';
+import { usePage } from '@inertiajs/react'
+import { User } from "@/types/User"
+import { Plan } from "@/types/Plan"
+import { Role } from "@/types/Role"
 
 // Tipos de datos
-interface Plan {
-    id: number
-    name: "basico" | "premium"
-    price: string
-}
+type UserData = User & { plan: Plan; role: Role }
 
-interface User {
-    id: number
-    name: string
-    username: string
-    plan: Plan | null
-    role: "user" | "admin"
-    avatar: string
-    email: string
-    status: number
+interface UsersPageProps {
+    users: UserData[] | { data: UserData[] }
+    plans: Plan[]
+    roles: Role[]
 }
 
 // Colores para los planes
-const planColors = {
-    basico: "bg-blue-500",
-    premium: "bg-green-500",
+// Colores para los planes usando plan_id
+const planColors: Record<number, string> = {
+    0: "bg-orange-500", // Ilimitado
+    1: "bg-gray-500",   // Básico
+    2: "bg-green-500",  // Premium
 }
 
 // Colores para los roles
-const roleColors = {
-    user: "bg-gray-500",
-    admin: "bg-red-500",
+const roleColors: Record<number, string> = {
+    1: "bg-gray-500",  // user
+    2: "bg-blue-500",   // admin
 }
 
 // Colores para los estados
 const statusColors: { [key: number]: string } = {
     0: "bg-red-500",
     1: "bg-green-500",
-};
+}
 
 // Breadcrumbs para la navegación
 const breadcrumbs: BreadcrumbItem[] = [
@@ -89,184 +85,134 @@ const breadcrumbs: BreadcrumbItem[] = [
     },
 ]
 
-export default function Users({ users: initialUsers }: { users: User[] | { data: User[] } }) {
-
-    // Estado para los usuarios
-    const [users, setUsers] = useState<User[]>(Array.isArray(initialUsers) ? initialUsers : (initialUsers?.data || []));
-
-    // Estado para la paginación
-    const [currentPage, setCurrentPage] = useState(1)
-    const [itemsPerPage, setItemsPerPage] = useState(5)
-
-    // Estado para los filtros
-    const [searchTerm, setSearchTerm] = useState("")
+export default function Users({ users: initialUsers, plans: initialPlans, roles: initialRoles }: UsersPageProps) {
+    // Inicializar datos
+    // justo tras desestructurar las props
+    const [users, setUsers] = useState<UserData[]>(
+        Array.isArray(initialUsers) ? initialUsers : initialUsers.data
+    )
     const [filterPlan, setFilterPlan] = useState<string>("all")
     const [filterRole, setFilterRole] = useState<string>("all")
     const [filterStatus, setFilterStatus] = useState<string>("all")
 
-    // Estado para el diálogo de crear/editar usuario
+    // Paginación y formularios (idénticos a tu código anterior)
+    const [currentPage, setCurrentPage] = useState(1)
+    const [itemsPerPage, setItemsPerPage] = useState(5)
+    const [searchTerm, setSearchTerm] = useState("")
+
     const [isDialogOpen, setIsDialogOpen] = useState(false)
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
-    const [currentUser, setCurrentUser] = useState<User | null>(null)
+    const [currentUser, setCurrentUser] = useState<UserData | null>(null)
     const [isEditing, setIsEditing] = useState(false)
 
-    // Estado para el formulario
     const [formData, setFormData] = useState({
         name: "",
         username: "",
         email: "",
-        plan: "basico", // Usa nombres que vengan en user.plan.name
+        plan: "basico",
         role: "user",
-        status: 1, // Consistente con tu modelo
+        status: 1,
     })
 
-    // Filtrar usuarios
+    // Filtrado de usuarios
     const filteredUsers = users.filter((user) => {
         const matchesSearch =
             user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
             user.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
             user.email.toLowerCase().includes(searchTerm.toLowerCase())
 
-        const matchesPlan = filterPlan === "all" ? true : user.plan?.name === filterPlan
-        const matchesRole = filterRole === "all" ? true : user.role === filterRole
+        const matchesPlan = filterPlan === "all" ? true : user.plan.name === filterPlan
+        const matchesRole = filterRole === "all" ? true : user.role.name === filterRole
         const matchesStatus = filterStatus === "all" ? true : user.status === parseInt(filterStatus, 10)
 
         return matchesSearch && matchesPlan && matchesRole && matchesStatus
     })
 
-
-    // Calcular paginación
+    // Paginación
     const totalPages = Math.ceil(filteredUsers.length / itemsPerPage)
     const indexOfLastItem = currentPage * itemsPerPage
     const indexOfFirstItem = indexOfLastItem - itemsPerPage
     const currentUsers = filteredUsers.slice(indexOfFirstItem, indexOfLastItem)
 
-    // Cambiar de página
     const paginate = (pageNumber: number) => {
-        if (pageNumber > 0 && pageNumber <= totalPages) {
-            setCurrentPage(pageNumber)
-        }
+        if (pageNumber > 0 && pageNumber <= totalPages) setCurrentPage(pageNumber)
     }
 
-    // Abrir diálogo para crear usuario
+    // Diálogos
     const openCreateDialog = () => {
-        setFormData({
-            name: "",
-            username: "",
-            email: "",
-            plan: "basic",
-            role: "user",
-            status: 1,
-        })
+        setFormData({ name: "", username: "", email: "", plan: "basico", role: "user", status: 1 })
         setIsEditing(false)
         setCurrentUser(null)
         setIsDialogOpen(true)
     }
 
-    // Abrir diálogo para editar usuario
-    const openEditDialog = (user: User) => {
-        setFormData({
-            name: user.name,
-            username: user.username,
-            email: user.email,
-            plan: user.plan?.name ?? "basico",
-            role: user.role,
-            status: user.status,
-        })
+    const openEditDialog = (user: UserData) => {
+        setFormData({ name: user.name, username: user.username, email: user.email, plan: user.plan.name, role: user.role.name, status: user.status })
         setIsEditing(true)
         setCurrentUser(user)
         setIsDialogOpen(true)
     }
 
-    // Abrir diálogo para eliminar usuario
-    const openDeleteDialog = (user: User) => {
+    const openDeleteDialog = (user: UserData) => {
         setCurrentUser(user)
         setIsDeleteDialogOpen(true)
     }
 
-    // Manejar cambios en el formulario
+    // Formularios
     const handleFormChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target
         setFormData((prev) => ({ ...prev, [name]: value }))
     }
 
-    // Manejar cambios en selects
     const handleSelectChange = (name: string, value: string) => {
-        setFormData((prev) => ({
-            ...prev,
-            [name]: name === "status" ? parseInt(value, 10) : value,
-        }))
+        setFormData((prev) => ({ ...prev, [name]: name === "status" ? parseInt(value, 10) : value }))
     }
 
-    // Guardar usuario (crear o editar)
     const saveUser = () => {
         if (isEditing && currentUser) {
-            // Editar usuario existente
             setUsers(
-                users.map((user) =>
-                    user.id === currentUser.id
+                users.map((u) =>
+                    u.id === currentUser.id
                         ? {
-                            ...user,
+                            ...u,
                             name: formData.name,
                             username: formData.username,
                             email: formData.email,
-                            plan: formData.plan as any,
-                            role: formData.role as any,
+                            plan: initialPlans.find((p) => p.name === formData.plan)!,
+                            role: initialRoles.find((r) => r.name === formData.role)!,
                             status: formData.status,
                         }
-                        : user,
-                ),
+                        : u
+                )
             )
         } else {
-            // Crear nuevo usuario
-            const newUser: User = {
+            const newUser: UserData = {
                 id: Math.max(...users.map((u) => u.id)) + 1,
                 name: formData.name,
                 username: formData.username,
                 email: formData.email,
-                plan: { id: 0, name: formData.plan as any, price: "0.00" }, // Dummy plan object
-                role: formData.role as any,
-                avatar: "/placeholder.svg?height=40&width=40",
+                plan: initialPlans.find((p) => p.name === formData.plan) || initialPlans[0],
+                role: initialRoles.find((r) => r.name === formData.role) || initialRoles[0],
+                profile_image_url: "/placeholder.svg?height=40&width=40",
                 status: formData.status,
             }
             setUsers([...users, newUser])
         }
-
         setIsDialogOpen(false)
     }
 
-    // Eliminar usuario
     const deleteUser = () => {
-        if (!currentUser) return;
-
+        if (!currentUser) return
         router.delete(route('users.destroy', currentUser.id), {
-            onSuccess: () => {
-                setUsers(users.filter(u => u.id !== currentUser.id));
-                setIsDeleteDialogOpen(false);
-            },
-            onError: () => {
-                setIsDeleteDialogOpen(false);
-            },
-        });
-    };
-
-    // Limpiar todos los filtros
-    const clearFilters = () => {
-        setSearchTerm("")
-        setFilterPlan("all")
-        setFilterRole("all")
-        setFilterStatus("all")
+            onSuccess: () => { setUsers(users.filter(u => u.id !== currentUser.id)); setIsDeleteDialogOpen(false) },
+            onError: () => setIsDeleteDialogOpen(false),
+        })
     }
 
-    const { flash } = usePage().props;
+    const clearFilters = () => { setSearchTerm(""); setFilterPlan("all"); setFilterRole("all"); setFilterStatus("all") }
 
-    useEffect(() => {
-        if (flash?.success) {
-            toast.success(flash.success);
-        } else if (flash?.error) {
-            toast.error(flash.error);
-        }
-    }, [flash]);
+    const { flash } = usePage().props
+    useEffect(() => { if (flash?.success) toast.success(flash.success); else if (flash?.error) toast.error(flash.error) }, [flash])
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -444,13 +390,13 @@ export default function Users({ users: initialUsers }: { users: User[] | { data:
                                                             </div>
                                                         </TableCell>
                                                         <TableCell>
-                                                            <Badge className={`${planColors[user.plan?.name ?? "basico"]} text-white`}>
-                                                                {user.plan?.name ?? "Sin plan"}
+                                                            <Badge className={`${planColors[user.plan?.id ?? 0]} text-white`}>
+                                                                {user.plan?.name ?? "Ilimitado"}
                                                             </Badge>
                                                         </TableCell>
                                                         <TableCell>
-                                                            <Badge variant="outline" className={`${roleColors[user.role]} text-white`}>
-                                                                {user.role}
+                                                            <Badge className={`${roleColors[user.role.id]} text-white`}>
+                                                                {user.role.name}
                                                             </Badge>
                                                         </TableCell>
                                                         <TableCell>
@@ -569,7 +515,7 @@ export default function Users({ users: initialUsers }: { users: User[] | { data:
                                                 <div className="flex items-center justify-between">
                                                     <div className="flex items-center gap-3">
                                                         <Avatar>
-                                                            <AvatarImage src={user.avatar || "/placeholder.svg"} alt={user.name} />
+                                                            <AvatarImage src={user.profile_image_url || "/placeholder.svg"} alt={user.name} />
                                                             <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
                                                         </Avatar>
                                                         <div>
@@ -607,14 +553,14 @@ export default function Users({ users: initialUsers }: { users: User[] | { data:
                                                     <div className="flex flex-wrap gap-2">
                                                         <div>
                                                             <div className="text-sm text-muted-foreground">Plan</div>
-                                                            <Badge variant="outline" className={`${statusColors[user.status]} text-white mt-1`}>
-                                                                {user.status == 1 ? "Activo" : "Inactivo"}
+                                                            <Badge className={`${planColors[user.plan?.name ?? "basico"]} text-white mt-1`}>
+                                                                {user.plan?.name ?? "Ilimitado"}
                                                             </Badge>
                                                         </div>
                                                         <div>
                                                             <div className="text-sm text-muted-foreground">Rol</div>
-                                                            <Badge variant="outline" className={`${roleColors[user.role]} text-white mt-1`}>
-                                                                {user.role}
+                                                            <Badge className={`${roleColors[user.role.name]} text-white`}>
+                                                                {user.role.name}
                                                             </Badge>
                                                         </div>
                                                         <div>
