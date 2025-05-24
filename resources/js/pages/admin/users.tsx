@@ -91,7 +91,7 @@ export default function Users({ users: initialUsers, plans: initialPlans, roles:
     const [users, setUsers] = useState<UserData[]>(
         Array.isArray(initialUsers) ? initialUsers : initialUsers.data
     )
-    console.log(users)
+
     const [filterPlan, setFilterPlan] = useState<string>("all")
     const [filterRole, setFilterRole] = useState<string>("all")
     const [filterStatus, setFilterStatus] = useState<string>("all")
@@ -209,11 +209,6 @@ export default function Users({ users: initialUsers, plans: initialPlans, roles:
             onSuccess: () => {
                 // Actualizamos la lista local solo tras el borrado exitoso
                 setUsers((prev) => prev.filter((u) => u.id !== currentUser.id));
-                toast.success('Usuario eliminado correctamente.');
-            },
-            onError: () => {
-                // No se modifica la lista si falla
-                toast.error('No se pudo eliminar el usuario.');
             },
             onFinish: () => {
                 // Cerramos el diálogo en cualquier caso

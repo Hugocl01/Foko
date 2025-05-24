@@ -8,7 +8,7 @@ import { UserInfo } from '@/components/user-info';
 import { useMobileNavigation } from '@/hooks/use-mobile-navigation';
 import { type User } from '@/types';
 import { Link } from '@inertiajs/react';
-import { LogOut, Settings, ShoppingBag, ShieldUser } from 'lucide-react';
+import { LogOut, CircleUserRound, Settings, ShoppingBag, ShieldUser } from 'lucide-react';
 
 interface UserMenuContentProps {
     user: User;
@@ -29,13 +29,13 @@ export function UserMenuContent({ user }: UserMenuContentProps) {
                 <DropdownMenuItem asChild>
                     <Link
                         className="block w-full"
-                        href={route('profile.edit')}
+                        href={route('home')}
                         as="button"
                         prefetch
                         onClick={cleanup}
                     >
-                        <Settings className="mr-2" />
-                        Configuración
+                        <CircleUserRound className="mr-2" />
+                        Perfil
                     </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
@@ -53,6 +53,18 @@ export function UserMenuContent({ user }: UserMenuContentProps) {
                 <DropdownMenuItem asChild>
                     <Link
                         className="block w-full"
+                        href={route('profile.edit')}
+                        as="button"
+                        prefetch
+                        onClick={cleanup}
+                    >
+                        <Settings className="mr-2" />
+                        Configuración
+                    </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                    <Link
+                        className="block w-full"
                         href={route('users.index')}
                         as="button"
                         prefetch
@@ -64,7 +76,6 @@ export function UserMenuContent({ user }: UserMenuContentProps) {
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
             </DropdownMenuGroup>
-            <DropdownMenuSeparator />
             <DropdownMenuItem asChild>
                 <Link
                     className="block w-full"
