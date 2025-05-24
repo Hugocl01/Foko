@@ -193,7 +193,7 @@ export default function Users({ users: initialUsers, plans: initialPlans, roles:
                 email: formData.email,
                 plan: initialPlans.find((p) => p.name === formData.plan) || initialPlans[0],
                 role: initialRoles.find((r) => r.name === formData.role) || initialRoles[0],
-                profile_image_url: "/placeholder.svg?height=40&width=40",
+                profile_image: "/placeholder.svg?height=40&width=40",
                 status: formData.status,
             }
             setUsers([...users, newUser])
@@ -397,8 +397,11 @@ export default function Users({ users: initialUsers, plans: initialPlans, roles:
                                                         <TableCell>
                                                             <div className="flex items-center gap-3">
                                                                 <Avatar>
-                                                                    <AvatarImage src={user.avatar || "/placeholder.svg"} alt={user.name} />
-                                                                    <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
+                                                                    {user.profile_image ? (
+                                                                        <AvatarImage src={user.profile_image} alt={user.name} />
+                                                                    ) : (
+                                                                        <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
+                                                                    )}
                                                                 </Avatar>
                                                                 <div>
                                                                     <div className="font-medium">{user.name}</div>
@@ -418,7 +421,7 @@ export default function Users({ users: initialUsers, plans: initialPlans, roles:
                                                             </Badge>
                                                         </TableCell>
                                                         <TableCell>
-                                                            <Badge variant="outline" className={`${statusColors[user.status]} text-white`}>
+                                                            <Badge className={`${statusColors[user.status]} text-white`}>
                                                                 {user.status == 1 ? "Activo" : "Inactivo"}
                                                             </Badge>
                                                         </TableCell>
@@ -533,8 +536,11 @@ export default function Users({ users: initialUsers, plans: initialPlans, roles:
                                                 <div className="flex items-center justify-between">
                                                     <div className="flex items-center gap-3">
                                                         <Avatar>
-                                                            <AvatarImage src={user.profile_image_url || "/placeholder.svg"} alt={user.name} />
-                                                            <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
+                                                            {user.profile_image ? (
+                                                                <AvatarImage src={user.profile_image} alt={user.name} />
+                                                            ) : (
+                                                                <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
+                                                            )}
                                                         </Avatar>
                                                         <div>
                                                             <div className="font-medium">{user.name}</div>
@@ -571,20 +577,20 @@ export default function Users({ users: initialUsers, plans: initialPlans, roles:
                                                     <div className="flex flex-wrap gap-2">
                                                         <div>
                                                             <div className="text-sm text-muted-foreground">Plan</div>
-                                                            <Badge className={`${planColors[user.plan?.name ?? "basico"]} text-white mt-1`}>
+                                                            <Badge className={`${planColors[user.plan?.id ?? 0]} text-white`}>
                                                                 {user.plan?.name ?? "Ilimitado"}
                                                             </Badge>
                                                         </div>
                                                         <div>
                                                             <div className="text-sm text-muted-foreground">Rol</div>
-                                                            <Badge className={`${roleColors[user.role.name]} text-white`}>
+                                                            <Badge className={`${roleColors[user.role.id]} text-white`}>
                                                                 {user.role.name}
                                                             </Badge>
                                                         </div>
                                                         <div>
                                                             <div className="text-sm text-muted-foreground">Estado</div>
-                                                            <Badge variant="outline" className={`${statusColors[user.status]} text-white mt-1`}>
-                                                                {user.status}
+                                                            <Badge className={`${statusColors[user.status]} text-white`}>
+                                                                {user.status == 1 ? "Activo" : "Inactivo"}
                                                             </Badge>
                                                         </div>
                                                     </div>
