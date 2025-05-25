@@ -26,8 +26,8 @@ class DatabaseSeeder extends Seeder
         $this->call([
             RoleSeeder::class,          // Crea los roles
             PlanSeeder::class,          // Crea los planes
-            FeatureSeeder::class,          // Crea los Caracteristicas
-            PlanFeatureSeeder::class,          // Crea los datos de la tabla intermedia
+            FeatureSeeder::class,       // Crea los Caracteristicas
+            PlanFeatureSeeder::class,   // Crea los datos de la tabla intermedia
             UserSeeder::class,          // Crea los usuarios
 
         ]);
