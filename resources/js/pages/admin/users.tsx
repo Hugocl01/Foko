@@ -222,7 +222,7 @@ export default function Users({ users: initialUsers, plans: initialPlans, roles:
         if (isEditing && currentUser) {
             // Para update usamos POST + método PATCH
             router.post(
-                route('users.update', currentUser.id),
+                route('users.update', currentUser.username),
                 {
                     _method: 'patch',
                     ...payload,
