@@ -33,8 +33,8 @@ interface Preset {
     name: string
     description: string
     price: number
-    before_image_id: string
-    after_image_id: string
+    before_image: string
+    after_image: string
     user_id: number
     user: {
         name: string
@@ -69,8 +69,8 @@ export default function PresetsPage() {
             name: "Vintage Summer",
             description: "Efecto retro con tonos cálidos y grano suave, perfecto para fotos de verano",
             price: 19.99,
-            before_image_id: "/placeholder.svg?height=500&width=500&text=Original",
-            after_image_id: "/placeholder.svg?height=500&width=500&text=Vintage",
+            before_image: "/placeholder.svg?height=500&width=500&text=Original",
+            after_image: "/placeholder.svg?height=500&width=500&text=Vintage",
             user_id: 1,
             user: {
                 name: "Carlos Mendez",
@@ -95,8 +95,8 @@ export default function PresetsPage() {
             name: "Clarity Pro",
             description: "Aumenta el detalle y la nitidez para paisajes espectaculares",
             price: 24.99,
-            before_image_id: "/placeholder.svg?height=500&width=500&text=Original",
-            after_image_id: "/placeholder.svg?height=500&width=500&text=Clarity",
+            before_image: "/placeholder.svg?height=500&width=500&text=Original",
+            after_image: "/placeholder.svg?height=500&width=500&text=Clarity",
             user_id: 2,
             user: {
                 name: "Laura Sánchez",
@@ -119,8 +119,8 @@ export default function PresetsPage() {
             name: "Moody Dark",
             description: "Tonos oscuros y dramáticos con contraste alto para fotos urbanas",
             price: 14.99,
-            before_image_id: "/placeholder.svg?height=500&width=500&text=Original",
-            after_image_id: "/placeholder.svg?height=500&width=500&text=Moody",
+            before_image: "/placeholder.svg?height=500&width=500&text=Original",
+            after_image: "/placeholder.svg?height=500&width=500&text=Moody",
             user_id: 3,
             user: {
                 name: "Miguel Torres",
@@ -144,8 +144,8 @@ export default function PresetsPage() {
             name: "Natural Light",
             description: "Realza los colores naturales manteniendo un aspecto auténtico",
             price: 9.99,
-            before_image_id: "/placeholder.svg?height=500&width=500&text=Original",
-            after_image_id: "/placeholder.svg?height=500&width=500&text=Natural",
+            before_image: "/placeholder.svg?height=500&width=500&text=Original",
+            after_image: "/placeholder.svg?height=500&width=500&text=Natural",
             user_id: 4,
             user: {
                 name: "Ana Gómez",
@@ -168,8 +168,8 @@ export default function PresetsPage() {
             name: "B & W lightning",
             description: "Efecto blanco y negro con altas luces",
             price: 17.99,
-            before_image_id: "/placeholder.svg?height=500&width=500&text=Original",
-            after_image_id: "/placeholder.svg?height=500&width=500&text=Vintage",
+            before_image: "/placeholder.svg?height=500&width=500&text=Original",
+            after_image: "/placeholder.svg?height=500&width=500&text=Vintage",
             user_id: 1,
             user: {
                 name: "Hugo Cayón",
@@ -297,7 +297,7 @@ export default function PresetsPage() {
                                             <div className="relative overflow-hidden aspect-square">
                                                 {getViewMode(preset.id) === "before" && (
                                                     <img
-                                                        src={preset.before_image_id || "/placeholder.svg"}
+                                                        src={preset.before_image || "/placeholder.svg"}
                                                         alt={`Original para ${preset.name}`}
                                                         className="w-full h-full object-cover"
                                                     />
@@ -305,7 +305,7 @@ export default function PresetsPage() {
 
                                                 {getViewMode(preset.id) === "after" && (
                                                     <img
-                                                        src={preset.after_image_id || "/placeholder.svg"}
+                                                        src={preset.after_image || "/placeholder.svg"}
                                                         alt={`Resultado de ${preset.name}`}
                                                         className="w-full h-full object-cover"
                                                     />
@@ -314,13 +314,13 @@ export default function PresetsPage() {
                                                 {getViewMode(preset.id) === "split" && (
                                                     <div className="relative w-full h-full">
                                                         <img
-                                                            src={preset.before_image_id || "/placeholder.svg"}
+                                                            src={preset.before_image || "/placeholder.svg"}
                                                             alt={`Original para ${preset.name}`}
                                                             className="absolute top-0 left-0 w-full h-full object-cover"
                                                         />
                                                         <div className="absolute top-0 right-0 w-1/2 h-full overflow-hidden">
                                                             <img
-                                                                src={preset.after_image_id || "/placeholder.svg"}
+                                                                src={preset.after_image || "/placeholder.svg"}
                                                                 alt={`Resultado de ${preset.name}`}
                                                                 className="absolute top-0 left-0 w-[200%] h-full object-cover"
                                                                 style={{ transform: "translateX(-50%)" }}
@@ -529,7 +529,7 @@ export default function PresetsPage() {
                                             <div className="relative aspect-square md:aspect-auto md:h-full">
                                                 {getViewMode(preset.id) === "before" && (
                                                     <img
-                                                        src={preset.before_image_id || "/placeholder.svg"}
+                                                        src={preset.before_image || "/placeholder.svg"}
                                                         alt={`Original para ${preset.name}`}
                                                         className="w-full h-full object-cover"
                                                     />
@@ -537,7 +537,7 @@ export default function PresetsPage() {
 
                                                 {getViewMode(preset.id) === "after" && (
                                                     <img
-                                                        src={preset.after_image_id || "/placeholder.svg"}
+                                                        src={preset.after_image || "/placeholder.svg"}
                                                         alt={`Resultado de ${preset.name}`}
                                                         className="w-full h-full object-cover"
                                                     />
@@ -546,13 +546,13 @@ export default function PresetsPage() {
                                                 {getViewMode(preset.id) === "split" && (
                                                     <div className="relative w-full h-full">
                                                         <img
-                                                            src={preset.before_image_id || "/placeholder.svg"}
+                                                            src={preset.before_image || "/placeholder.svg"}
                                                             alt={`Original para ${preset.name}`}
                                                             className="absolute top-0 left-0 w-full h-full object-cover"
                                                         />
                                                         <div className="absolute top-0 right-0 w-1/2 h-full overflow-hidden">
                                                             <img
-                                                                src={preset.after_image_id || "/placeholder.svg"}
+                                                                src={preset.after_image || "/placeholder.svg"}
                                                                 alt={`Resultado de ${preset.name}`}
                                                                 className="absolute top-0 left-0 w-[200%] h-full object-cover"
                                                                 style={{ transform: "translateX(-50%)" }}

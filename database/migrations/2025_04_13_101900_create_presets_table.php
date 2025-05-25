@@ -15,10 +15,11 @@ return new class extends Migration {
             $table->string('name', 255);
             $table->string('description', 255)->nullable();
             $table->decimal('price', 10, 2);
+            $table->string('file');
 
             // Sin FK circular a images
-            $table->unsignedBigInteger('before_image_id')->nullable();
-            $table->unsignedBigInteger('after_image_id')->nullable();
+            $table->unsignedBigInteger('before_image')->nullable();
+            $table->unsignedBigInteger('after_image')->nullable();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->timestamps();
         Schema::enableForeignKeyConstraints();

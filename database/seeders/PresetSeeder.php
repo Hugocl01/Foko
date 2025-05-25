@@ -15,25 +15,47 @@ class PresetSeeder extends Seeder
     {
         $presets = [
             [
-                'name' => 'Golden Mood',
-                'description' => 'Ideal para fotos al atardecer con tonos cálidos.',
-                'price' => 4.99,
-                'user_id' => 1,
-                'before_image_id' => null,
-                'after_image_id' => null,
+                'name' => 'B&N Alto Contraste',
+                'description' => 'Preset monocromático con alto contraste.',
+                'price' => 0.00,
+                'file' => 'B&N_Alto_Contraste.xmp',
             ],
             [
-                'name' => 'Street Vibes',
-                'description' => 'Preset urbano para resaltar sombras y contrastes.',
+                'name' => 'Cine Suave',
+                'description' => 'Preset con tonos suaves tipo cinematográfico.',
+                'price' => 2.99,
+                'file' => 'Cine_Suave.xmp',
+            ],
+            [
+                'name' => 'HDR Natural',
+                'description' => 'Simulación de HDR manteniendo un estilo natural.',
                 'price' => 3.99,
-                'user_id' => 2,
-                'before_image_id' => null,
-                'after_image_id' => null,
+                'file' => 'HDR_Natural.xmp',
+            ],
+            [
+                'name' => 'Tonos Tierra',
+                'description' => 'Preset cálido con énfasis en marrones y verdes.',
+                'price' => 1.99,
+                'file' => 'Tonos_Tierra.xmp',
+            ],
+            [
+                'name' => 'Vintage Gold',
+                'description' => 'Estética retro con luces doradas.',
+                'price' => 4.99,
+                'file' => 'Vintage_Gold.xmp',
             ],
         ];
 
         foreach ($presets as $preset) {
-            Preset::create($preset);
+            Preset::create([
+                'name' => $preset['name'],
+                'description' => $preset['description'],
+                'price' => $preset['price'],
+                'user_id' => 1,
+                'before_image' => null,
+                'after_image' => null,
+                'file' => $preset['file'],
+            ]);
         }
     }
 }

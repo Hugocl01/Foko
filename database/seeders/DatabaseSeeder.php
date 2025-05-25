@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\Preset;
 use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
@@ -21,6 +22,8 @@ class DatabaseSeeder extends Seeder
         DB::table('features')->delete();
         DB::table('plan_features')->delete();
         DB::table('users')->delete();
+        DB::table('chats')->delete();
+        DB::table('presets')->delete();
 
         // Llama a los seeders
         $this->call([
@@ -29,7 +32,8 @@ class DatabaseSeeder extends Seeder
             FeatureSeeder::class,       // Crea los Caracteristicas
             PlanFeatureSeeder::class,   // Crea los datos de la tabla intermedia
             UserSeeder::class,          // Crea los usuarios
-
+            ChatSeeder::class,          // Crea los chats con los usuarios y mensajes
+            PresetSeeder::class,        // Crea los presets
         ]);
     }
 }

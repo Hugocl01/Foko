@@ -287,7 +287,7 @@ CREATE TABLE `presets` (
   `name` varchar(255) NOT NULL,
   `description` varchar(255) DEFAULT NULL,
   `price` decimal(10,2) NOT NULL,
-  `before_image_id` bigint(20) UNSIGNED DEFAULT NULL,
+  `before_image` bigint(20) UNSIGNED DEFAULT NULL,
   `after_image_id` bigint(20) UNSIGNED DEFAULT NULL,
   `user_id` bigint(20) UNSIGNED NOT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
@@ -560,8 +560,6 @@ ALTER TABLE `plan_features`
 ALTER TABLE `presets`
   ADD PRIMARY KEY (`id`),
   ADD KEY `presets_user_id_foreign` (`user_id`),
-  ADD KEY `presets_before_image_id_foreign` (`before_image_id`),
-  ADD KEY `presets_after_image_id_foreign` (`after_image_id`);
 
 --
 -- Indices de la tabla `preset_hashtags`
@@ -801,8 +799,6 @@ ALTER TABLE `plan_features`
 -- Filtros para la tabla `presets`
 --
 ALTER TABLE `presets`
-  ADD CONSTRAINT `presets_after_image_id_foreign` FOREIGN KEY (`after_image_id`) REFERENCES `images` (`id`) ON DELETE SET NULL,
-  ADD CONSTRAINT `presets_before_image_id_foreign` FOREIGN KEY (`before_image_id`) REFERENCES `images` (`id`) ON DELETE SET NULL,
   ADD CONSTRAINT `presets_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
 
 --

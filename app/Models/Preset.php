@@ -16,9 +16,10 @@ class Preset extends Model
         'name',
         'description',
         'price',
-        'before_image_id',
-        'after_image_id',
+        'before_image',
+        'after_image',
         'user_id',
+        'file',
     ];
 
     /**
@@ -45,12 +46,12 @@ class Preset extends Model
 
     public function beforeImage(): BelongsTo
     {
-        return $this->belongsTo(Image::class, 'before_image_id');
+        return $this->belongsTo(Image::class, 'before_image');
     }
 
     public function afterImage(): BelongsTo
     {
-        return $this->belongsTo(Image::class, 'after_image_id');
+        return $this->belongsTo(Image::class, 'after_image');
     }
 
     public function tags(): BelongsToMany
