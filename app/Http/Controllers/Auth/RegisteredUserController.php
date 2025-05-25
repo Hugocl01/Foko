@@ -32,11 +32,18 @@ class RegisteredUserController extends Controller
     {
         $request->validate([
             'name' => 'required|string|max:255',
-            'username' => 'required|unique:users|string|max:255',
+            'username' => [
+                'required',
+                'string',
+                'max:255',
+                'regex:/^\S+$/',
+                'unique:users,username',
+            ],
             'email' => 'required|string|lowercase|email|max:255|unique:' . User::class,
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ], [
             'username.unique' => 'Este nombre de usuario ya está en uso.',
+            'username.regex' => 'El nombre de usuario no puede contener espacios.',
         ]);
 
         $user = User::create([

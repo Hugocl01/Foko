@@ -24,6 +24,7 @@ class UserUpdateRequest extends FormRequest
                 'required',
                 'string',
                 'max:255',
+                'regex:/^\S+$/',
                 Rule::unique('users', 'username')->ignore($userId),
             ],
             'email' => [
@@ -46,6 +47,7 @@ class UserUpdateRequest extends FormRequest
 
             'username.required' => 'El nombre de usuario es obligatorio.',
             'username.unique' => 'Este nombre de usuario ya está en uso.',
+            'username.regex' => 'El nombre de usuario no puede contener espacios.',
             'username.max' => 'El nombre de usuario no debe exceder :max caracteres.',
 
             'email.required' => 'El email es obligatorio.',
