@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('messages', function (Blueprint $table) {
             $table->id();
             $table->foreignId('sender_id')->constrained('users')->onDelete('cascade');
-            $table->text('content');
+            $table->string('content', 255);
             $table->foreignId('chat_id')->constrained('chats')->onDelete('cascade');
             $table->timestamps();
         Schema::enableForeignKeyConstraints();

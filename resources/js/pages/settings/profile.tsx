@@ -130,6 +130,7 @@ export default function Profile() {
                                 value={data.description}
                                 onChange={(e) => setData('description', e.target.value)}
                                 placeholder="Cuéntanos algo sobre ti"
+                                maxLength={255}
                             />
                             <InputError message={errors.description} />
                         </div>

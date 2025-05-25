@@ -14,7 +14,7 @@ return new class extends Migration {
             $table->id();
             $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
             $table->string('title', 255);
-            $table->text('description')->nullable();
+            $table->string('description', 255)->nullable();
 
             // Sin FK circular a presets
             $table->unsignedBigInteger('preset_id')->nullable();

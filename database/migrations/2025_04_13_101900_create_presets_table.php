@@ -13,7 +13,7 @@ return new class extends Migration {
         Schema::create('presets', function (Blueprint $table) {
             $table->id();
             $table->string('name', 255);
-            $table->text('description')->nullable();
+            $table->string('description', 255)->nullable();
             $table->decimal('price', 10, 2);
 
             // Sin FK circular a images

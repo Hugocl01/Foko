@@ -16,7 +16,7 @@ class CreateNotificationsTable extends Migration
             $table->enum('type', ['like','comment','follow','message','purchase','report']);
             $table->enum('entity_type', ['publication','comment','user','preset']);
             $table->unsignedBigInteger('entity_id');
-            $table->text('reason')->nullable();
+            $table->string('reason', 255)->nullable();
             $table->enum('status', ['pending','reviewed','resolved'])->default('pending');
             $table->timestamps();
             $table->timestamp('read_at')->nullable();

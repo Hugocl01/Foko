@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('features', function (Blueprint $table) {
             $table->id();
             $table->string('name', 100);
-            $table->text('description')->nullable();
+            $table->string('description', 255)->nullable();
             $table->timestamps();
         Schema::enableForeignKeyConstraints();
     });
