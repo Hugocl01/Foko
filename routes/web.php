@@ -57,22 +57,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/purchases', function () {
         return Inertia::render('purchases');
     })->name('purchases.index');
-
-    // Usuarios
-    Route::get('admin/users', [UserController::class, 'index'])->name('users.index');
-
-    Route::post('/users', [UserController::class, 'store'])->name('users.store');
-
-    Route::patch('/users/{user}', [UserController::class, 'update'])->name('users.update');
-
-    Route::delete('/users/{user}', [UserController::class, 'destroy'])->name('users.destroy');
-
-    // Reportes
-    Route::get('admin/reports', function () {
-        return Inertia::render('admin/reports');
-    })->name('reports.index');
 });
 
 // Archivos adicionales
 require __DIR__ . '/settings.php';
 require __DIR__ . '/auth.php';
+require __DIR__ . '/admin.php';
+require __DIR__ . '/profile.php';
