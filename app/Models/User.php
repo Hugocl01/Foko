@@ -127,7 +127,7 @@ class User extends Authenticatable implements MustVerifyEmail
         }
 
         // 2) Pasa el nombre de fichero, no el URL
-        return Storage::url("profile_images/{$this->profile_image}");
+        return Storage::disk('profile_images')->url($this->profile_image);
     }
 
     public function getRouteKeyName()
