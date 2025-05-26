@@ -2,9 +2,10 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use App\Models\Preset;
+use App\Models\User;
+use Illuminate\Support\Arr;
 
 class PresetSeeder extends Seeder
 {
@@ -13,6 +14,9 @@ class PresetSeeder extends Seeder
      */
     public function run(): void
     {
+        // Recogemos todos los IDs de usuario
+        $userIds = User::pluck('id')->toArray();
+
         $presets = [
             [
                 'name' => 'B&N Alto Contraste',
@@ -46,15 +50,16 @@ class PresetSeeder extends Seeder
             ],
         ];
 
-        foreach ($presets as $preset) {
+        foreach ($presets as $presetData) {
             Preset::create([
-                'name' => $preset['name'],
-                'description' => $preset['description'],
-                'price' => $preset['price'],
-                'user_id' => 1,
+                'name' => $presetData['name'],
+                'description' => $presetData['description'],
+                'price' => $presetData['price'],
+                // Asigna un user_id aleatorio
+                'user_id' => Arr::random($userIds),
                 'before_image' => null,
                 'after_image' => null,
-                'file' => $preset['file'],
+                'file' => $presetData['file'],
             ]);
         }
     }
