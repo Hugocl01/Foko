@@ -364,11 +364,10 @@ export default function Users({ users: initialUsers, plans: initialPlans, roles:
                                         <Button
                                             variant="outline"
                                             size="sm"
-                                            className="mt-3 w-full"
+                                            className="mt-2 w-full"
                                             onClick={clearFilters}
                                             disabled={filterPlan === "all" && filterRole === "all" && filterStatus === "all" && !searchTerm}
                                         >
-                                            <X className="h-4 w-4 mr-2" />
                                             Limpiar filtros
                                         </Button>
                                     </div>

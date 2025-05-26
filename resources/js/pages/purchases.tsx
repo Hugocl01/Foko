@@ -79,6 +79,11 @@ export default function PurchasesPage() {
         0
     )
 
+    // Determina si hay filtros activos
+    const hasFilters = Boolean(
+        searchTerm || dateFrom || dateTo || priceFrom || priceTo
+    )
+
     const clearFilters = () => {
         setSearchTerm("")
         setDateFrom("")
@@ -138,7 +143,7 @@ export default function PurchasesPage() {
                             <Input id="price-from" type="number" placeholder="0" value={priceFrom} onChange={(e) => { setPriceFrom(e.target.value); setCurrentPage(1) }} />
                             <Label htmlFor="price-to" className="text-xs text-muted-foreground">Precio hasta</Label>
                             <Input id="price-to" type="number" placeholder="100" value={priceTo} onChange={(e) => { setPriceTo(e.target.value); setCurrentPage(1) }} />
-                            <Button variant="outline" size="sm" className="mt-2 w-full" onClick={clearFilters}>Limpiar filtros</Button>
+                            <Button variant="outline" size="sm" className="mt-2 w-full" onClick={clearFilters} disabled={!hasFilters} >Limpiar filtros</Button>
                         </DropdownMenuContent>
                     </DropdownMenu>
                 </div>
