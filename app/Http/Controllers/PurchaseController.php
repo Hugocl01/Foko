@@ -17,20 +17,25 @@ class PurchaseController extends Controller
         $purchases = Auth::user()
             ->purchases()
             ->with([
-                // Cargamos preset y el user que lo creó
-                'preset:id,name,user_id',
+                'preset:id,name,user_id,price',
                 'preset.user:id,name'
             ])
-            ->with('preset:id,name')
             ->orderBy('created_at', 'desc')
             ->get()
             ->map(fn($p) => [
                 'id' => $p->id,
-                'preset' => $p->preset,
                 'created_at' => $p->created_at->format('Y-m-d H:i'),
+                'preset' => [
+                    'id' => $p->preset->id,
+                    'name' => $p->preset->name,
+                    'price' => $p->preset->price,
+                    'user' => [
+                        'id' => $p->preset->user->id,
+                        'name' => $p->preset->user->name,
+                    ],
+                ],
             ]);
 
-        // Renderiza la página Inertia, pasando los datos
         return Inertia::render('purchases', [
             'purchases' => $purchases,
         ]);

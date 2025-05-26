@@ -54,9 +54,9 @@ class Preset extends Model
         return $this->belongsTo(Image::class, 'after_image');
     }
 
-    public function tags(): BelongsToMany
+    public function hashtags()
     {
-        return $this->belongsToMany(Tag::class, 'presets_tags');
+        return $this->belongsToMany(Hashtag::class, 'preset_hashtags');
     }
 
     public function purchases(): HasMany
