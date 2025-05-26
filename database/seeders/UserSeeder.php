@@ -23,6 +23,7 @@ class UserSeeder extends Seeder
                 'plan_id' => 1,
                 'role_id' => 1,
                 'description' => 'Hola soy Hugo, el creador de esta web, espero que os guste.',
+                'profile_image' => '9f9ccbf3-ec69-47a7-9a6b-86f8bf4856d9.webp'
             ],
             [
                 'name' => 'Admin',
@@ -32,6 +33,7 @@ class UserSeeder extends Seeder
                 'plan_id' => 1,
                 'role_id' => 1,
                 'description' => 'Administrador de la plataforma.',
+                'profile_image' => '96e3abca-8ed6-446a-bff3-618acd8cf6a2.webp'
             ]
         ];
 
@@ -43,7 +45,7 @@ class UserSeeder extends Seeder
                 'password' => Hash::make($userData['password']),
                 'plan_id' => $userData['plan_id'],
                 'role_id' => $userData['role_id'],
-                'profile_image' => null,
+                'profile_image' => $userData['profile_image'],
                 'description' => $userData['description'],
             ]);
         }

@@ -56,7 +56,7 @@ class PresetSeeder extends Seeder
                 'description' => $presetData['description'],
                 'price' => $presetData['price'],
                 // Asigna un user_id aleatorio
-                'user_id' => Arr::random($userIds),
+                'user_id' => rand(1, 2), // Arr::random($userIds),
                 'before_image' => null,
                 'after_image' => null,
                 'file' => $presetData['file'],
