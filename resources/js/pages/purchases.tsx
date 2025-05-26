@@ -1,5 +1,3 @@
-"use client"
-
 import { useState } from "react"
 import { usePage, Head } from "@inertiajs/react"
 import { Search, Download, Eye, Calendar, Filter, ChevronLeft, ChevronRight, X, MoreHorizontal } from "lucide-react"
@@ -35,13 +33,12 @@ export default function PurchasesPage() {
             preset: {
                 id: number
                 name: string
-                user: { id: number; name: string }
+                user: { id: number; username: string; }
                 price: number
             }
         }>
     }
 
-    console.log(purchases)
     const [searchTerm, setSearchTerm] = useState("")
     const [dateFrom, setDateFrom] = useState("")
     const [dateTo, setDateTo] = useState("")
@@ -167,7 +164,7 @@ export default function PurchasesPage() {
                                         <TableCell>
                                             <div className="font-medium">{p.preset.name}</div>
                                         </TableCell>
-                                        <TableCell>{p.preset.user.name}</TableCell>
+                                        <TableCell>{p.preset.user.username}</TableCell>
                                         <TableCell className="flex items-center gap-1 text-sm">
                                             <Calendar className="h-4 w-4" /> {formatDate(p.created_at)}
                                         </TableCell>

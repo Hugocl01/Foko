@@ -18,7 +18,7 @@ class PurchaseController extends Controller
             ->purchases()
             ->with([
                 'preset:id,name,user_id,price',
-                'preset.user:id,name'
+                'preset.user:id,username'
             ])
             ->orderBy('created_at', 'desc')
             ->get()
@@ -31,7 +31,7 @@ class PurchaseController extends Controller
                     'price' => $p->preset->price,
                     'user' => [
                         'id' => $p->preset->user->id,
-                        'name' => $p->preset->user->name,
+                        'username' => $p->preset->user->username,
                     ],
                 ],
             ]);
