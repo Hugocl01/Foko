@@ -4,6 +4,7 @@ use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\PurchaseController;
 
 // Página pública (Landing Page)
 Route::get('/', function () {
@@ -54,9 +55,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->name('notifications.destroy');
 
     // Compras
-    Route::get('/purchases', function () {
-        return Inertia::render('purchases');
-    })->name('purchases.index');
+    Route::get('/purchases', [PurchaseController::class, 'index'])->name('purchases.index');
 });
 
 // Archivos adicionales

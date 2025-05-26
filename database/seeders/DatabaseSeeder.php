@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\Preset;
+use App\Models\Purchase;
 use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
@@ -24,6 +25,7 @@ class DatabaseSeeder extends Seeder
         DB::table('users')->delete();
         DB::table('chats')->delete();
         DB::table('presets')->delete();
+        DB::table('purchases')->delete();
 
         // Llama a los seeders
         $this->call([
@@ -34,6 +36,7 @@ class DatabaseSeeder extends Seeder
             UserSeeder::class,          // Crea los usuarios
             ChatSeeder::class,          // Crea los chats con los usuarios y mensajes
             PresetSeeder::class,        // Crea los presets
+            PurchaseSeeder::class,      // Crea las compras de los presets
         ]);
     }
 }

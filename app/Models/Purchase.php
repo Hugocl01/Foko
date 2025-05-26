@@ -13,20 +13,7 @@ class Purchase extends Model
     protected $fillable = [
         'user_id',
         'preset_id',
-        'purchase_date',
     ];
-
-    /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
-     */
-    protected function casts(): array
-    {
-        return [
-            'purchase_date' => 'datetime',
-        ];
-    }
 
     public function user(): BelongsTo
     {
