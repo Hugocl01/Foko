@@ -59,7 +59,7 @@ export default function PresetsPage() {
 
     const setPresetViewMode = (id: number, mode: "before" | "after") => setViewMode((prev) => ({ ...prev, [id]: mode }))
 
-    const avatarUrl = (filename: string | null) => (filename ? `/storage/${filename}` : "/placeholder.svg")
+    const avatarUrl = (filename: string | null) => (filename ? filename : "/placeholder.svg")
 
     const getImageUrl = (preset: Preset, mode: "before" | "after") => {
         if (mode === "before" && preset.before_image) {
