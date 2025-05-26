@@ -1,5 +1,3 @@
-"use client"
-
 import { useState } from "react"
 import { usePage, Head } from "@inertiajs/react"
 import {

@@ -1,5 +1,3 @@
-"use client"
-
 import { router, usePage } from "@inertiajs/react"
 import { Check, Star } from "lucide-react"
 

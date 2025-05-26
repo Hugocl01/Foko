@@ -4,6 +4,7 @@ use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\PresetController;
 use App\Http\Controllers\PurchaseController;
 
 // Página pública (Landing Page)
@@ -30,9 +31,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     })->name('publications.show');
 
     // Presets
-    Route::get('/presets', function () {
-        return Inertia::render('presets');
-    })->name('presets.index');
+    Route::get('/presets', [PresetController::class, 'index'])
+        ->name('presets.index');
 
     Route::get('/presets/{id}', function ($id) {
         return Inertia::render('preset', ['id' => $id]);
