@@ -8,6 +8,8 @@ import {
     ChevronRight,
     Trash2,
     Edit,
+    UsersRound,
+    UserRoundCheck,
     UserPlus,
     X,
     Save,
@@ -279,6 +281,32 @@ export default function Users({ users: initialUsers, plans: initialPlans, roles:
             <AdminLayout>
                 <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">
                     <h1 className="text-2xl font-bold">Gestión de Usuarios</h1>
+
+                    {/* Estadísticas */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <Card>
+                            <CardContent className="p-4">
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <p className="text-sm text-muted-foreground">Total de Usuarios</p>
+                                        <p className="text-2xl font-bold">{filteredUsers.length}</p>
+                                    </div>
+                                    <UsersRound className="h-8 w-8 text-muted-foreground" />
+                                </div>
+                            </CardContent>
+                        </Card>
+                        <Card>
+                            <CardContent className="p-4">
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <p className="text-sm text-muted-foreground">Usuarios Activos</p>
+                                        <p className="text-2xl font-bold">{filteredUsers.filter(user => user.status === 1).length}</p>
+                                    </div>
+                                    <UserRoundCheck className="h-8 w-8 text-muted-foreground" />
+                                </div>
+                            </CardContent>
+                        </Card>
+                    </div>
 
                     {/* Barra de herramientas */}
                     <div className="flex flex-col sm:flex-row gap-3 justify-between items-start sm:items-center">

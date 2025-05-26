@@ -423,7 +423,7 @@ export default function PresetsPage() {
 
                                                 {/* Price Badge */}
                                                 <div className="absolute top-3 right-3">
-                                                    <Badge className="bg-primary hover:bg-primary/90 text-white border-none font-bold">
+                                                    <Badge className="bg-primary border-none font-bold">
                                                         {preset.price.toFixed(2)} €
                                                     </Badge>
                                                 </div>
@@ -596,7 +596,7 @@ export default function PresetsPage() {
 
                                                 {/* Price Badge */}
                                                 <div className="absolute top-3 right-3">
-                                                    <Badge className="bg-primary hover:bg-primary/90 text-white border-none font-bold">
+                                                    <Badge className="bg-primary border-none font-bold">
                                                         {preset.price.toFixed(2)} €
                                                     </Badge>
                                                 </div>
