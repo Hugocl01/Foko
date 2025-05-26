@@ -7,7 +7,6 @@ use App\Models\Purchase;
 use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
-use Database\Seeders\UserSeeder;
 use Illuminate\Support\Facades\DB;
 
 class DatabaseSeeder extends Seeder
@@ -25,6 +24,7 @@ class DatabaseSeeder extends Seeder
         DB::table('users')->delete();
         DB::table('chats')->delete();
         DB::table('presets')->delete();
+        DB::table('hashtags')->delete();
         DB::table('purchases')->delete();
 
         // Llama a los seeders
@@ -36,6 +36,7 @@ class DatabaseSeeder extends Seeder
             UserSeeder::class,          // Crea los usuarios
             ChatSeeder::class,          // Crea los chats con los usuarios y mensajes
             PresetSeeder::class,        // Crea los presets
+            HashtagSeeder::class,       // Crea los Hashtags con las relaciones a Publicaciones y Presets
             PurchaseSeeder::class,      // Crea las compras de los presets
         ]);
     }

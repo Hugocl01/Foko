@@ -13,7 +13,10 @@ class CreateHashtagsTable extends Migration
     {
         Schema::create('hashtags', function (Blueprint $table) {
             $table->bigIncrements('id');
-            $table->string('tag', 100)->unique();
+            $table->string('name', 100)->unique();
+
+            // Slug para URLs, único
+            $table->string('slug', 100)->unique();
             $table->timestamps();
         });
     }
