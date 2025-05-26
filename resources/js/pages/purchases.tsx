@@ -1,6 +1,20 @@
+"use client"
+
 import { useState } from "react"
 import { usePage, Head } from "@inertiajs/react"
-import { Search, Download, Eye, Calendar, Filter, ChevronLeft, ChevronRight, X, MoreHorizontal } from "lucide-react"
+import {
+    Search,
+    Download,
+    Calendar,
+    Eye,
+    Filter,
+    ChevronLeft,
+    ChevronRight,
+    X,
+    MoreHorizontal,
+    ShoppingBag,
+    HandCoins,
+} from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -21,9 +35,7 @@ import type { BreadcrumbItem } from "@/types"
 import AppLayout from "@/layouts/app-layout"
 
 // Breadcrumbs para la navegación
-const breadcrumbs: BreadcrumbItem[] = [
-    { title: "Compras", href: "/compras" }
-]
+const breadcrumbs: BreadcrumbItem[] = [{ title: "Compras", href: "/compras" }]
 
 export default function PurchasesPage() {
     const { purchases } = usePage().props as {
@@ -33,7 +45,7 @@ export default function PurchasesPage() {
             preset: {
                 id: number
                 name: string
-                user: { id: number; username: string; }
+                user: { id: number; username: string }
                 price: number
             }
         }>
@@ -48,38 +60,53 @@ export default function PurchasesPage() {
     const [itemsPerPage, setItemsPerPage] = useState(5)
 
     // Filtrado
-    const filtered = purchases.filter((p) => {
+    const filteredPurchases = purchases.filter((p) => {
         const name = p.preset.name.toLowerCase()
-        const matchesSearch = name.includes(searchTerm.toLowerCase())
+        const username = p.preset.user.username.toLowerCase()
+        const matchesSearch = name.includes(searchTerm.toLowerCase()) || username.includes(searchTerm.toLowerCase())
+
         const date = new Date(p.created_at)
         const fromD = dateFrom ? new Date(dateFrom) : null
         const toD = dateTo ? new Date(dateTo) : null
         const matchesDate = (!fromD || date >= fromD) && (!toD || date <= toD)
+
         const price = p.preset.price
-        const fromP = priceFrom ? parseFloat(priceFrom) : null
-        const toP = priceTo ? parseFloat(priceTo) : null
+        const fromP = priceFrom ? Number.parseFloat(priceFrom) : null
+        const toP = priceTo ? Number.parseFloat(priceTo) : null
         const matchesPrice = (!fromP || price >= fromP) && (!toP || price <= toP)
+
         return matchesSearch && matchesDate && matchesPrice
     })
 
     // Paginación
-    const totalPages = Math.ceil(filtered.length / itemsPerPage)
-    const start = (currentPage - 1) * itemsPerPage
-    const end = start + itemsPerPage
-    const pageItems = filtered.slice(start, end)
+    const totalPages = Math.ceil(filteredPurchases.length / itemsPerPage)
+    const indexOfLastItem = currentPage * itemsPerPage
+    const indexOfFirstItem = indexOfLastItem - itemsPerPage
+    const currentPurchases = filteredPurchases.slice(indexOfFirstItem, indexOfLastItem)
 
-    const formatDate = (d: string) => new Date(d).toLocaleDateString("es-ES", { year: "numeric", month: "short", day: "numeric" })
-    const formatPrice = (v: number) => new Intl.NumberFormat("es-ES", { style: "currency", currency: "EUR" }).format(v)
+    const paginate = (pageNumber: number) => {
+        if (pageNumber > 0 && pageNumber <= totalPages) setCurrentPage(pageNumber)
+    }
 
-    const totalInvertido = filtered.reduce(
-        (sum, p) => sum + (Number(p.preset.price) || 0),
-        0
-    )
+    const formatDate = (d: string) =>
+        new Date(d).toLocaleDateString("es-ES", {
+            year: "numeric",
+            month: "short",
+            day: "numeric",
+            hour: "2-digit",
+            minute: "2-digit",
+        })
+
+    const formatPrice = (v: number) =>
+        new Intl.NumberFormat("es-ES", {
+            style: "currency",
+            currency: "EUR",
+        }).format(v)
+
+    const totalInvertido = filteredPurchases.reduce((sum, p) => sum + (Number(p.preset.price) || 0), 0)
 
     // Determina si hay filtros activos
-    const hasFilters = Boolean(
-        searchTerm || dateFrom || dateTo || priceFrom || priceTo
-    )
+    const hasActiveFilters = Boolean(dateFrom || dateTo || priceFrom || priceTo)
 
     const clearFilters = () => {
         setSearchTerm("")
@@ -90,138 +117,454 @@ export default function PurchasesPage() {
         setCurrentPage(1)
     }
 
+    const handlePreview = (presetId: number) => {
+        // Implementar lógica de preview
+        console.log("Preview preset:", presetId)
+    }
+
+    const handleDownload = (presetId: number) => {
+        // Implementar lógica de descarga
+        console.log("Download preset:", presetId)
+    }
+
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Compras" />
-            <div className="p-4 space-y-4">
-                <div className="flex justify-between items-center">
-                    <h1 className="text-2xl font-bold">Compras</h1>
-                    <div className="space-x-6 flex text-sm">
-                        <div>
-                            <div className="text-xl font-semibold">{filtered.length}</div>
-                            <div className="text-muted-foreground">Presets</div>
-                        </div>
-                        <div>
-                            < div className="text-xl font-semibold">
-                                {new Intl.NumberFormat("es-ES", {
-                                    style: "currency",
-                                    currency: "EUR",
-                                }).format(totalInvertido)}
+
+            <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">
+                <h1 className="text-2xl font-bold">Gestión de Compras</h1>
+
+                {/* Estadísticas */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <Card>
+                        <CardContent className="p-4">
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <p className="text-sm text-muted-foreground">Total de Presets</p>
+                                    <p className="text-2xl font-bold">{filteredPurchases.length}</p>
+                                </div>
+                                <ShoppingBag className="h-8 w-8 text-muted-foreground" />
                             </div>
-                            <div className="text-muted-foreground">Total invertido</div>
-                        </div>
-                    </div>
+                        </CardContent>
+                    </Card>
+                    <Card>
+                        <CardContent className="p-4">
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <p className="text-sm text-muted-foreground">Total Invertido</p>
+                                    <p className="text-2xl font-bold">{formatPrice(totalInvertido)}</p>
+                                </div>
+                                <HandCoins className="h-8 w-8 text-muted-foreground" />
+                            </div>
+                        </CardContent>
+                    </Card>
                 </div>
 
-                {/* Filtros y búsqueda */}
-                <div className="flex flex-col sm:flex-row items-start sm:items-center sm:justify-between gap-4">
+                {/* Barra de herramientas */}
+                <div className="flex flex-col sm:flex-row gap-3 justify-between items-start sm:items-center">
                     <div className="relative w-full sm:w-64">
-                        <Search className="absolute left-2 top-2 h-4 w-4 text-muted-foreground" />
+                        <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                         <Input
-                            placeholder="Buscar presets..."
-                            className="pl-8"
+                            type="search"
+                            placeholder="Buscar presets o autores..."
+                            className="w-full pl-8"
                             value={searchTerm}
-                            onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1) }}
+                            onChange={(e) => {
+                                setSearchTerm(e.target.value)
+                                setCurrentPage(1)
+                            }}
                         />
                     </div>
-                    <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                            <Button variant="outline" size="sm" className="h-9 flex items-center">
-                                <Filter className="mr-2 h-4 w-4" /> Filtros
-                                {(dateFrom || dateTo || priceFrom || priceTo) && <Badge className="ml-2 px-1">{[dateFrom, dateTo, priceFrom, priceTo].filter(Boolean).length}</Badge>}
-                            </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end" className="w-60 p-3 space-y-2">
-                            <Label htmlFor="date-from" className="text-xs text-muted-foreground">Desde</Label>
-                            <Input id="date-from" type="date" value={dateFrom} onChange={(e) => { setDateFrom(e.target.value); setCurrentPage(1) }} />
-                            <Label htmlFor="date-to" className="text-xs text-muted-foreground">Hasta</Label>
-                            <Input id="date-to" type="date" value={dateTo} onChange={(e) => { setDateTo(e.target.value); setCurrentPage(1) }} />
-                            <Label htmlFor="price-from" className="text-xs text-muted-foreground">Precio desde</Label>
-                            <Input id="price-from" type="number" placeholder="0" value={priceFrom} onChange={(e) => { setPriceFrom(e.target.value); setCurrentPage(1) }} />
-                            <Label htmlFor="price-to" className="text-xs text-muted-foreground">Precio hasta</Label>
-                            <Input id="price-to" type="number" placeholder="100" value={priceTo} onChange={(e) => { setPriceTo(e.target.value); setCurrentPage(1) }} />
-                            <Button variant="outline" size="sm" className="mt-2 w-full" onClick={clearFilters} disabled={!hasFilters} >Limpiar filtros</Button>
-                        </DropdownMenuContent>
-                    </DropdownMenu>
+
+                    <div className="flex flex-wrap gap-2 items-center">
+                        {/* Filtros */}
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="outline" size="sm" className="h-9">
+                                    <Filter className="h-4 w-4 mr-2" />
+                                    Filtros
+                                    {hasActiveFilters && (
+                                        <Badge variant="secondary" className="ml-2 px-1 py-0">
+                                            {[dateFrom, dateTo, priceFrom, priceTo].filter(Boolean).length}
+                                        </Badge>
+                                    )}
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" className="w-60">
+                                <div className="p-2">
+                                    <div className="space-y-2">
+                                        <Label htmlFor="date-from">Fecha desde</Label>
+                                        <Input
+                                            id="date-from"
+                                            type="date"
+                                            value={dateFrom}
+                                            onChange={(e) => {
+                                                setDateFrom(e.target.value)
+                                                setCurrentPage(1)
+                                            }}
+                                        />
+                                    </div>
+
+                                    <div className="space-y-2 mt-3">
+                                        <Label htmlFor="date-to">Fecha hasta</Label>
+                                        <Input
+                                            id="date-to"
+                                            type="date"
+                                            value={dateTo}
+                                            onChange={(e) => {
+                                                setDateTo(e.target.value)
+                                                setCurrentPage(1)
+                                            }}
+                                        />
+                                    </div>
+
+                                    <div className="space-y-2 mt-3">
+                                        <Label htmlFor="price-from">Precio desde (€)</Label>
+                                        <Input
+                                            id="price-from"
+                                            type="number"
+                                            placeholder="0"
+                                            value={priceFrom}
+                                            onChange={(e) => {
+                                                setPriceFrom(e.target.value)
+                                                setCurrentPage(1)
+                                            }}
+                                        />
+                                    </div>
+
+                                    <div className="space-y-2 mt-3">
+                                        <Label htmlFor="price-to">Precio hasta (€)</Label>
+                                        <Input
+                                            id="price-to"
+                                            type="number"
+                                            placeholder="100"
+                                            value={priceTo}
+                                            onChange={(e) => {
+                                                setPriceTo(e.target.value)
+                                                setCurrentPage(1)
+                                            }}
+                                        />
+                                    </div>
+
+                                    <Button
+                                        variant="outline"
+                                        size="sm"
+                                        className="mt-2 w-full"
+                                        onClick={clearFilters}
+                                        disabled={!hasActiveFilters && !searchTerm}
+                                    >
+                                        Limpiar filtros
+                                    </Button>
+                                </div>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                    </div>
                 </div>
 
-                {/* Tabla de compras */}
-                <Card>
-                    <CardContent className="p-0">
-                        <Table>
-                            <TableHeader>
-                                <TableRow>
-                                    <TableHead>Preset</TableHead>
-                                    <TableHead>Autor</TableHead>
-                                    <TableHead>Fecha</TableHead>
-                                    <TableHead>Precio</TableHead>
-                                    <TableHead className="text-right">Acciones</TableHead>
-                                </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                                {pageItems.length ? pageItems.map(p => (
-                                    <TableRow key={p.id}>
-                                        <TableCell>
-                                            <div className="font-medium">{p.preset.name}</div>
-                                        </TableCell>
-                                        <TableCell>{p.preset.user.username}</TableCell>
-                                        <TableCell className="flex items-center gap-1 text-sm">
-                                            <Calendar className="h-4 w-4" /> {formatDate(p.created_at)}
-                                        </TableCell>
-                                        <TableCell className="font-semibold">{formatPrice(p.preset.price)}</TableCell>
-                                        <TableCell className="text-right">
-                                            <div className="flex gap-2 justify-end">
-                                                <TooltipProvider>
-                                                    <Tooltip>
-                                                        <TooltipTrigger asChild>
-                                                            <Button variant="secondary" size="icon" onClick={() => handlePreview(p.preset.id)}>
-                                                                <Eye className="h-4 w-4" />
-                                                            </Button>
-                                                        </TooltipTrigger>
-                                                        <TooltipContent>Ver preset</TooltipContent>
-                                                    </Tooltip>
-                                                </TooltipProvider>
-                                                <TooltipProvider>
-                                                    <Tooltip>
-                                                        <TooltipTrigger asChild>
-                                                            <Button variant="default" size="icon" onClick={() => handleDownload(p.preset.id)}>
-                                                                <Download className="h-4 w-4" />
-                                                            </Button>
-                                                        </TooltipTrigger>
-                                                        <TooltipContent>Descargar preset</TooltipContent>
-                                                    </Tooltip>
-                                                </TooltipProvider>
+                {/* Filtros activos */}
+                {(dateFrom || dateTo || priceFrom || priceTo) && (
+                    <div className="flex flex-wrap gap-2 mt-2">
+                        {dateFrom && (
+                            <Badge variant="secondary" className="flex items-center gap-1">
+                                Desde: {formatDate(dateFrom)}
+                                <Button variant="ghost" size="icon" className="h-4 w-4 p-0 ml-1" onClick={() => setDateFrom("")}>
+                                    <X className="h-3 w-3" />
+                                </Button>
+                            </Badge>
+                        )}
+                        {dateTo && (
+                            <Badge variant="secondary" className="flex items-center gap-1">
+                                Hasta: {formatDate(dateTo)}
+                                <Button variant="ghost" size="icon" className="h-4 w-4 p-0 ml-1" onClick={() => setDateTo("")}>
+                                    <X className="h-3 w-3" />
+                                </Button>
+                            </Badge>
+                        )}
+                        {priceFrom && (
+                            <Badge variant="secondary" className="flex items-center gap-1">
+                                Precio desde: {formatPrice(Number.parseFloat(priceFrom))}
+                                <Button variant="ghost" size="icon" className="h-4 w-4 p-0 ml-1" onClick={() => setPriceFrom("")}>
+                                    <X className="h-3 w-3" />
+                                </Button>
+                            </Badge>
+                        )}
+                        {priceTo && (
+                            <Badge variant="secondary" className="flex items-center gap-1">
+                                Precio hasta: {formatPrice(Number.parseFloat(priceTo))}
+                                <Button variant="ghost" size="icon" className="h-4 w-4 p-0 ml-1" onClick={() => setPriceTo("")}>
+                                    <X className="h-3 w-3" />
+                                </Button>
+                            </Badge>
+                        )}
+                    </div>
+                )}
+
+                <Tabs defaultValue="table" className="w-full">
+                    <TabsList>
+                        <TabsTrigger value="table">Tabla</TabsTrigger>
+                        <TabsTrigger value="grid">Tarjetas</TabsTrigger>
+                    </TabsList>
+
+                    {/* Vista de tabla */}
+                    <TabsContent value="table" className="mt-4">
+                        <Card>
+                            <CardContent className="p-0">
+                                <Table>
+                                    <TableHeader>
+                                        <TableRow className="hover:bg-transparent">
+                                            <TableHead>Preset</TableHead>
+                                            <TableHead>Autor</TableHead>
+                                            <TableHead>Fecha de Compra</TableHead>
+                                            <TableHead>Precio</TableHead>
+                                            <TableHead className="text-right">Acciones</TableHead>
+                                        </TableRow>
+                                    </TableHeader>
+                                    <TableBody>
+                                        {currentPurchases.length > 0 ? (
+                                            currentPurchases.map((purchase) => (
+                                                <TableRow key={purchase.id}>
+                                                    <TableCell>
+                                                        <div className="font-medium">{purchase.preset.name}</div>
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        <div className="font-medium">@{purchase.preset.user.username}</div>
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        <div className="flex items-center gap-2">
+                                                            <Calendar className="h-4 w-4 text-muted-foreground" />
+                                                            <span className="text-sm">{formatDate(purchase.created_at)}</span>
+                                                        </div>
+                                                    </TableCell>
+                                                    <TableCell>
+                                                        <Badge variant="default" className="font-semibold">
+                                                            {formatPrice(purchase.preset.price)}
+                                                        </Badge>
+                                                    </TableCell>
+                                                    <TableCell className="text-right">
+                                                        <div className="flex justify-end gap-2">
+                                                            <TooltipProvider>
+                                                                <Tooltip>
+                                                                    <TooltipTrigger asChild>
+                                                                        <Button
+                                                                            variant="secondary"
+                                                                            size="icon"
+                                                                            onClick={() => handlePreview(purchase.preset.id)}
+                                                                        >
+                                                                            <Eye className="h-4 w-4" />
+                                                                        </Button>
+                                                                    </TooltipTrigger>
+                                                                    <TooltipContent>
+                                                                        <p>Ver preset</p>
+                                                                    </TooltipContent>
+                                                                </Tooltip>
+                                                            </TooltipProvider>
+
+                                                            <TooltipProvider>
+                                                                <Tooltip>
+                                                                    <TooltipTrigger asChild>
+                                                                        <Button
+                                                                            variant="default"
+                                                                            size="icon"
+                                                                            onClick={() => handleDownload(purchase.preset.id)}
+                                                                        >
+                                                                            <Download className="h-4 w-4" />
+                                                                        </Button>
+                                                                    </TooltipTrigger>
+                                                                    <TooltipContent>
+                                                                        <p>Descargar preset</p>
+                                                                    </TooltipContent>
+                                                                </Tooltip>
+                                                            </TooltipProvider>
+                                                        </div>
+                                                    </TableCell>
+                                                </TableRow>
+                                            ))
+                                        ) : (
+                                            <TableRow>
+                                                <TableCell colSpan={5} className="text-center py-10 text-muted-foreground">
+                                                    No se encontraron compras con los filtros aplicados
+                                                </TableCell>
+                                            </TableRow>
+                                        )}
+                                    </TableBody>
+                                </Table>
+                            </CardContent>
+
+                            {/* Paginación */}
+                            {filteredPurchases.length > 0 && (
+                                <CardFooter className="flex items-center justify-between p-4 border-t">
+                                    <div className="text-sm text-muted-foreground">
+                                        Mostrando {indexOfFirstItem + 1}-{Math.min(indexOfLastItem, filteredPurchases.length)} de{" "}
+                                        {filteredPurchases.length} compras
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <Button
+                                            variant="outline"
+                                            size="icon"
+                                            onClick={() => paginate(currentPage - 1)}
+                                            disabled={currentPage === 1}
+                                        >
+                                            <ChevronLeft className="h-4 w-4" />
+                                        </Button>
+                                        <div className="text-sm">
+                                            Página {currentPage} de {totalPages}
+                                        </div>
+                                        <Button
+                                            variant="outline"
+                                            size="icon"
+                                            onClick={() => paginate(currentPage + 1)}
+                                            disabled={currentPage === totalPages}
+                                        >
+                                            <ChevronRight className="h-4 w-4" />
+                                        </Button>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <Select
+                                            value={itemsPerPage.toString()}
+                                            onValueChange={(value) => {
+                                                setItemsPerPage(Number.parseInt(value))
+                                                setCurrentPage(1)
+                                            }}
+                                        >
+                                            <SelectTrigger className="w-[100px]">
+                                                <SelectValue placeholder="5 por página" />
+                                            </SelectTrigger>
+                                            <SelectContent>
+                                                <SelectItem value="5">5 por página</SelectItem>
+                                                <SelectItem value="10">10 por página</SelectItem>
+                                                <SelectItem value="20">20 por página</SelectItem>
+                                                <SelectItem value="50">50 por página</SelectItem>
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
+                                </CardFooter>
+                            )}
+                        </Card>
+                    </TabsContent>
+
+                    {/* Vista de tarjetas */}
+                    <TabsContent value="grid" className="mt-4">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            {currentPurchases.length > 0 ? (
+                                currentPurchases.map((purchase) => (
+                                    <Card key={purchase.id} className="overflow-hidden flex flex-col h-full">
+                                        <CardHeader className="p-4">
+                                            <div className="flex items-center justify-between">
+                                                <div className="flex-1">
+                                                    <div className="font-medium text-lg">{purchase.preset.name}</div>
+                                                </div>
+                                                <DropdownMenu>
+                                                    <DropdownMenuTrigger asChild>
+                                                        <Button variant="ghost" size="icon">
+                                                            <MoreHorizontal className="h-5 w-5" />
+                                                            <span className="sr-only">Más opciones</span>
+                                                        </Button>
+                                                    </DropdownMenuTrigger>
+                                                    <DropdownMenuContent align="end">
+                                                        <DropdownMenuItem onClick={() => handlePreview(purchase.preset.id)}>
+                                                            <Eye className="h-4 w-4 mr-2" />
+                                                            Ver preset
+                                                        </DropdownMenuItem>
+                                                        <DropdownMenuSeparator />
+                                                        <DropdownMenuItem onClick={() => handleDownload(purchase.preset.id)}>
+                                                            <Download className="h-4 w-4 mr-2" />
+                                                            Descargar preset
+                                                        </DropdownMenuItem>
+                                                    </DropdownMenuContent>
+                                                </DropdownMenu>
                                             </div>
-                                        </TableCell>
-                                    </TableRow>
-                                )) : (
-                                    <TableRow>
-                                        <TableCell colSpan={5} className="text-center py-6 text-muted-foreground">
-                                            No se encontraron compras.
-                                        </TableCell>
-                                    </TableRow>
-                                )}
-                            </TableBody>
-                        </Table>
-                    </CardContent>
-                    <CardFooter className="flex items-center justify-between">
-                        <Button variant="outline" size="icon" onClick={() => setCurrentPage(currentPage - 1)} disabled={currentPage === 1}>
-                            <ChevronLeft className="h-4 w-4" />
-                        </Button>
-                        <span className="text-sm">Página {currentPage} de {totalPages}</span>
-                        <Button variant="outline" size="icon" onClick={() => setCurrentPage(currentPage + 1)} disabled={currentPage === totalPages}>
-                            <ChevronRight className="h-4 w-4" />
-                        </Button>
-                        <Select value={itemsPerPage.toString()} onValueChange={(v) => { setItemsPerPage(parseInt(v)); setCurrentPage(1) }}>
-                            <SelectTrigger className="w-24">
-                                <SelectValue placeholder="{itemsPerPage} por página" />
-                            </SelectTrigger>
-                            <SelectContent>
-                                {[5, 10, 20, 50].map(n => <SelectItem key={n} value={n.toString()}>{n} por página</SelectItem>)}
-                            </SelectContent>
-                        </Select>
-                    </CardFooter>
-                </Card>
+                                        </CardHeader>
+                                        <CardContent className="p-4 pt-0 flex-grow">
+                                            <div className="space-y-3">
+                                                <div>
+                                                    <div className="text-sm text-muted-foreground">Autor</div>
+                                                    <div className="font-medium">@{purchase.preset.user.username}</div>
+                                                </div>
+                                                <div>
+                                                    <div className="text-sm text-muted-foreground">Fecha de compra</div>
+                                                    <div className="flex items-center gap-2">
+                                                        <Calendar className="h-4 w-4 text-muted-foreground" />
+                                                        <span className="text-sm">{formatDate(purchase.created_at)}</span>
+                                                    </div>
+                                                </div>
+                                                <div>
+                                                    <div className="text-sm text-muted-foreground">Precio</div>
+                                                    <Badge variant="outline" className="font-semibold text-base">
+                                                        {formatPrice(purchase.preset.price)}
+                                                    </Badge>
+                                                </div>
+                                            </div>
+                                        </CardContent>
+                                        <CardFooter className="p-4 border-t flex justify-end gap-2">
+                                            <Button variant="outline" size="sm" onClick={() => handlePreview(purchase.preset.id)}>
+                                                <Eye className="h-4 w-4 mr-2" />
+                                                Ver
+                                            </Button>
+                                            <Button variant="default" size="sm" onClick={() => handleDownload(purchase.preset.id)}>
+                                                <Download className="h-4 w-4 mr-2" />
+                                                Descargar
+                                            </Button>
+                                        </CardFooter>
+                                    </Card>
+                                ))
+                            ) : (
+                                <div className="col-span-full text-center py-10 text-muted-foreground">
+                                    No se encontraron compras con los filtros aplicados
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Paginación para vista de tarjetas */}
+                        {filteredPurchases.length > 0 && (
+                            <div className="flex items-center justify-between mt-4 p-4 bg-card border rounded-lg">
+                                <div className="text-sm text-muted-foreground">
+                                    Mostrando {indexOfFirstItem + 1}-{Math.min(indexOfLastItem, filteredPurchases.length)} de{" "}
+                                    {filteredPurchases.length} compras
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <Button
+                                        variant="outline"
+                                        size="icon"
+                                        onClick={() => paginate(currentPage - 1)}
+                                        disabled={currentPage === 1}
+                                    >
+                                        <ChevronLeft className="h-4 w-4" />
+                                    </Button>
+                                    <div className="text-sm">
+                                        Página {currentPage} de {totalPages}
+                                    </div>
+                                    <Button
+                                        variant="outline"
+                                        size="icon"
+                                        onClick={() => paginate(currentPage + 1)}
+                                        disabled={currentPage === totalPages}
+                                    >
+                                        <ChevronRight className="h-4 w-4" />
+                                    </Button>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <Select
+                                        value={itemsPerPage.toString()}
+                                        onValueChange={(value) => {
+                                            setItemsPerPage(Number.parseInt(value))
+                                            setCurrentPage(1)
+                                        }}
+                                    >
+                                        <SelectTrigger className="w-[100px]">
+                                            <SelectValue placeholder="5 por página" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="5">5 por página</SelectItem>
+                                            <SelectItem value="10">10 por página</SelectItem>
+                                            <SelectItem value="20">20 por página</SelectItem>
+                                            <SelectItem value="50">50 por página</SelectItem>
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+                            </div>
+                        )}
+                    </TabsContent>
+                </Tabs>
             </div>
         </AppLayout>
     )
