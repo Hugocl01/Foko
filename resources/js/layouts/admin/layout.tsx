@@ -5,13 +5,13 @@ import { cn } from '@/lib/utils';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/react';
 import { type PropsWithChildren } from 'react';
-import { Users, Flag } from 'lucide-react';
+import { UsersRound, Flag } from 'lucide-react';
 
 const sidebarNavItems: NavItem[] = [
     {
         title: 'Usuarios',
         href: '/admin/users',
-        icon: Users,
+        icon: UsersRound,
     },
     {
         title: 'Reportes',

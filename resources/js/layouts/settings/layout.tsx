@@ -5,27 +5,28 @@ import { cn } from '@/lib/utils';
 import { type NavItem } from '@/types';
 import { Link } from '@inertiajs/react';
 import { type PropsWithChildren } from 'react';
+import { UserRound, Layers, KeyRound, Palette } from 'lucide-react';
 
 const sidebarNavItems: NavItem[] = [
     {
         title: 'Perfil',
         href: '/settings/profile',
-        icon: null,
+        icon: UserRound,
     },
     {
         title: 'Plan',
         href: '/settings/plan',
-        icon: null,
+        icon: Layers,
     },
     {
         title: 'Contraseña',
         href: '/settings/password',
-        icon: null,
+        icon: KeyRound,
     },
     {
         title: 'Apariencia',
         href: '/settings/appearance',
-        icon: null,
+        icon: Palette,
     },
 ];
 
@@ -55,6 +56,7 @@ export default function SettingsLayout({ children }: PropsWithChildren) {
                                 })}
                             >
                                 <Link href={item.href} prefetch>
+                                    {<item.icon />}
                                     {item.title}
                                 </Link>
                             </Button>
