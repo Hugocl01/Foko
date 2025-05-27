@@ -34,9 +34,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/presets', [PresetController::class, 'index'])
         ->name('presets.index');
 
-    Route::get('/presets/{id}', function ($id) {
-        return Inertia::render('preset', ['id' => $id]);
-    })->name('presets.show');
+    Route::get('/presets/{preset}', [PresetController::class, 'show'])
+        ->name('presets.show');
 
     // Chats
     Route::get('/chats', function () {

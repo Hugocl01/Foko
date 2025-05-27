@@ -1,7 +1,7 @@
 import type React from "react"
 
 import { useState } from "react"
-import { MoreHorizontal, Sliders, Download, Eye, EyeOff } from "lucide-react"
+import { MoreHorizontal, Download, Eye, EyeOff } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
@@ -101,111 +101,117 @@ export default function PresetsPage() {
                     <TabsContent value="grid" className="mt-4">
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                             {presets.map((preset) => (
-                                <Card
+                                <Link
                                     key={preset.id}
+                                    href={route('presets.show', preset.id)}
                                     className="flex flex-col h-full cursor-pointer hover:shadow-lg transition-shadow duration-200"
-                                    onClick={(e) => handleCardClick(preset.id, e)}
                                 >
-                                    <CardHeader className="p-4">
-                                        <div className="flex items-center justify-between">
-                                            <div className="flex items-center gap-3">
-                                                <Avatar className="h-10 w-10">
-                                                    <AvatarImage
-                                                        src={avatarUrl(preset.user.profile_image) || "/placeholder.svg"}
-                                                        alt={preset.user.name}
-                                                    />
-                                                    <AvatarFallback className="text-sm">{preset.user.name.charAt(0)}</AvatarFallback>
-                                                </Avatar>
-                                                <div className="flex flex-col">
-                                                    <div className="font-medium text-base">{preset.user.name}</div>
-                                                    <div className="text-sm text-muted-foreground">@{preset.user.username || "usuario"}</div>
+                                    <Card
+                                        key={preset.id}
+                                        className="flex flex-col h-full cursor-pointer hover:shadow-lg transition-shadow duration-200"
+                                        onClick={(e) => handleCardClick(preset.id, e)}
+                                    >
+                                        <CardHeader className="p-4">
+                                            <div className="flex items-center justify-between">
+                                                <div className="flex items-center gap-3">
+                                                    <Avatar className="h-10 w-10">
+                                                        <AvatarImage
+                                                            src={avatarUrl(preset.user.profile_image) || "/placeholder.svg"}
+                                                            alt={preset.user.name}
+                                                        />
+                                                        <AvatarFallback className="text-sm">{preset.user.name.charAt(0)}</AvatarFallback>
+                                                    </Avatar>
+                                                    <div className="flex flex-col">
+                                                        <div className="font-medium text-base">{preset.user.name}</div>
+                                                        <div className="text-sm text-muted-foreground">@{preset.user.username || "usuario"}</div>
+                                                    </div>
+                                                </div>
+                                                <DropdownMenu>
+                                                    <DropdownMenuTrigger asChild>
+                                                        <Button variant="ghost" size="icon" className="h-9 w-9">
+                                                            <MoreHorizontal className="h-5 w-5" />
+                                                            <span className="sr-only">Más opciones</span>
+                                                        </Button>
+                                                    </DropdownMenuTrigger>
+                                                    <DropdownMenuContent align="end">
+                                                        <DropdownMenuItem>Copiar enlace</DropdownMenuItem>
+                                                        <DropdownMenuItem>Ver perfil</DropdownMenuItem>
+                                                        <DropdownMenuSeparator />
+                                                        <DropdownMenuItem className="text-destructive">Reportar</DropdownMenuItem>
+                                                    </DropdownMenuContent>
+                                                </DropdownMenu>
+                                            </div>
+                                        </CardHeader>
+
+                                        <CardContent className="relative flex-grow p-0">
+                                            <div className="relative aspect-square overflow-hidden bg-gray-100">
+                                                <img
+                                                    src={getImageUrl(preset, getViewMode(preset.id)) || "/placeholder.svg"}
+                                                    alt={`${preset.name} - ${getViewMode(preset.id)}`}
+                                                    className="w-full h-full object-cover transition-all duration-300"
+                                                />
+
+                                                {/* Image Toggle Controls */}
+                                                <div className="absolute top-2 left-2 toggle-group">
+                                                    <ToggleGroup
+                                                        type="single"
+                                                        value={getViewMode(preset.id)}
+                                                        onValueChange={(value) => value && setPresetViewMode(preset.id, value as "before" | "after")}
+                                                        className="bg-black/50 rounded-md p-1"
+                                                    >
+                                                        <ToggleGroupItem
+                                                            value="before"
+                                                            size="sm"
+                                                            className="text-white data-[state=on]:bg-white data-[state=on]:text-black transition-all duration-200"
+                                                        >
+                                                            <EyeOff className="h-3 w-3 mr-1" />
+                                                            Antes
+                                                        </ToggleGroupItem>
+                                                        <ToggleGroupItem
+                                                            value="after"
+                                                            size="sm"
+                                                            className="text-white data-[state=on]:bg-white data-[state=on]:text-black transition-all duration-200"
+                                                        >
+                                                            <Eye className="h-3 w-3 mr-1" />
+                                                            Después
+                                                        </ToggleGroupItem>
+                                                    </ToggleGroup>
+                                                </div>
+
+                                                <Badge className="absolute top-2 right-2 bg-primary text-white">
+                                                    {Number(preset.price).toFixed(2)} €
+                                                </Badge>
+                                            </div>
+                                        </CardContent>
+
+                                        <CardFooter className="flex flex-col items-start gap-3 p-4">
+                                            <div className="w-full">
+                                                <div className="font-semibold">{preset.name}</div>
+                                                <div className="text-sm text-muted-foreground line-clamp-2 mb-2">{preset.description}</div>
+                                                <div className="flex flex-wrap gap-1 mb-3">
+                                                    {preset.hashtags.map((tag) => (
+                                                        <Link
+                                                            key={tag}
+                                                            href={`/presets?hashtag=${encodeURIComponent(tag)}`}
+                                                            className="inline-block"
+                                                            onClick={(e) => e.stopPropagation()}
+                                                        >
+                                                            <Badge
+                                                                variant="secondary"
+                                                                className="text-xs hover:bg-secondary/80 transition-colors cursor-pointer"
+                                                            >
+                                                                #{tag}
+                                                            </Badge>
+                                                        </Link>
+                                                    ))}
                                                 </div>
                                             </div>
-                                            <DropdownMenu>
-                                                <DropdownMenuTrigger asChild>
-                                                    <Button variant="ghost" size="icon" className="h-9 w-9">
-                                                        <MoreHorizontal className="h-5 w-5" />
-                                                        <span className="sr-only">Más opciones</span>
-                                                    </Button>
-                                                </DropdownMenuTrigger>
-                                                <DropdownMenuContent align="end">
-                                                    <DropdownMenuItem>Copiar enlace</DropdownMenuItem>
-                                                    <DropdownMenuItem>Ver perfil</DropdownMenuItem>
-                                                    <DropdownMenuSeparator />
-                                                    <DropdownMenuItem className="text-destructive">Reportar</DropdownMenuItem>
-                                                </DropdownMenuContent>
-                                            </DropdownMenu>
-                                        </div>
-                                    </CardHeader>
-
-                                    <CardContent className="relative flex-grow p-0">
-                                        <div className="relative aspect-square overflow-hidden bg-gray-100">
-                                            <img
-                                                src={getImageUrl(preset, getViewMode(preset.id)) || "/placeholder.svg"}
-                                                alt={`${preset.name} - ${getViewMode(preset.id)}`}
-                                                className="w-full h-full object-cover transition-all duration-300"
-                                            />
-
-                                            {/* Image Toggle Controls */}
-                                            <div className="absolute top-2 left-2 toggle-group">
-                                                <ToggleGroup
-                                                    type="single"
-                                                    value={getViewMode(preset.id)}
-                                                    onValueChange={(value) => value && setPresetViewMode(preset.id, value as "before" | "after")}
-                                                    className="bg-black/50 rounded-md p-1"
-                                                >
-                                                    <ToggleGroupItem
-                                                        value="before"
-                                                        size="sm"
-                                                        className="text-white data-[state=on]:bg-white data-[state=on]:text-black transition-all duration-200"
-                                                    >
-                                                        <EyeOff className="h-3 w-3 mr-1" />
-                                                        Antes
-                                                    </ToggleGroupItem>
-                                                    <ToggleGroupItem
-                                                        value="after"
-                                                        size="sm"
-                                                        className="text-white data-[state=on]:bg-white data-[state=on]:text-black transition-all duration-200"
-                                                    >
-                                                        <Eye className="h-3 w-3 mr-1" />
-                                                        Después
-                                                    </ToggleGroupItem>
-                                                </ToggleGroup>
-                                            </div>
-
-                                            <Badge className="absolute top-2 right-2 bg-primary text-white">
-                                                {Number(preset.price).toFixed(2)} €
-                                            </Badge>
-                                        </div>
-                                    </CardContent>
-
-                                    <CardFooter className="flex flex-col items-start gap-3 p-4">
-                                        <div className="w-full">
-                                            <div className="font-semibold">{preset.name}</div>
-                                            <div className="text-sm text-muted-foreground line-clamp-2 mb-2">{preset.description}</div>
-                                            <div className="flex flex-wrap gap-1 mb-3">
-                                                {preset.hashtags.map((tag) => (
-                                                    <Link
-                                                        key={tag}
-                                                        href={`/presets?hashtag=${encodeURIComponent(tag)}`}
-                                                        className="inline-block"
-                                                        onClick={(e) => e.stopPropagation()}
-                                                    >
-                                                        <Badge
-                                                            variant="secondary"
-                                                            className="text-xs hover:bg-secondary/80 transition-colors cursor-pointer"
-                                                        >
-                                                            #{tag}
-                                                        </Badge>
-                                                    </Link>
-                                                ))}
-                                            </div>
-                                        </div>
-                                        <Button size="sm" className="bg-primary text-white w-full" onClick={(e) => e.stopPropagation()}>
-                                            <Download className="h-4 w-4 mr-1" /> Comprar
-                                        </Button>
-                                    </CardFooter>
-                                </Card>
+                                            <Button size="sm" className="bg-primary text-white w-full" onClick={(e) => e.stopPropagation()}>
+                                                <Download className="h-4 w-4 mr-1" /> Comprar
+                                            </Button>
+                                        </CardFooter>
+                                    </Card>
+                                </ Link>
                             ))}
                         </div>
                     </TabsContent>
@@ -213,103 +219,109 @@ export default function PresetsPage() {
                     {/* LIST VIEW */}
                     <TabsContent value="list" className="mt-4 space-y-4">
                         {presets.map((preset) => (
-                            <Card
+                            <Link
                                 key={preset.id}
-                                className="flex flex-col md:flex-row overflow-hidden cursor-pointer hover:shadow-lg transition-shadow duration-200"
-                                onClick={(e) => handleCardClick(preset.id, e)}
+                                href={route('presets.show', preset.id)}
+                                className="flex flex-col h-full cursor-pointer hover:shadow-lg transition-shadow duration-200"
                             >
-                                <div className="md:w-1/3 bg-gray-100 aspect-square relative">
-                                    <img
-                                        src={getImageUrl(preset, getViewMode(preset.id)) || "/placeholder.svg"}
-                                        alt={`${preset.name} - ${getViewMode(preset.id)}`}
-                                        className="w-full h-full object-cover transition-all duration-300"
-                                    />
+                                <Card
+                                    key={preset.id}
+                                    className="flex flex-col md:flex-row overflow-hidden cursor-pointer hover:shadow-lg transition-shadow duration-200"
+                                    onClick={(e) => handleCardClick(preset.id, e)}
+                                >
+                                    <div className="md:w-1/3 bg-gray-100 aspect-square relative">
+                                        <img
+                                            src={getImageUrl(preset, getViewMode(preset.id)) || "/placeholder.svg"}
+                                            alt={`${preset.name} - ${getViewMode(preset.id)}`}
+                                            className="w-full h-full object-cover transition-all duration-300"
+                                        />
 
-                                    {/* Image Toggle Controls */}
-                                    <div className="absolute top-2 left-2 toggle-group">
-                                        <ToggleGroup
-                                            type="single"
-                                            value={getViewMode(preset.id)}
-                                            onValueChange={(value) => value && setPresetViewMode(preset.id, value as "before" | "after")}
-                                            className="bg-black/50 rounded-md p-1"
-                                        >
-                                            <ToggleGroupItem
-                                                value="before"
-                                                size="sm"
-                                                className="text-white data-[state=on]:bg-white data-[state=on]:text-black transition-all duration-200"
+                                        {/* Image Toggle Controls */}
+                                        <div className="absolute top-2 left-2 toggle-group">
+                                            <ToggleGroup
+                                                type="single"
+                                                value={getViewMode(preset.id)}
+                                                onValueChange={(value) => value && setPresetViewMode(preset.id, value as "before" | "after")}
+                                                className="bg-black/50 rounded-md p-1"
                                             >
-                                                <EyeOff className="h-3 w-3 mr-1" />
-                                                Antes
-                                            </ToggleGroupItem>
-                                            <ToggleGroupItem
-                                                value="after"
-                                                size="sm"
-                                                className="text-white data-[state=on]:bg-white data-[state=on]:text-black transition-all duration-200"
-                                            >
-                                                <Eye className="h-3 w-3 mr-1" />
-                                                Después
-                                            </ToggleGroupItem>
-                                        </ToggleGroup>
-                                    </div>
-                                </div>
-                                <div className="md:w-2/3 p-4 flex flex-col justify-between">
-                                    <div>
-                                        <div className="flex items-center justify-between mb-2">
-                                            <div className="flex items-center gap-3">
-                                                <Avatar className="h-12 w-12">
-                                                    <AvatarImage
-                                                        src={avatarUrl(preset.user.profile_image) || "/placeholder.svg"}
-                                                        alt={preset.user.name}
-                                                    />
-                                                    <AvatarFallback className="text-base">{preset.user.name.charAt(0)}</AvatarFallback>
-                                                </Avatar>
-                                                <div className="flex flex-col">
-                                                    <div className="font-medium text-lg">{preset.user.name}</div>
-                                                    <div className="text-base text-muted-foreground">@{preset.user.username || "usuario"}</div>
-                                                </div>
-                                            </div>
-                                            <DropdownMenu>
-                                                <DropdownMenuTrigger asChild>
-                                                    <Button variant="ghost" size="icon" className="h-9 w-9">
-                                                        <MoreHorizontal className="h-5 w-5" />
-                                                        <span className="sr-only">Más opciones</span>
-                                                    </Button>
-                                                </DropdownMenuTrigger>
-                                                <DropdownMenuContent align="end">
-                                                    <DropdownMenuItem>Copiar enlace</DropdownMenuItem>
-                                                    <DropdownMenuItem>Ver perfil</DropdownMenuItem>
-                                                    <DropdownMenuSeparator />
-                                                    <DropdownMenuItem className="text-destructive">Reportar</DropdownMenuItem>
-                                                </DropdownMenuContent>
-                                            </DropdownMenu>
-                                        </div>
-                                        <h3 className="text-xl font-bold flex items-center gap-2 mb-2">
-                                            {preset.name}
-                                        </h3>
-                                        <p className="text-sm text-muted-foreground mb-3">{preset.description}</p>
-                                        <div className="flex flex-wrap gap-2 mb-4">
-                                            {preset.hashtags.map((tag) => (
-                                                <Link
-                                                    key={tag}
-                                                    href={`/presets?hashtag=${encodeURIComponent(tag)}`}
-                                                    className="inline-block"
-                                                    onClick={(e) => e.stopPropagation()}
+                                                <ToggleGroupItem
+                                                    value="before"
+                                                    size="sm"
+                                                    className="text-white data-[state=on]:bg-white data-[state=on]:text-black transition-all duration-200"
                                                 >
-                                                    <Badge variant="secondary" className="hover:bg-secondary/80 transition-colors cursor-pointer">
-                                                        #{tag}
-                                                    </Badge>
-                                                </Link>
-                                            ))}
+                                                    <EyeOff className="h-3 w-3 mr-1" />
+                                                    Antes
+                                                </ToggleGroupItem>
+                                                <ToggleGroupItem
+                                                    value="after"
+                                                    size="sm"
+                                                    className="text-white data-[state=on]:bg-white data-[state=on]:text-black transition-all duration-200"
+                                                >
+                                                    <Eye className="h-3 w-3 mr-1" />
+                                                    Después
+                                                </ToggleGroupItem>
+                                            </ToggleGroup>
                                         </div>
                                     </div>
-                                    <div className="flex items-center justify-between">
-                                        <div className="font-bold text-lg">{Number(preset.price).toFixed(2)} €</div>
-                                        <Button size="sm" className="bg-primary text-white" onClick={(e) => e.stopPropagation()}>
-                                            <Download className="h-4 w-4 mr-1" /> Comprar
-                                        </Button>
+                                    <div className="md:w-2/3 p-4 flex flex-col justify-between">
+                                        <div>
+                                            <div className="flex items-center justify-between mb-2">
+                                                <div className="flex items-center gap-3">
+                                                    <Avatar className="h-12 w-12">
+                                                        <AvatarImage
+                                                            src={avatarUrl(preset.user.profile_image) || "/placeholder.svg"}
+                                                            alt={preset.user.name}
+                                                        />
+                                                        <AvatarFallback className="text-base">{preset.user.name.charAt(0)}</AvatarFallback>
+                                                    </Avatar>
+                                                    <div className="flex flex-col">
+                                                        <div className="font-medium text-lg">{preset.user.name}</div>
+                                                        <div className="text-base text-muted-foreground">@{preset.user.username || "usuario"}</div>
+                                                    </div>
+                                                </div>
+                                                <DropdownMenu>
+                                                    <DropdownMenuTrigger asChild>
+                                                        <Button variant="ghost" size="icon" className="h-9 w-9">
+                                                            <MoreHorizontal className="h-5 w-5" />
+                                                            <span className="sr-only">Más opciones</span>
+                                                        </Button>
+                                                    </DropdownMenuTrigger>
+                                                    <DropdownMenuContent align="end">
+                                                        <DropdownMenuItem>Copiar enlace</DropdownMenuItem>
+                                                        <DropdownMenuItem>Ver perfil</DropdownMenuItem>
+                                                        <DropdownMenuSeparator />
+                                                        <DropdownMenuItem className="text-destructive">Reportar</DropdownMenuItem>
+                                                    </DropdownMenuContent>
+                                                </DropdownMenu>
+                                            </div>
+                                            <h3 className="text-xl font-bold flex items-center gap-2 mb-2">
+                                                {preset.name}
+                                            </h3>
+                                            <p className="text-sm text-muted-foreground mb-3">{preset.description}</p>
+                                            <div className="flex flex-wrap gap-2 mb-4">
+                                                {preset.hashtags.map((tag) => (
+                                                    <Link
+                                                        key={tag}
+                                                        href={`/presets?hashtag=${encodeURIComponent(tag)}`}
+                                                        className="inline-block"
+                                                        onClick={(e) => e.stopPropagation()}
+                                                    >
+                                                        <Badge variant="secondary" className="hover:bg-secondary/80 transition-colors cursor-pointer">
+                                                            #{tag}
+                                                        </Badge>
+                                                    </Link>
+                                                ))}
+                                            </div>
+                                        </div>
+                                        <div className="flex items-center justify-between">
+                                            <div className="font-bold text-lg">{Number(preset.price).toFixed(2)} €</div>
+                                            <Button size="sm" className="bg-primary text-white" onClick={(e) => e.stopPropagation()}>
+                                                <Download className="h-4 w-4 mr-1" /> Comprar
+                                            </Button>
+                                        </div>
                                     </div>
-                                </div>
-                            </Card>
+                                </Card>
+                            </Link>
                         ))}
                     </TabsContent>
                 </Tabs>

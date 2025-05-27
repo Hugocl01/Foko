@@ -96,7 +96,7 @@ class PresetController extends Controller
     {
         $preset->load(['user', 'hashtags', 'purchases']);
 
-        return Inertia::render('Presets/Show', [
+        return Inertia::render('preset', [
             'preset' => $preset,
         ]);
     }
