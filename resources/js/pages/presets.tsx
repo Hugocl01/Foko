@@ -111,7 +111,7 @@ export default function PresetsPage() {
                                         className="flex flex-col h-full cursor-pointer hover:shadow-lg transition-shadow duration-200"
                                         onClick={(e) => handleCardClick(preset.id, e)}
                                     >
-                                        <CardHeader className="p-4">
+                                        <CardHeader className="px-4">
                                             <div className="flex items-center justify-between">
                                                 <div className="flex items-center gap-3">
                                                     <Avatar className="h-10 w-10">

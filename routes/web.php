@@ -37,6 +37,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/presets/{preset}', [PresetController::class, 'show'])
         ->name('presets.show');
 
+    Route::post('/presets/{preset}/purchase', [PurchaseController::class, 'store'])
+        ->name('purchases.store');
+
     // Chats
     Route::get('/chats', function () {
         return Inertia::render('chats');
