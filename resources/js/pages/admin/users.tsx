@@ -325,7 +325,7 @@ export default function Users({ users: initialUsers, plans: initialPlans, roles:
                             {/* Filtros */}
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
-                                    <Button variant="outline" size="sm" className="h-9">
+                                    <Button variant="outline" size="sm" className="h-9 cursor-pointer">
                                         <Filter className="h-4 w-4 mr-2" />
                                         Filtros
                                         {(filterPlan !== "all" || filterRole !== "all" || filterStatus !== "all") && (
@@ -340,13 +340,19 @@ export default function Users({ users: initialUsers, plans: initialPlans, roles:
                                         <div className="space-y-2">
                                             <Label htmlFor="filter-plan">Plan</Label>
                                             <Select value={filterPlan} onValueChange={setFilterPlan}>
-                                                <SelectTrigger id="filter-plan">
+                                                <SelectTrigger id="filter-plan" className="cursor-pointer">
                                                     <SelectValue placeholder="Todos los planes" />
                                                 </SelectTrigger>
                                                 <SelectContent>
-                                                    <SelectItem value="all" disabled >Todos los planes</SelectItem>
+                                                    <SelectItem value="all" disabled>Todos los planes</SelectItem>
                                                     {initialPlans.map(plan => (
-                                                        <SelectItem key={plan.id} value={plan.name}>{plan.name}</SelectItem>
+                                                        <SelectItem
+                                                            key={plan.id}
+                                                            value={plan.name}
+                                                            className="cursor-pointer"
+                                                        >
+                                                            {plan.name}
+                                                        </SelectItem>
                                                     ))}
                                                 </SelectContent>
                                             </Select>
@@ -358,13 +364,17 @@ export default function Users({ users: initialUsers, plans: initialPlans, roles:
                                                 value={filterRole}
                                                 onValueChange={setFilterRole}
                                             >
-                                                <SelectTrigger id="filter-role">
+                                                <SelectTrigger id="filter-role" className="cursor-pointer">
                                                     <SelectValue placeholder="Seleccionar rol" />
                                                 </SelectTrigger>
                                                 <SelectContent>
                                                     <SelectItem value="all" disabled>Todos los roles</SelectItem>
                                                     {initialRoles.map((role) => (
-                                                        <SelectItem key={role.id} value={role.name}>
+                                                        <SelectItem
+                                                            key={role.id}
+                                                            value={role.name}
+                                                            className="cursor-pointer"
+                                                        >
                                                             {role.name}
                                                         </SelectItem>
                                                     ))}
@@ -378,13 +388,13 @@ export default function Users({ users: initialUsers, plans: initialPlans, roles:
                                                 value={filterStatus}
                                                 onValueChange={(value) => setFilterStatus(value)}
                                             >
-                                                <SelectTrigger id="filter-status">
+                                                <SelectTrigger id="filter-status" className="cursor-pointer">
                                                     <SelectValue placeholder="Todos los estados" />
                                                 </SelectTrigger>
                                                 <SelectContent>
-                                                    <SelectItem value="all">Todos los estados</SelectItem>
-                                                    <SelectItem value="1">Activo</SelectItem>
-                                                    <SelectItem value="0">Inactivo</SelectItem>
+                                                    <SelectItem value="all" className="cursor-pointer">Todos los estados</SelectItem>
+                                                    <SelectItem value="1" className="cursor-pointer">Activo</SelectItem>
+                                                    <SelectItem value="0" className="cursor-pointer">Inactivo</SelectItem>
                                                 </SelectContent>
                                             </Select>
                                         </div>
@@ -392,7 +402,7 @@ export default function Users({ users: initialUsers, plans: initialPlans, roles:
                                         <Button
                                             variant="outline"
                                             size="sm"
-                                            className="mt-2 w-full"
+                                            className="mt-2 w-full cursor-pointer"
                                             onClick={clearFilters}
                                             disabled={filterPlan === "all" && filterRole === "all" && filterStatus === "all" && !searchTerm}
                                         >
@@ -403,7 +413,7 @@ export default function Users({ users: initialUsers, plans: initialPlans, roles:
                             </DropdownMenu>
 
                             {/* Botón para crear usuario */}
-                            <Button onClick={openCreateDialog} className="bg-primary hover:bg-primary/90">
+                            <Button variant={"default"} onClick={openCreateDialog} className="cursor-pointer">
                                 <UserPlus className="h-4 w-4 mr-2" />
                                 Nuevo Usuario
                             </Button>
@@ -416,7 +426,12 @@ export default function Users({ users: initialUsers, plans: initialPlans, roles:
                             {filterPlan !== "all" && (
                                 <Badge variant="secondary" className="flex items-center gap-1">
                                     Plan: {filterPlan}
-                                    <Button variant="ghost" size="icon" className="h-4 w-4 p-0 ml-1" onClick={() => setFilterPlan("all")}>
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        className="h-4 w-4 p-0 ml-1 cursor-pointer"
+                                        onClick={() => setFilterPlan("all")}
+                                    >
                                         <X className="h-3 w-3" />
                                     </Button>
                                 </Badge>
@@ -424,7 +439,12 @@ export default function Users({ users: initialUsers, plans: initialPlans, roles:
                             {filterRole !== "all" && (
                                 <Badge variant="secondary" className="flex items-center gap-1">
                                     Rol: {filterRole}
-                                    <Button variant="ghost" size="icon" className="h-4 w-4 p-0 ml-1" onClick={() => setFilterRole("all")}>
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        className="h-4 w-4 p-0 ml-1 cursor-pointer"
+                                        onClick={() => setFilterRole("all")}
+                                    >
                                         <X className="h-3 w-3" />
                                     </Button>
                                 </Badge>
@@ -432,7 +452,12 @@ export default function Users({ users: initialUsers, plans: initialPlans, roles:
                             {filterStatus !== "all" && (
                                 <Badge variant="secondary" className="flex items-center gap-1">
                                     Estado: {filterStatus == "1" ? "Activo" : "Inactivo"}
-                                    <Button variant="ghost" size="icon" className="h-4 w-4 p-0 ml-1" onClick={() => setFilterStatus("all")}>
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        className="h-4 w-4 p-0 ml-1 cursor-pointer"
+                                        onClick={() => setFilterStatus("all")}
+                                    >
                                         <X className="h-3 w-3" />
                                     </Button>
                                 </Badge>
@@ -442,8 +467,8 @@ export default function Users({ users: initialUsers, plans: initialPlans, roles:
 
                     <Tabs defaultValue="table" className="w-full">
                         <TabsList>
-                            <TabsTrigger value="table">Tabla</TabsTrigger>
-                            <TabsTrigger value="grid">Tarjetas</TabsTrigger>
+                            <TabsTrigger value="table" className="cursor-pointer">Tabla</TabsTrigger>
+                            <TabsTrigger value="grid" className="cursor-pointer">Tarjetas</TabsTrigger>
                         </TabsList>
 
                         {/* Vista de tabla */}
@@ -502,6 +527,7 @@ export default function Users({ users: initialUsers, plans: initialPlans, roles:
                                                                         <TooltipTrigger asChild>
                                                                             <Button variant="secondary"
                                                                                 size="icon"
+                                                                                className="cursor-pointer"
                                                                                 onClick={() => openEditDialog(user)}
                                                                             >
                                                                                 <Edit className="h-4 w-4" />
@@ -519,6 +545,7 @@ export default function Users({ users: initialUsers, plans: initialPlans, roles:
                                                                             <Button
                                                                                 variant="destructive"
                                                                                 size="icon"
+                                                                                className="cursor-pointer"
                                                                                 onClick={() => openDeleteDialog(user)}
                                                                             >
                                                                                 <Trash2 className="h-4 w-4" />
@@ -625,13 +652,15 @@ export default function Users({ users: initialUsers, plans: initialPlans, roles:
                                                             </Button>
                                                         </DropdownMenuTrigger>
                                                         <DropdownMenuContent align="end">
-                                                            <DropdownMenuItem onClick={() => openEditDialog(user)}>
+                                                            <DropdownMenuItem
+                                                                className="cursor-pointer"
+                                                                onClick={() => openEditDialog(user)}>
                                                                 <Edit className="h-4 w-4 mr-2" />
                                                                 Editar usuario
                                                             </DropdownMenuItem>
                                                             <DropdownMenuSeparator />
-                                                            <DropdownMenuItem className="text-destructive" onClick={() => openDeleteDialog(user)}>
-                                                                <Trash2 className="h-4 w-4 mr-2" />
+                                                            <DropdownMenuItem className="text-destructive cursor-pointer" onClick={() => openDeleteDialog(user)}>
+                                                                <Trash2 className="text-destructive h-4 w-4 mr-2" />
                                                                 Eliminar usuario
                                                             </DropdownMenuItem>
                                                         </DropdownMenuContent>
@@ -667,11 +696,21 @@ export default function Users({ users: initialUsers, plans: initialPlans, roles:
                                                 </div>
                                             </CardContent>
                                             <CardFooter className="p-4 border-t flex justify-end gap-2">
-                                                <Button variant="outline" size="sm" onClick={() => openEditDialog(user)}>
+                                                <Button
+                                                    variant="outline"
+                                                    size="sm"
+                                                    className="cursor-pointer"
+                                                    onClick={() => openEditDialog(user)}
+                                                >
                                                     <Edit className="h-4 w-4 mr-2" />
                                                     Editar
                                                 </Button>
-                                                <Button variant="destructive" size="sm" onClick={() => openDeleteDialog(user)}>
+                                                <Button
+                                                    variant="destructive"
+                                                    size="sm"
+                                                    className="cursor-pointer"
+                                                    onClick={() => openDeleteDialog(user)}
+                                                >
                                                     <Trash2 className="h-4 w-4 mr-2" />
                                                     Eliminar
                                                 </Button>
@@ -823,13 +862,18 @@ export default function Users({ users: initialUsers, plans: initialPlans, roles:
                                                     value={formData.plan_id.toString()}
                                                     onValueChange={val => handleSelectChange('plan_id', val)}
                                                 >
-                                                    <SelectTrigger id="filter-plan">
+                                                    <SelectTrigger id="filter-plan" className="cursor-pointer">
                                                         <SelectValue placeholder="Todos los planes" />
                                                     </SelectTrigger>
                                                     <SelectContent>
                                                         <SelectItem value="0" disabled >Todos los planes</SelectItem>
                                                         {initialPlans.map(plan => (
-                                                            <SelectItem key={plan.id} value={plan.id.toString()}>{plan.name}</SelectItem>
+                                                            <SelectItem
+                                                                key={plan.id}
+                                                                value={plan.id.toString()}
+                                                                className="cursor-pointer"
+                                                            >{plan.name}
+                                                            </SelectItem>
                                                         ))}
                                                     </SelectContent>
                                                 </Select>
@@ -844,13 +888,17 @@ export default function Users({ users: initialUsers, plans: initialPlans, roles:
                                                     value={formData.role_id.toString()}
                                                     onValueChange={(val) => handleSelectChange("role_id", val)}
                                                 >
-                                                    <SelectTrigger id="role">
+                                                    <SelectTrigger id="role" className="cursor-pointer">
                                                         <SelectValue placeholder="Seleccionar rol" />
                                                     </SelectTrigger>
                                                     <SelectContent>
                                                         <SelectItem value="0" disabled >Todos los roles</SelectItem>
                                                         {initialRoles.map((role) => (
-                                                            <SelectItem key={role.id} value={role.id.toString()}>
+                                                            <SelectItem
+                                                                key={role.id}
+                                                                className="cursor-pointer"
+                                                                value={role.id.toString()}
+                                                            >
                                                                 {role.name}
                                                             </SelectItem>
                                                         ))}
@@ -868,12 +916,12 @@ export default function Users({ users: initialUsers, plans: initialPlans, roles:
                                                 value={formData.status.toString()}
                                                 onValueChange={(value) => handleSelectChange("status", value)}
                                             >
-                                                <SelectTrigger id="status">
+                                                <SelectTrigger id="status" className="cursor-pointer">
                                                     <SelectValue placeholder="Seleccionar estado" />
                                                 </SelectTrigger>
                                                 <SelectContent>
-                                                    <SelectItem value="1">Activo</SelectItem>
-                                                    <SelectItem value="0">Inactivo</SelectItem>
+                                                    <SelectItem value="1" className="cursor-pointer">Activo</SelectItem>
+                                                    <SelectItem value="0" className="cursor-pointer">Inactivo</SelectItem>
                                                 </SelectContent>
                                             </Select>
                                             {errors.status && (
@@ -883,13 +931,18 @@ export default function Users({ users: initialUsers, plans: initialPlans, roles:
                                     </div>
                                 </div>
                                 <DialogFooter>
-                                    <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
+                                    <Button
+                                        variant="outline"
+                                        className="cursor-pointer"
+                                        onClick={() => setIsDialogOpen(false)}
+                                    >
                                         Cancelar
                                     </Button>
                                     <Button
+                                        variant="default"
                                         onClick={saveUser}
+                                        className="cursor-pointer"
                                         disabled={!formData.name || !formData.username || !formData.email}
-                                        className="bg-primary hover:bg-primary/90"
                                     >
                                         <Save className="h-4 w-4 mr-2" />
                                         {isEditing ? "Guardar cambios" : "Crear usuario"}
@@ -910,10 +963,18 @@ export default function Users({ users: initialUsers, plans: initialPlans, roles:
                                 </DialogDescription>
                             </DialogHeader>
                             <DialogFooter className="flex flex-wrap gap-2">
-                                <Button variant="outline" onClick={() => setIsDeleteDialogOpen(false)}>
+                                <Button
+                                    variant="outline"
+                                    className="cursor-pointer"
+                                    onClick={() => setIsDeleteDialogOpen(false)}
+                                >
                                     Cancelar
                                 </Button>
-                                <Button variant="destructive" onClick={deleteUser}>
+                                <Button
+                                    variant="destructive"
+                                    className="cursor-pointer"
+                                    onClick={deleteUser}
+                                >
                                     <Trash2 className="h-4 w-4 mr-2" />
                                     Eliminar usuario
                                 </Button>
