@@ -244,7 +244,7 @@ export default function Users({ users: initialUsers, plans: initialPlans, roles:
     const deleteUser = () => {
         if (!currentUser) return;
 
-        router.delete(route('users.destroy', currentUser.id), {
+        router.delete(route('users.destroy', currentUser), {
             preserveScroll: true,
             onSuccess: () => {
                 // Actualizamos la lista local solo tras el borrado exitoso
