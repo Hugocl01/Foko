@@ -16,7 +16,7 @@ import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 import AppLayout from "@/layouts/app-layout"
-import { usePage, Head, Link } from "@inertiajs/react"
+import { usePage, Head, Link, router } from "@inertiajs/react"
 import type { BreadcrumbItem } from "@/types"
 
 interface Preset {
@@ -81,10 +81,8 @@ export default function PresetsPage() {
         }
 
         // Navegar a la vista del preset
-        window.location.href = `/presets/${presetId}`
+        router.get(`/presets/${presetId}`);
     }
-
-    console.log(presets)
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
