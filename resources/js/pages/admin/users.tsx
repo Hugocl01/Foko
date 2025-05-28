@@ -582,6 +582,7 @@ export default function Users({ users: initialUsers, plans: initialPlans, roles:
                                             <Button
                                                 variant="outline"
                                                 size="icon"
+                                                className="cursor-pointer"
                                                 onClick={() => paginate(currentPage - 1)}
                                                 disabled={currentPage === 1}
                                             >
@@ -593,6 +594,7 @@ export default function Users({ users: initialUsers, plans: initialPlans, roles:
                                             <Button
                                                 variant="outline"
                                                 size="icon"
+                                                className="cursor-pointer"
                                                 onClick={() => paginate(currentPage + 1)}
                                                 disabled={currentPage === totalPages}
                                             >
@@ -607,14 +609,14 @@ export default function Users({ users: initialUsers, plans: initialPlans, roles:
                                                     setCurrentPage(1)
                                                 }}
                                             >
-                                                <SelectTrigger className="w-[100px]">
+                                                <SelectTrigger className="w-[100px] cursor-pointer">
                                                     <SelectValue placeholder="5 por página" />
                                                 </SelectTrigger>
                                                 <SelectContent>
-                                                    <SelectItem value="5">5 por página</SelectItem>
-                                                    <SelectItem value="10">10 por página</SelectItem>
-                                                    <SelectItem value="20">20 por página</SelectItem>
-                                                    <SelectItem value="50">50 por página</SelectItem>
+                                                    <SelectItem value="5" className="cursor-pointer">5 por página</SelectItem>
+                                                    <SelectItem value="10" className="cursor-pointer">10 por página</SelectItem>
+                                                    <SelectItem value="20" className="cursor-pointer">20 por página</SelectItem>
+                                                    <SelectItem value="50" className="cursor-pointer">50 por página</SelectItem>
                                                 </SelectContent>
                                             </Select>
                                         </div>
@@ -735,6 +737,7 @@ export default function Users({ users: initialUsers, plans: initialPlans, roles:
                                         <Button
                                             variant="outline"
                                             size="icon"
+                                            className="cursor-pointer"
                                             onClick={() => paginate(currentPage - 1)}
                                             disabled={currentPage === 1}
                                         >
@@ -746,6 +749,7 @@ export default function Users({ users: initialUsers, plans: initialPlans, roles:
                                         <Button
                                             variant="outline"
                                             size="icon"
+                                            className="cursor-pointer"
                                             onClick={() => paginate(currentPage + 1)}
                                             disabled={currentPage === totalPages}
                                         >
@@ -760,14 +764,14 @@ export default function Users({ users: initialUsers, plans: initialPlans, roles:
                                                 setCurrentPage(1)
                                             }}
                                         >
-                                            <SelectTrigger className="w-[100px]">
+                                            <SelectTrigger className="w-[100px] cursor-pointer">
                                                 <SelectValue placeholder="5 por página" />
                                             </SelectTrigger>
                                             <SelectContent>
-                                                <SelectItem value="5">5 por página</SelectItem>
-                                                <SelectItem value="10">10 por página</SelectItem>
-                                                <SelectItem value="20">20 por página</SelectItem>
-                                                <SelectItem value="50">50 por página</SelectItem>
+                                                <SelectItem value="5" className="cursor-pointer">5 por página</SelectItem>
+                                                <SelectItem value="10" className="cursor-pointer">10 por página</SelectItem>
+                                                <SelectItem value="20" className="cursor-pointer">20 por página</SelectItem>
+                                                <SelectItem value="50" className="cursor-pointer">50 por página</SelectItem>
                                             </SelectContent>
                                         </Select>
                                     </div>
