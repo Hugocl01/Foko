@@ -51,7 +51,7 @@ export default function DeleteUser() {
 
                 <Dialog>
                     <DialogTrigger asChild>
-                        <Button variant="destructive">Eliminar cuenta</Button>
+                        <Button variant="destructive" className='cursor-pointer'>Eliminar cuenta</Button>
                     </DialogTrigger>
                     <DialogContent>
                         <DialogTitle>¿Estás seguro de que deseas eliminar tu cuenta?</DialogTitle>
@@ -81,12 +81,12 @@ export default function DeleteUser() {
 
                             <DialogFooter className="gap-2">
                                 <DialogClose asChild>
-                                    <Button variant="secondary" onClick={closeModal}>
+                                    <Button variant="secondary" className='cursor-pointer' onClick={closeModal}>
                                         Cancelar
                                     </Button>
                                 </DialogClose>
 
-                                <Button variant="destructive" disabled={processing} asChild>
+                                <Button variant="destructive" disabled={processing} className='cursor-pointer' asChild>
                                     <button type="submit">Eliminar cuenta</button>
                                 </Button>
                             </DialogFooter>

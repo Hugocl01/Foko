@@ -111,7 +111,7 @@ export default function Password() {
                         </div>
 
                         <div className="flex items-center gap-4">
-                            <Button disabled={processing}>Guardar contraseña</Button>
+                            <Button disabled={processing} className='cursor-pointer'>Guardar contraseña</Button>
 
                             <Transition
                                 show={recentlySuccessful}

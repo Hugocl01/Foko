@@ -137,7 +137,7 @@ export default function Profile() {
 
                         {/* Botón Guardar */}
                         <div className="flex items-center gap-4">
-                            <Button disabled={processing}>Guardar</Button>
+                            <Button disabled={processing} className='cursor-pointer'>Guardar</Button>
                             {recentlySuccessful && <span className="text-sm text-green-600">Guardado</span>}
                         </div>
                     </form>

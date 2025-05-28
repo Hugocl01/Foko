@@ -97,7 +97,7 @@ export default function PlanTabs() {
                   py-3 px-8 rounded-xl font-semibold text-sm
                   transition-all duration-300 ease-out transform
                   focus:outline-none focus:ring-2 focus:ring-primary/50 focus:ring-offset-2
-                  disabled:cursor-not-allowed min-w-[180px]
+                  disabled:cursor-not-allowed min-w-[180px] cursor-pointer
                   ${isActive
                                         ? "bg-primary/10 border-2 border-primary text-primary cursor-default"
                                         : `bg-primary text-primary-foreground hover:bg-primary/90
