@@ -16,7 +16,7 @@ class PresetController extends Controller
      */
     public function index()
     {
-        $presets = Preset::with(['user:id,name,profile_image', 'hashtags:id,name'])
+        $presets = Preset::with(['user:id,name,username,profile_image', 'hashtags:id,name'])
             ->latest()
             ->paginate(12)
             ->through(fn($preset) => [

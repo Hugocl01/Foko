@@ -1,7 +1,7 @@
 import type React from "react"
 
 import { useState } from "react"
-import { MoreHorizontal, Download, Eye, EyeOff } from "lucide-react"
+import { MoreHorizontal, Download, Eye, EyeOff, Plus, ChevronLeft, ChevronRight } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
@@ -12,6 +12,7 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
@@ -48,8 +49,11 @@ const breadcrumbs: BreadcrumbItem[] = [{ title: "Presets", href: "/presets" }]
 export default function PresetsPage() {
     // Usamos generics en usePage para tipar correctamente
     const { props } = usePage<{ presets: Paginated<Preset> }>()
-    const presets = props.presets.data
+    const { data: presets, current_page, last_page, per_page, total } = props.presets
+    const indexOfFirstItem = (current_page - 1) * per_page + 1
+    const indexOfLastItem = Math.min(current_page * per_page, total)
 
+    console.log(presets)
     const [showPresetDetails, setShowPresetDetails] = useState<Record<number, boolean>>({})
     const [viewMode, setViewMode] = useState<Record<number, "before" | "after">>({})
 
@@ -67,6 +71,21 @@ export default function PresetsPage() {
         }
         return preset.after_image ? `/storage/${preset.after_image}` : "/placeholder.svg"
     }
+
+    const paginate = (page: number) => {
+        if (page < 1 || page > last_page) return;
+        router.get(
+            route('presets.index', { page, perPage: per_page }),
+            {}, { preserveState: true }
+        );
+    };
+
+    const changePerPage = (newPerPage: number) => {
+        router.get(
+            route('presets.index', { page: 1, perPage: newPerPage }),
+            {}, { preserveState: true }
+        );
+    };
 
     const handleCardClick = (presetId: number, e: React.MouseEvent) => {
         // Evitar navegación si se hace click en elementos interactivos
@@ -90,10 +109,17 @@ export default function PresetsPage() {
             <div className="flex flex-col gap-4 p-4">
                 <h1 className="text-2xl font-bold">Presets</h1>
                 <Tabs defaultValue="grid" className="w-full">
-                    <TabsList>
-                        <TabsTrigger value="grid">Cuadrícula</TabsTrigger>
-                        <TabsTrigger value="list">Lista</TabsTrigger>
-                    </TabsList>
+                    <div className="flex justify-between items-center">
+                        <TabsList>
+                            <TabsTrigger value="grid">Cuadrícula</TabsTrigger>
+                            <TabsTrigger value="list">Lista</TabsTrigger>
+                        </TabsList>
+
+                        <Button variant="default" className="flex items-center">
+                            <Plus className="h-4 w-4 mr-1" />
+                            Publicar preset
+                        </Button>
+                    </div>
 
                     {/* GRID VIEW */}
                     <TabsContent value="grid" className="mt-4">
@@ -212,6 +238,50 @@ export default function PresetsPage() {
                                 </ Link>
                             ))}
                         </div>
+
+                        <div className="flex items-center justify-between mt-4 p-4 bg-card border rounded-lg">
+                            <div className="text-sm text-muted-foreground">
+                                Mostrando {indexOfFirstItem}-{indexOfLastItem} de {total} presets
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <Button
+                                    variant="outline"
+                                    size="icon"
+                                    onClick={() => paginate(current_page - 1)}
+                                    disabled={current_page === 1}
+                                >
+                                    <ChevronLeft className="h-4 w-4" />
+                                </Button>
+                                <div className="text-sm">
+                                    Página {current_page} de {last_page}
+                                </div>
+                                <Button
+                                    variant="outline"
+                                    size="icon"
+                                    onClick={() => paginate(current_page + 1)}
+                                    disabled={current_page === last_page}
+                                >
+                                    <ChevronRight className="h-4 w-4" />
+                                </Button>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <Select
+                                    value={per_page.toString()}
+                                    onValueChange={(value) => changePerPage(Number(value))}
+                                >
+                                    <SelectTrigger className="w-[100px]">
+                                        <SelectValue placeholder={`${per_page} por página`} />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {[5, 10, 20, 50].map(n => (
+                                            <SelectItem key={n} value={n.toString()}>
+                                                {n} por página
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                        </div>
                     </TabsContent>
 
                     {/* LIST VIEW */}
@@ -321,6 +391,50 @@ export default function PresetsPage() {
                                 </Card>
                             </Link>
                         ))}
+
+                        <div className="flex items-center justify-between mt-4 p-4 bg-card border rounded-lg">
+                            <div className="text-sm text-muted-foreground">
+                                Mostrando {indexOfFirstItem}-{indexOfLastItem} de {total} presets
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <Button
+                                    variant="outline"
+                                    size="icon"
+                                    onClick={() => paginate(current_page - 1)}
+                                    disabled={current_page === 1}
+                                >
+                                    <ChevronLeft className="h-4 w-4" />
+                                </Button>
+                                <div className="text-sm">
+                                    Página {current_page} de {last_page}
+                                </div>
+                                <Button
+                                    variant="outline"
+                                    size="icon"
+                                    onClick={() => paginate(current_page + 1)}
+                                    disabled={current_page === last_page}
+                                >
+                                    <ChevronRight className="h-4 w-4" />
+                                </Button>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <Select
+                                    value={per_page.toString()}
+                                    onValueChange={(value) => changePerPage(Number(value))}
+                                >
+                                    <SelectTrigger className="w-[100px]">
+                                        <SelectValue placeholder={`${per_page} por página`} />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {[5, 10, 20, 50].map(n => (
+                                            <SelectItem key={n} value={n.toString()}>
+                                                {n} por página
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                        </div>
                     </TabsContent>
                 </Tabs>
             </div>
