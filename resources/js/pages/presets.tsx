@@ -53,7 +53,6 @@ export default function PresetsPage() {
     const indexOfFirstItem = (current_page - 1) * per_page + 1
     const indexOfLastItem = Math.min(current_page * per_page, total)
 
-    console.log(presets)
     const [showPresetDetails, setShowPresetDetails] = useState<Record<number, boolean>>({})
     const [viewMode, setViewMode] = useState<Record<number, "before" | "after">>({})
 

@@ -74,6 +74,15 @@ return [
             // Carpeta para almacenar presets (por ejemplo antes/después)
             'root' => storage_path('app/public/presets'),
             'url' => env('APP_URL') . '/storage/presets',
+            'visibility' => 'private',
+        ],
+
+        'preset_images' => [
+            'driver' => 'local',
+            // Carpeta donde se guardarán las imágenes de los presets
+            'root' => storage_path('app/public/presets_images'),
+            // URL pública (acceso vía navegador)
+            'url' => env('APP_URL') . '/storage/presets_images',
             'visibility' => 'public',
         ],
 
