@@ -178,7 +178,7 @@ export default function PresetsPage() {
                                                     </ToggleGroup>
                                                 </div>
 
-                                                <Badge className="absolute top-2 right-2 bg-primary text-white">
+                                                <Badge variant={"default"} className="absolute top-2 right-2">
                                                     {Number(preset.price).toFixed(2)} €
                                                 </Badge>
                                             </div>
@@ -197,8 +197,8 @@ export default function PresetsPage() {
                                                             onClick={(e) => e.stopPropagation()}
                                                         >
                                                             <Badge
-                                                                variant="secondary"
-                                                                className="text-xs hover:bg-secondary/80 transition-colors cursor-pointer"
+                                                                variant="default"
+                                                                className="cursor-pointer"
                                                             >
                                                                 #{tag}
                                                             </Badge>
@@ -206,7 +206,7 @@ export default function PresetsPage() {
                                                     ))}
                                                 </div>
                                             </div>
-                                            <Button size="sm" className="bg-primary text-white w-full" onClick={(e) => e.stopPropagation()}>
+                                            <Button size="sm" variant={"default"} className="w-full" onClick={(e) => e.stopPropagation()}>
                                                 <Download className="h-4 w-4 mr-1" /> Comprar
                                             </Button>
                                         </CardFooter>
@@ -306,7 +306,7 @@ export default function PresetsPage() {
                                                         className="inline-block"
                                                         onClick={(e) => e.stopPropagation()}
                                                     >
-                                                        <Badge variant="secondary" className="hover:bg-secondary/80 transition-colors cursor-pointer">
+                                                        <Badge variant="default" className="cursor-pointer">
                                                             #{tag}
                                                         </Badge>
                                                     </Link>
@@ -315,7 +315,7 @@ export default function PresetsPage() {
                                         </div>
                                         <div className="flex items-center justify-between">
                                             <div className="font-bold text-lg">{Number(preset.price).toFixed(2)} €</div>
-                                            <Button size="sm" className="bg-primary text-white" onClick={(e) => e.stopPropagation()}>
+                                            <Button size="sm" variant={"default"} onClick={(e) => e.stopPropagation()}>
                                                 <Download className="h-4 w-4 mr-1" /> Comprar
                                             </Button>
                                         </div>

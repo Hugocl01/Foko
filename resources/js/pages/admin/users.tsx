@@ -602,7 +602,7 @@ export default function Users({ users: initialUsers, plans: initialPlans, roles:
                                 {currentUsers.length > 0 ? (
                                     currentUsers.map((user) => (
                                         <Card key={user.id} className="overflow-hidden flex flex-col h-full">
-                                            <CardHeader className="p-4">
+                                            <CardHeader className="px-4">
                                                 <div className="flex items-center justify-between">
                                                     <div className="flex items-center gap-3">
                                                         <Avatar>
