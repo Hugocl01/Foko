@@ -40,6 +40,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/presets/{preset}/purchase', [PurchaseController::class, 'store'])
         ->name('purchases.store');
 
+    Route::get('/presets/{preset}/download', [PurchaseController::class, 'download'])
+        ->name('purchases.download');
+
     // Chats
     Route::get('/chats', function () {
         return Inertia::render('chats');

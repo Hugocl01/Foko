@@ -4,7 +4,6 @@ import { useState } from "react"
 import {
     ArrowLeft,
     Download,
-    Heart,
     Share2,
     Eye,
     EyeOff,
@@ -89,18 +88,13 @@ export default function PresetDetailPage() {
         props: { preset, auth },
     } = usePage<{ preset: Preset; auth: { user: User } }>()
 
-    /* ------------------------ valores derivados ------------------------ */
     const downloadsCount = preset.purchases ? preset.purchases.length : 0
-    const likesCount = preset.likes_count ?? 0
+    const downloadUrl = route("purchases.download", { preset: preset.id })
     const loggedUser = auth.user
     const hasPurchased = preset.purchases.some((p) => p.user_id === loggedUser.id)
-    const fileUrl = `/storage/${preset.file}`
 
-    /* --------------------------- estado UI --------------------------- */
     const [viewMode, setViewMode] = useState<"before" | "after">("after")
-    const [isLiked, setIsLiked] = useState(preset.is_liked ?? false)
 
-    /* ---------------------------- helpers ---------------------------- */
     const breadcrumbs: BreadcrumbItem[] = [
         { title: "Presets", href: "/presets" },
         { title: preset.name, href: `/presets/${preset.id}` },
@@ -116,11 +110,6 @@ export default function PresetDetailPage() {
             return `/storage/${preset.after_image}`
         }
         return "/placeholder.svg"
-    }
-
-    const handleLike = () => {
-        setIsLiked((prev) => !prev)
-        // TODO: llamada al backend para persistir
     }
 
     const handleShare = () => {
@@ -148,7 +137,6 @@ export default function PresetDetailPage() {
         router.post(route("purchases.store", { preset: preset.id }))
     }
 
-    /* ------------------------------------------------------------------ */
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title={preset.name} />
@@ -296,7 +284,7 @@ export default function PresetDetailPage() {
                                 </div>
                                 {hasPurchased ? (
                                     <Button asChild variant={"default"} size="sm" className="w-full">
-                                        <a href={fileUrl} download>
+                                        <a href={downloadUrl}>
                                             <Download className="h-4 w-4 mr-1" /> Descargar
                                         </a>
                                     </Button>
@@ -323,7 +311,7 @@ export default function PresetDetailPage() {
                                     </div>
                                     {hasPurchased ? (
                                         <Button asChild variant={"default"} size="lg" className="w-full">
-                                            <a href={fileUrl} download>
+                                            <a href={downloadUrl}>
                                                 <Download className="h-5 w-5 mr-2" /> Descargar
                                             </a>
                                         </Button>
