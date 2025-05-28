@@ -353,7 +353,7 @@ export default function PurchasesPage() {
                                                                         </Button>
                                                                     </TooltipTrigger>
                                                                     <TooltipContent>
-                                                                        <p>Ver preset {purchase.preset.name}</p>
+                                                                        <p>Ver preset</p>
                                                                     </TooltipContent>
                                                                 </Tooltip>
                                                             </TooltipProvider>
@@ -371,7 +371,7 @@ export default function PurchasesPage() {
                                                                         </Button>
                                                                     </TooltipTrigger>
                                                                     <TooltipContent>
-                                                                        <p>Ver perfil de {purchase.preset.user.username}</p>
+                                                                        <p>Ver perfil de usuario</p>
                                                                     </TooltipContent>
                                                                 </Tooltip>
                                                             </TooltipProvider>
@@ -473,7 +473,7 @@ export default function PurchasesPage() {
                             {currentPurchases.length > 0 ? (
                                 currentPurchases.map((purchase) => (
                                     <Card key={purchase.id} className="overflow-hidden flex flex-col h-full">
-                                        <CardHeader className="p-4">
+                                        <CardHeader className="px-4">
                                             <div className="flex items-center justify-between">
                                                 <div className="flex-1">
                                                     <div className="font-medium text-lg">{purchase.preset.name}</div>
@@ -488,10 +488,18 @@ export default function PurchasesPage() {
                                                     <DropdownMenuContent align="end">
                                                         <DropdownMenuItem
                                                             className="cursor-pointer"
-                                                            onClick={() => handlePreview(purchase.preset.id)}
+                                                            onClick={() => handleProfile(purchase.preset.user.id)}
                                                         >
                                                             <Eye className="h-4 w-4 mr-2" />
                                                             Ver preset
+                                                        </DropdownMenuItem>
+                                                        <DropdownMenuSeparator />
+                                                        <DropdownMenuItem
+                                                            className="cursor-pointer"
+                                                            onClick={() => handlePreview(purchase.preset.id)}
+                                                        >
+                                                            <UserRound className="h-4 w-4 mr-2" />
+                                                            Ver perfil de usuario
                                                         </DropdownMenuItem>
                                                         <DropdownMenuSeparator />
                                                         <DropdownMenuItem
@@ -525,7 +533,7 @@ export default function PurchasesPage() {
                                                 </div>
                                                 <div>
                                                     <div className="text-sm text-muted-foreground">Precio</div>
-                                                    <Badge variant="outline" className="font-semibold text-base">
+                                                    <Badge variant="default">
                                                         {formatPrice(purchase.preset.price)}
                                                     </Badge>
                                                 </div>
@@ -533,8 +541,11 @@ export default function PurchasesPage() {
                                         </CardContent>
                                         <CardFooter className="p-4 border-t flex justify-end gap-2">
                                             <Button variant="outline" size="sm" className="cursor-pointer" onClick={() => handlePreview(purchase.preset.id)}>
-                                                <Eye className="h-4 w-4 mr-2" />
-                                                Ver
+                                                <Eye className="h-4 w-4" />
+                                            </Button>
+
+                                            <Button variant="outline" size="sm" className="cursor-pointer" onClick={() => handlePreview(purchase.preset.id)}>
+                                                <UserRound className="h-4 w-4" />
                                             </Button>
                                             <Button asChild variant="default" size="sm" className="cursor-pointer">
                                                 <a
@@ -567,6 +578,7 @@ export default function PurchasesPage() {
                                     <Button
                                         variant="outline"
                                         size="icon"
+                                        className="cursor-pointer"
                                         onClick={() => paginate(currentPage - 1)}
                                         disabled={currentPage === 1}
                                     >
@@ -578,6 +590,7 @@ export default function PurchasesPage() {
                                     <Button
                                         variant="outline"
                                         size="icon"
+                                        className="cursor-pointer"
                                         onClick={() => paginate(currentPage + 1)}
                                         disabled={currentPage === totalPages}
                                     >
@@ -592,14 +605,14 @@ export default function PurchasesPage() {
                                             setCurrentPage(1)
                                         }}
                                     >
-                                        <SelectTrigger className="w-[100px]">
+                                        <SelectTrigger className="w-[100px] cursor-pointer">
                                             <SelectValue placeholder="5 por página" />
                                         </SelectTrigger>
                                         <SelectContent>
-                                            <SelectItem value="5">5 por página</SelectItem>
-                                            <SelectItem value="10">10 por página</SelectItem>
-                                            <SelectItem value="20">20 por página</SelectItem>
-                                            <SelectItem value="50">50 por página</SelectItem>
+                                            <SelectItem value="5" className="cursor-pointer">5 por página</SelectItem>
+                                            <SelectItem value="10" className="cursor-pointer">10 por página</SelectItem>
+                                            <SelectItem value="20" className="cursor-pointer">20 por página</SelectItem>
+                                            <SelectItem value="50" className="cursor-pointer">50 por página</SelectItem>
                                         </SelectContent>
                                     </Select>
                                 </div>
