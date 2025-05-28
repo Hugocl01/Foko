@@ -172,7 +172,7 @@ export default function PurchasesPage() {
                         {/* Filtros */}
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                                <Button variant="outline" size="sm" className="h-9">
+                                <Button variant="outline" size="sm" className="h-9 cursor-pointer">
                                     <Filter className="h-4 w-4 mr-2" />
                                     Filtros
                                     {hasActiveFilters && (
@@ -241,7 +241,7 @@ export default function PurchasesPage() {
                                     <Button
                                         variant="outline"
                                         size="sm"
-                                        className="mt-2 w-full"
+                                        className="mt-2 w-full cursor-pointer"
                                         onClick={clearFilters}
                                         disabled={!hasActiveFilters && !searchTerm}
                                     >
@@ -259,7 +259,7 @@ export default function PurchasesPage() {
                         {dateFrom && (
                             <Badge variant="secondary" className="flex items-center gap-1">
                                 Desde: {formatDate(dateFrom)}
-                                <Button variant="ghost" size="icon" className="h-4 w-4 p-0 ml-1" onClick={() => setDateFrom("")}>
+                                <Button variant="ghost" size="icon" className="h-4 w-4 p-0 ml-1 cursor-pointer" onClick={() => setDateFrom("")}>
                                     <X className="h-3 w-3" />
                                 </Button>
                             </Badge>
@@ -267,7 +267,7 @@ export default function PurchasesPage() {
                         {dateTo && (
                             <Badge variant="secondary" className="flex items-center gap-1">
                                 Hasta: {formatDate(dateTo)}
-                                <Button variant="ghost" size="icon" className="h-4 w-4 p-0 ml-1" onClick={() => setDateTo("")}>
+                                <Button variant="ghost" size="icon" className="h-4 w-4 p-0 ml-1 cursor-pointer" onClick={() => setDateTo("")}>
                                     <X className="h-3 w-3" />
                                 </Button>
                             </Badge>
@@ -275,7 +275,7 @@ export default function PurchasesPage() {
                         {priceFrom && (
                             <Badge variant="secondary" className="flex items-center gap-1">
                                 Precio desde: {formatPrice(Number.parseFloat(priceFrom))}
-                                <Button variant="ghost" size="icon" className="h-4 w-4 p-0 ml-1" onClick={() => setPriceFrom("")}>
+                                <Button variant="ghost" size="icon" className="h-4 w-4 p-0 ml-1 cursor-pointer" onClick={() => setPriceFrom("")}>
                                     <X className="h-3 w-3" />
                                 </Button>
                             </Badge>
@@ -283,7 +283,7 @@ export default function PurchasesPage() {
                         {priceTo && (
                             <Badge variant="secondary" className="flex items-center gap-1">
                                 Precio hasta: {formatPrice(Number.parseFloat(priceTo))}
-                                <Button variant="ghost" size="icon" className="h-4 w-4 p-0 ml-1" onClick={() => setPriceTo("")}>
+                                <Button variant="ghost" size="icon" className="h-4 w-4 p-0 ml-1 cursor-pointer" onClick={() => setPriceTo("")}>
                                     <X className="h-3 w-3" />
                                 </Button>
                             </Badge>
@@ -293,8 +293,8 @@ export default function PurchasesPage() {
 
                 <Tabs defaultValue="table" className="w-full">
                     <TabsList>
-                        <TabsTrigger value="table">Tabla</TabsTrigger>
-                        <TabsTrigger value="grid">Tarjetas</TabsTrigger>
+                        <TabsTrigger value="table" className="cursor-pointer">Tabla</TabsTrigger>
+                        <TabsTrigger value="grid" className="cursor-pointer">Tarjetas</TabsTrigger>
                     </TabsList>
 
                     {/* Vista de tabla */}
@@ -340,6 +340,7 @@ export default function PurchasesPage() {
                                                                         <Button
                                                                             variant="secondary"
                                                                             size="icon"
+                                                                            className="cursor-pointer"
                                                                             onClick={() => handlePreview(purchase.preset.id)}
                                                                         >
                                                                             <Eye className="h-4 w-4" />
@@ -354,7 +355,12 @@ export default function PurchasesPage() {
                                                             <TooltipProvider>
                                                                 <Tooltip>
                                                                     <TooltipTrigger asChild>
-                                                                        <Button asChild variant="default" size="icon">
+                                                                        <Button
+                                                                            asChild
+                                                                            variant="default"
+                                                                            size="icon"
+                                                                            className="cursor-pointer"
+                                                                        >
                                                                             <a
                                                                                 href={route("purchases.download", { preset: purchase.preset.id })}
                                                                                 data-inertia="false"
@@ -362,7 +368,6 @@ export default function PurchasesPage() {
                                                                                 <Download className="h-4 w-4" />
                                                                             </a>
                                                                         </Button>
-
                                                                     </TooltipTrigger>
                                                                     <TooltipContent>
                                                                         <p>Descargar preset</p>
@@ -395,6 +400,7 @@ export default function PurchasesPage() {
                                         <Button
                                             variant="outline"
                                             size="icon"
+                                            className="cursor-pointer"
                                             onClick={() => paginate(currentPage - 1)}
                                             disabled={currentPage === 1}
                                         >
@@ -406,6 +412,7 @@ export default function PurchasesPage() {
                                         <Button
                                             variant="outline"
                                             size="icon"
+                                            className="cursor-pointer"
                                             onClick={() => paginate(currentPage + 1)}
                                             disabled={currentPage === totalPages}
                                         >
@@ -420,14 +427,14 @@ export default function PurchasesPage() {
                                                 setCurrentPage(1)
                                             }}
                                         >
-                                            <SelectTrigger className="w-[100px]">
+                                            <SelectTrigger className="w-[100px] cursor-pointer">
                                                 <SelectValue placeholder="5 por página" />
                                             </SelectTrigger>
                                             <SelectContent>
-                                                <SelectItem value="5">5 por página</SelectItem>
-                                                <SelectItem value="10">10 por página</SelectItem>
-                                                <SelectItem value="20">20 por página</SelectItem>
-                                                <SelectItem value="50">50 por página</SelectItem>
+                                                <SelectItem value="5" className="cursor-pointer">5 por página</SelectItem>
+                                                <SelectItem value="10" className="cursor-pointer">10 por página</SelectItem>
+                                                <SelectItem value="20" className="cursor-pointer">20 por página</SelectItem>
+                                                <SelectItem value="50" className="cursor-pointer">50 por página</SelectItem>
                                             </SelectContent>
                                         </Select>
                                     </div>
@@ -455,12 +462,18 @@ export default function PurchasesPage() {
                                                         </Button>
                                                     </DropdownMenuTrigger>
                                                     <DropdownMenuContent align="end">
-                                                        <DropdownMenuItem onClick={() => handlePreview(purchase.preset.id)}>
+                                                        <DropdownMenuItem
+                                                            className="cursor-pointer"
+                                                            onClick={() => handlePreview(purchase.preset.id)}
+                                                        >
                                                             <Eye className="h-4 w-4 mr-2" />
                                                             Ver preset
                                                         </DropdownMenuItem>
                                                         <DropdownMenuSeparator />
-                                                        <DropdownMenuItem asChild>
+                                                        <DropdownMenuItem
+                                                            asChild
+                                                            className="cursor-pointer"
+                                                        >
                                                             <a
                                                                 href={route("purchases.download", { preset: purchase.preset.id })}
                                                                 data-inertia="false"
@@ -495,11 +508,11 @@ export default function PurchasesPage() {
                                             </div>
                                         </CardContent>
                                         <CardFooter className="p-4 border-t flex justify-end gap-2">
-                                            <Button variant="outline" size="sm" onClick={() => handlePreview(purchase.preset.id)}>
+                                            <Button variant="outline" size="sm" className="cursor-pointer" onClick={() => handlePreview(purchase.preset.id)}>
                                                 <Eye className="h-4 w-4 mr-2" />
                                                 Ver
                                             </Button>
-                                            <Button asChild variant="default" size="sm">
+                                            <Button asChild variant="default" size="sm" className="cursor-pointer">
                                                 <a
                                                     href={route("purchases.download", { preset: purchase.preset.id })}
                                                     data-inertia="false"

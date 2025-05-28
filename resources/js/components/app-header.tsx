@@ -174,7 +174,7 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
                         </div>
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" className="size-10 rounded-full p-1">
+                                <Button variant="ghost" className="size-10 rounded-full p-1 cursor-pointer">
                                     <Avatar className="size-8 overflow-hidden rounded-full">
                                         {auth.user.profile_image_url ? (
                                             <AvatarImage

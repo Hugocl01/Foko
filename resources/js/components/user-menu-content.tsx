@@ -28,7 +28,7 @@ export function UserMenuContent({ user }: UserMenuContentProps) {
             <DropdownMenuGroup>
                 <DropdownMenuItem asChild>
                     <Link
-                        className="block w-full"
+                        className="block w-full cursor-pointer"
                         href={route('publications.index')}
                         as="button"
                         prefetch
@@ -40,7 +40,7 @@ export function UserMenuContent({ user }: UserMenuContentProps) {
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
                     <Link
-                        className="block w-full"
+                        className="block w-full cursor-pointer"
                         href={route('purchases.index')}
                         as="button"
                         prefetch
@@ -52,7 +52,7 @@ export function UserMenuContent({ user }: UserMenuContentProps) {
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
                     <Link
-                        className="block w-full"
+                        className="block w-full cursor-pointer"
                         href={route('profile.edit')}
                         as="button"
                         prefetch
@@ -64,7 +64,7 @@ export function UserMenuContent({ user }: UserMenuContentProps) {
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
                     <Link
-                        className="block w-full"
+                        className="block w-full cursor-pointer"
                         href={route('users.index')}
                         as="button"
                         prefetch
@@ -78,7 +78,7 @@ export function UserMenuContent({ user }: UserMenuContentProps) {
             </DropdownMenuGroup>
             <DropdownMenuItem asChild>
                 <Link
-                    className="block w-full"
+                    className="block w-full cursor-pointer"
                     method="post"
                     href={route('logout')}
                     as="button"
