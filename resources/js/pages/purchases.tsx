@@ -5,6 +5,7 @@ import {
     Download,
     Calendar,
     Eye,
+    UserRound,
     Filter,
     ChevronLeft,
     ChevronRight,
@@ -31,6 +32,7 @@ import {
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import type { BreadcrumbItem } from "@/types"
 import AppLayout from "@/layouts/app-layout"
+import { userInfo } from "os"
 
 // Breadcrumbs para la navegación
 const breadcrumbs: BreadcrumbItem[] = [{ title: "Compras", href: "/compras" }]
@@ -117,6 +119,10 @@ export default function PurchasesPage() {
 
     const handlePreview = (presetId: number) => {
         router.get(route("presets.show", { preset: presetId }));
+    };
+
+    const handleProfile = (userId: number) => {
+        // TODO
     };
 
     return (
@@ -347,7 +353,25 @@ export default function PurchasesPage() {
                                                                         </Button>
                                                                     </TooltipTrigger>
                                                                     <TooltipContent>
-                                                                        <p>Ver preset</p>
+                                                                        <p>Ver preset {purchase.preset.name}</p>
+                                                                    </TooltipContent>
+                                                                </Tooltip>
+                                                            </TooltipProvider>
+
+                                                            <TooltipProvider>
+                                                                <Tooltip>
+                                                                    <TooltipTrigger asChild>
+                                                                        <Button
+                                                                            variant="secondary"
+                                                                            size="icon"
+                                                                            className="cursor-pointer"
+                                                                            onClick={() => handleProfile(purchase.preset.user.id)}
+                                                                        >
+                                                                            <UserRound className="h-4 w-4" />
+                                                                        </Button>
+                                                                    </TooltipTrigger>
+                                                                    <TooltipContent>
+                                                                        <p>Ver perfil de {purchase.preset.user.username}</p>
                                                                     </TooltipContent>
                                                                 </Tooltip>
                                                             </TooltipProvider>
