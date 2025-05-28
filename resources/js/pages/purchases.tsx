@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { usePage, Head } from "@inertiajs/react"
+import { usePage, Head, router } from "@inertiajs/react"
 import {
     Search,
     Download,
@@ -116,14 +116,8 @@ export default function PurchasesPage() {
     }
 
     const handlePreview = (presetId: number) => {
-        // Implementar lógica de preview
-        console.log("Preview preset:", presetId)
-    }
-
-    const handleDownload = (presetId: number) => {
-        // Implementar lógica de descarga
-        console.log("Download preset:", presetId)
-    }
+        router.get(route("presets.show", { preset: presetId }));
+    };
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -360,13 +354,15 @@ export default function PurchasesPage() {
                                                             <TooltipProvider>
                                                                 <Tooltip>
                                                                     <TooltipTrigger asChild>
-                                                                        <Button
-                                                                            variant="default"
-                                                                            size="icon"
-                                                                            onClick={() => handleDownload(purchase.preset.id)}
-                                                                        >
-                                                                            <Download className="h-4 w-4" />
+                                                                        <Button asChild variant="default" size="icon">
+                                                                            <a
+                                                                                href={route("purchases.download", { preset: purchase.preset.id })}
+                                                                                data-inertia="false"
+                                                                            >
+                                                                                <Download className="h-4 w-4" />
+                                                                            </a>
                                                                         </Button>
+
                                                                     </TooltipTrigger>
                                                                     <TooltipContent>
                                                                         <p>Descargar preset</p>
@@ -464,9 +460,14 @@ export default function PurchasesPage() {
                                                             Ver preset
                                                         </DropdownMenuItem>
                                                         <DropdownMenuSeparator />
-                                                        <DropdownMenuItem onClick={() => handleDownload(purchase.preset.id)}>
-                                                            <Download className="h-4 w-4 mr-2" />
-                                                            Descargar preset
+                                                        <DropdownMenuItem asChild>
+                                                            <a
+                                                                href={route("purchases.download", { preset: purchase.preset.id })}
+                                                                data-inertia="false"
+                                                            >
+                                                                <Download className="h-4 w-4 mr-2" />
+                                                                Descargar preset
+                                                            </a>
                                                         </DropdownMenuItem>
                                                     </DropdownMenuContent>
                                                 </DropdownMenu>
@@ -498,10 +499,16 @@ export default function PurchasesPage() {
                                                 <Eye className="h-4 w-4 mr-2" />
                                                 Ver
                                             </Button>
-                                            <Button variant="default" size="sm" onClick={() => handleDownload(purchase.preset.id)}>
-                                                <Download className="h-4 w-4 mr-2" />
-                                                Descargar
+                                            <Button asChild variant="default" size="sm">
+                                                <a
+                                                    href={route("purchases.download", { preset: purchase.preset.id })}
+                                                    data-inertia="false"
+                                                >
+                                                    <Download className="h-4 w-4" />
+                                                    Descargar
+                                                </a>
                                             </Button>
+
                                         </CardFooter>
                                     </Card>
                                 ))
