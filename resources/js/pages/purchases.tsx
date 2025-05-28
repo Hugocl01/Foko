@@ -540,13 +540,42 @@ export default function PurchasesPage() {
                                             </div>
                                         </CardContent>
                                         <CardFooter className="p-4 border-t flex justify-end gap-2">
-                                            <Button variant="outline" size="sm" className="cursor-pointer" onClick={() => handlePreview(purchase.preset.id)}>
-                                                <Eye className="h-4 w-4" />
-                                            </Button>
+                                            <TooltipProvider>
+                                                <Tooltip>
+                                                    <TooltipTrigger asChild>
+                                                        <Button
+                                                            variant="outline"
+                                                            size="sm"
+                                                            className="cursor-pointer"
+                                                            onClick={() => handlePreview(purchase.preset.id)}
+                                                        >
+                                                            <Eye className="h-4 w-4" />
+                                                        </Button>
+                                                    </TooltipTrigger>
+                                                    <TooltipContent>
+                                                        <p>Ver preset</p>
+                                                    </TooltipContent>
+                                                </Tooltip>
+                                            </TooltipProvider>
 
-                                            <Button variant="outline" size="sm" className="cursor-pointer" onClick={() => handlePreview(purchase.preset.id)}>
-                                                <UserRound className="h-4 w-4" />
-                                            </Button>
+                                            <TooltipProvider>
+                                                <Tooltip>
+                                                    <TooltipTrigger asChild>
+                                                        <Button
+                                                            variant="outline"
+                                                            size="sm"
+                                                            className="cursor-pointer"
+                                                            onClick={() => handlePreview(purchase.preset.id)}
+                                                        >
+                                                            <UserRound className="h-4 w-4" />
+                                                        </Button>
+                                                    </TooltipTrigger>
+                                                    <TooltipContent>
+                                                        <p>Ver perfil de usuario</p>
+                                                    </TooltipContent>
+                                                </Tooltip>
+                                            </TooltipProvider>
+
                                             <Button asChild variant="default" size="sm" className="cursor-pointer">
                                                 <a
                                                     href={route("purchases.download", { preset: purchase.preset.id })}
@@ -556,7 +585,6 @@ export default function PurchasesPage() {
                                                     Descargar
                                                 </a>
                                             </Button>
-
                                         </CardFooter>
                                     </Card>
                                 ))
