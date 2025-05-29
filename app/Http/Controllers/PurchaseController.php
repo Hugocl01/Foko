@@ -45,7 +45,7 @@ class PurchaseController extends Controller
 
     public function store(Request $request, Preset $preset)
     {
-        $user = $request->user();   // Usuario autenticado
+        $user = $request->user();
 
         // 1. ¿Ya lo compró antes?
         $yaComprado = $user->purchases()
@@ -53,19 +53,19 @@ class PurchaseController extends Controller
             ->exists();
 
         if ($yaComprado) {
+            // Vuelve a la misma página con el error en el campo "preset"
             return back()->withErrors([
                 'preset' => 'Ya has comprado este preset.',
             ]);
         }
 
-        // 2. Crear la compra (solo user_id y preset_id)
+        // 2. Crear la compra
         $user->purchases()->create([
             'preset_id' => $preset->id,
         ]);
 
-        return redirect()
-            ->route('purchases.index')
-            ->with('flash', '¡Compra registrada con éxito!');
+        // 3. Vuelve a la misma página con un mensaje de éxito
+        return back()->with('flash', '¡Compra registrada con éxito!');
     }
 
     public function download(Request $request, Preset $preset)

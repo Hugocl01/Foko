@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import {
     ArrowLeft,
     Download,
@@ -25,6 +25,7 @@ import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 import AppLayout from "@/layouts/app-layout"
 import { usePage, Head, Link, router } from "@inertiajs/react"
 import type { BreadcrumbItem } from "@/types"
+import { toast } from 'sonner'
 
 /* --------------------------------------------------------------------------
  * Tipos basados en el JSON real que envía el backend
@@ -88,10 +89,14 @@ export default function PresetDetailPage() {
         props: { preset, auth },
     } = usePage<{ preset: Preset; auth: { user: User } }>()
 
-    const downloadsCount = preset.purchases ? preset.purchases.length : 0
     const downloadUrl = route("purchases.download", { preset: preset.id })
     const loggedUser = auth.user
-    const hasPurchased = preset.purchases.some((p) => p.user_id === loggedUser.id)
+    const [hasPurchased, setHasPurchased] = useState(false)
+
+    useEffect(() => {
+        const purchased = preset.purchases.some((p) => p.user.id === loggedUser.id)
+        setHasPurchased(purchased)
+    }, [preset.purchases, loggedUser.id])
 
     const [viewMode, setViewMode] = useState<"before" | "after">("after")
 
@@ -103,13 +108,11 @@ export default function PresetDetailPage() {
     const avatarUrl = (url: string | null) => url ?? "/placeholder.svg"
 
     const getImageUrl = (mode: "before" | "after") => {
-        if (mode === "before" && preset.before_image) {
-            return `/storage/${preset.before_image}`
-        }
-        if (mode === "after" && preset.after_image) {
-            return `/storage/${preset.after_image}`
-        }
-        return "/placeholder.svg"
+        const url = mode === "before"
+            ? preset.before_image
+            : preset.after_image
+
+        return url ?? "/placeholder.svg"
     }
 
     const handleShare = () => {
@@ -134,8 +137,26 @@ export default function PresetDetailPage() {
     }
 
     const handlePurchase = () => {
-        router.post(route("purchases.store", { preset: preset.id }))
+  router.post(
+    route("purchases.store", { preset: preset.id }),
+    {},
+    {
+      onSuccess: (page) => {
+        // La respuesta JSON está en page.props?
+        // Inertia te pasa la propia página reconstruida,
+        // pero puedes usar onFinish o onError si quieres leer error JSON.
+        toast.success("¡Compra registrada con éxito!");
+        setHasPurchased(true);
+      },
+      onError: (errors) => {
+        if (errors.message) {
+          toast.error(errors.message);
+        }
+      },
     }
+  )
+}
+
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>

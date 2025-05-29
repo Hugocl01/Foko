@@ -24,6 +24,8 @@ class PresetController extends Controller
                 'name' => $preset->name,
                 'description' => $preset->description,
                 'price' => $preset->price,
+                'before_image' => $preset->getBeforeImageUrlAttribute(),
+                'after_image' => $preset->getAfterImageUrlAttribute(),
                 'user' => [
                     'id' => $preset->user->id,
                     'name' => $preset->user->name,
@@ -94,10 +96,34 @@ class PresetController extends Controller
      */
     public function show(Preset $preset)
     {
+        // Cargamos relaciones necesarias
         $preset->load(['user', 'hashtags', 'purchases']);
 
+        // Preparamos el array con las URLs y datos que necesitas en Vue/React
         return Inertia::render('preset', [
-            'preset' => $preset,
+            'preset' => [
+                'id' => $preset->id,
+                'name' => $preset->name,
+                'description' => $preset->description,
+                'price' => $preset->price,
+                // Aquí usamos tus accessors para obtener la URL completa
+                'before_image' => $preset->getBeforeImageUrlAttribute(),
+                'after_image' => $preset->getAfterImageUrlAttribute(),
+                'file' => $preset->file,
+                'user' => [
+                    'id' => $preset->user->id,
+                    'name' => $preset->user->name,
+                    'username' => $preset->user->username,
+                    'profile_image' => $preset->user->getProfileImageUrlAttribute(),
+                ],
+                'hashtags' => $preset->hashtags,
+                'purchases' => $preset->purchases->map(fn($p) => [
+                    'id' => $p->id,
+                    'user' => $p->user->only('id', 'name', 'username'),
+                    'created_at' => $p->created_at->toDateTimeString(),
+                ]),
+                'created_at' => $preset->created_at->toDateTimeString(),
+            ],
         ]);
     }
 

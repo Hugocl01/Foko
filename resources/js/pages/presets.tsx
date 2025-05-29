@@ -52,11 +52,7 @@ export default function PresetsPage() {
     const { data: presets, current_page, last_page, per_page, total } = props.presets
     const indexOfFirstItem = (current_page - 1) * per_page + 1
     const indexOfLastItem = Math.min(current_page * per_page, total)
-
-    const [showPresetDetails, setShowPresetDetails] = useState<Record<number, boolean>>({})
     const [viewMode, setViewMode] = useState<Record<number, "before" | "after">>({})
-
-    const togglePresetDetails = (id: number) => setShowPresetDetails((prev) => ({ ...prev, [id]: !prev[id] }))
 
     const getViewMode = (id: number) => viewMode[id] || "after"
 
@@ -64,12 +60,10 @@ export default function PresetsPage() {
 
     const avatarUrl = (filename: string | null) => (filename ? filename : "/placeholder.svg")
 
-    const getImageUrl = (preset: Preset, mode: "before" | "after") => {
-        if (mode === "before" && preset.before_image) {
-            return `/storage/${preset.before_image}`
-        }
-        return preset.after_image ? `/storage/${preset.after_image}` : "/placeholder.svg"
-    }
+    const getImageUrl = (preset: Preset, mode: "before" | "after") =>
+        mode === "before"
+            ? preset.before_image ?? "/placeholder.svg"
+            : preset.after_image ?? "/placeholder.svg";
 
     const paginate = (page: number) => {
         if (page < 1 || page > last_page) return;

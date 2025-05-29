@@ -18,8 +18,8 @@ return new class extends Migration {
             $table->string('file');
 
             // Sin FK circular a images
-            $table->unsignedBigInteger('before_image')->nullable();
-            $table->unsignedBigInteger('after_image')->nullable();
+            $table->string('before_image')->nullable();
+            $table->string('after_image')->nullable();
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->timestamps();
         Schema::enableForeignKeyConstraints();

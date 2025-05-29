@@ -24,6 +24,8 @@ class PresetSeeder extends Seeder
                 'price' => 1.62,
                 'user_id' => Arr::random($userIds),
                 'file' => 'B&N_Alto_Contraste.xmp',
+                'before_image' => 'imagen1.webp',
+                'after_image' => 'imagen2.webp',
             ],
             [
                 'name' => 'Cine Suave',
@@ -31,6 +33,8 @@ class PresetSeeder extends Seeder
                 'user_id' => Arr::random($userIds),
                 'price' => 2.73,
                 'file' => 'Cine_Suave.xmp',
+                'before_image' => 'imagen1.webp',
+                'after_image' => 'imagen2.webp',
             ],
             [
                 'name' => 'HDR Natural',
@@ -38,6 +42,8 @@ class PresetSeeder extends Seeder
                 'user_id' => Arr::random($userIds),
                 'price' => 0.10,
                 'file' => 'HDR_Natural.xmp',
+                'before_image' => 'imagen1.webp',
+                'after_image' => 'imagen2.webp',
             ],
             [
                 'name' => 'Tonos Tierra',
@@ -376,8 +382,8 @@ class PresetSeeder extends Seeder
                 'description' => $presetData['description'],
                 'price' => $presetData['price'],
                 'user_id' => $presetData['user_id'],
-                'before_image' => null,
-                'after_image' => null,
+                'before_image' => $presetData['before_image'] ?? null,
+                'after_image' => $presetData['after_image'] ?? null,
                 'file' => $presetData['file'],
             ]);
         }
