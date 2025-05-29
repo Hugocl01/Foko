@@ -1,7 +1,5 @@
-// resources/js/Pages/Profile/Publications.tsx
-
 import { usePage } from '@inertiajs/react'
-import ProfileLayout from '@/Layouts/Profile/Layout'
+import ProfileLayout from '@/Layouts/profile/layout'
 
 type Publication = {
     id: number

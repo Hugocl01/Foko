@@ -87,8 +87,6 @@ class UserController extends Controller
      */
     public function update(UserUpdateRequest $request, User $user)
     {
-        dd($user);
-
         $user->update($request->validated());
 
         return redirect()->route('users.index')
@@ -108,6 +106,24 @@ class UserController extends Controller
 
     public function userPublications(User $user)
     {
-        dd($user);
+        // 1) Carga relaciones
+        $user->load(['plan', 'followers', 'following', 'publications', 'presets', 'purchases']);
+
+        // 2) Saca primero **todos** los atributos de la tabla `users`
+        $data = $user->attributesToArray();
+
+        // 3) Añade el atributo append y las relaciones cargadas
+        $data['profile_image_url'] = $user->profile_image_url;
+        $data['plan'] = $user->plan;
+        $data['followers'] = $user->followers;
+        $data['following'] = $user->following;
+        $data['publications'] = $user->publications;
+        $data['presets'] = $user->presets;
+        $data['purchases'] = $user->purchases;
+
+        // 4) Envía ese array “completo” a Inertia
+        return Inertia::render('profile/publications', [
+            'user' => $data,
+        ]);
     }
 }
