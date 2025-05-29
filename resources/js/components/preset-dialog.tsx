@@ -1,7 +1,7 @@
 import type React from "react"
 
 import { useState, useEffect, useMemo } from "react"
-import { X, ImageIcon, File, DollarSign, FileText, Plus } from "lucide-react"
+import { X, ImageIcon, File, Plus } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -178,24 +178,24 @@ export function PresetDialog({
                 <form onSubmit={handleSubmit} className="space-y-6">
                     <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
                         <TabsList className="grid w-full grid-cols-3">
-                            <TabsTrigger value="info">Información</TabsTrigger>
-                            <TabsTrigger value="files">Archivos</TabsTrigger>
-                            <TabsTrigger value="tags">Hashtags</TabsTrigger>
+                            <TabsTrigger value="info" className="cursor-pointer">Información</TabsTrigger>
+                            <TabsTrigger value="files" className="cursor-pointer">Archivos</TabsTrigger>
+                            <TabsTrigger value="tags" className="cursor-pointer">Hashtags</TabsTrigger>
                         </TabsList>
 
                         <TabsContent value="info" className="space-y-4 pt-4">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div className="space-y-2">
-                                    <Label htmlFor="name" className="flex items-center gap-2"><FileText className="h-4 w-4" /> Nombre del Preset</Label>
+                                    <Label htmlFor="name" className="flex items-center gap-2">Nombre del Preset</Label>
                                     <Input id="name" value={formData.name} onChange={(e) => handleInputChange("name", e.target.value)} placeholder="Ej: Preset Vintage Film" required />
                                 </div>
                                 <div className="space-y-2">
-                                    <Label htmlFor="price" className="flex items-center gap-2"><DollarSign className="h-4 w-4" /> Precio</Label>
+                                    <Label htmlFor="price" className="flex items-center gap-2">Precio</Label>
                                     <Input id="price" type="number" step="0.01" value={formData.price} onChange={(e) => handleInputChange("price", e.target.value)} placeholder="0.00" required />
                                 </div>
                             </div>
                             <div className="space-y-2">
-                                <Label htmlFor="description" className="flex items-center gap-2"><FileText className="h-4 w-4" /> Descripción</Label>
+                                <Label htmlFor="description" className="flex items-center gap-2">Descripción</Label>
                                 <Textarea id="description" value={formData.description} onChange={(e) => handleInputChange("description", e.target.value)} placeholder="Describe tu preset, su estilo y características..." rows={3} required />
                             </div>
                         </TabsContent>
@@ -222,7 +222,16 @@ export function PresetDialog({
                             <div className="space-y-4">
                                 <div className="flex gap-2">
                                     <Input value={hashtagInput} onChange={(e) => setHashtagInput(e.target.value)} onKeyPress={handleKeyPress} placeholder="Agregar hashtag..." className="flex-1" />
-                                    <Button type="button" onClick={addHashtag} variant="outline" size="sm"><Plus className="h-4 w-4 mr-1" /> Agregar</Button>
+                                    <Button
+                                        type="button"
+                                        onClick={addHashtag}
+                                        variant="outline"
+                                        size="sm"
+                                        className="cursor-pointer"
+                                    >
+                                        <Plus className="h-4 w-4 mr-1" />
+                                        Agregar
+                                    </Button>
                                 </div>
                                 <ScrollArea className="h-[150px] w-full rounded-md border p-2">
                                     {formData.hashtags.length > 0 ? (
@@ -239,8 +248,20 @@ export function PresetDialog({
                         </TabsContent>
                     </Tabs>
                     <DialogFooter>
-                        <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>Cancelar</Button>
-                        <Button type="submit">{isEditing ? "Actualizar" : "Crear"}</Button>
+                        <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => setIsDialogOpen(false)}
+                            className="cursor-pointer"
+                        >
+                            Cancelar
+                        </Button>
+                        <Button
+                            type="submit"
+                            className="cursor-pointer"
+                        >
+                            {isEditing ? "Actualizar" : "Crear"}
+                        </Button>
                     </DialogFooter>
                 </form>
             </DialogContent>
