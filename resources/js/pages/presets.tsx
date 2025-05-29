@@ -17,6 +17,7 @@ import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 import AppLayout from "@/layouts/app-layout"
+import { PresetDialog } from "@/components/preset-dialog"
 import { usePage, Head, Link, router } from "@inertiajs/react"
 import type { BreadcrumbItem } from "@/types"
 
@@ -96,6 +97,10 @@ export default function PresetsPage() {
         router.get(`/presets/${presetId}`);
     }
 
+    const handleCreatePreset = (formData: PresetFormData) => {
+        router.post(route('presets.store'), formData)
+    }
+
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Presets" />
@@ -108,10 +113,15 @@ export default function PresetsPage() {
                             <TabsTrigger value="list">Lista</TabsTrigger>
                         </TabsList>
 
-                        <Button variant="default" className="flex items-center">
-                            <Plus className="h-4 w-4 mr-1" />
-                            Publicar preset
-                        </Button>
+                        <PresetDialog
+                            onSubmit={handleCreatePreset}
+                            trigger={
+                                <Button variant="default" className="flex items-center cursor-pointer">
+                                    <Plus className="h-4 w-4 mr-1" />
+                                    Publicar preset
+                                </Button>
+                            }
+                        />
                     </div>
 
                     {/* GRID VIEW */}
