@@ -29,7 +29,7 @@ export function UserMenuContent({ user }: UserMenuContentProps) {
                 <DropdownMenuItem asChild>
                     <Link
                         className="block w-full cursor-pointer"
-                        href={route('profile.publications.index')}
+                        href={route('profile.publications.index', { user: user.username })}
                         as="button"
                         prefetch
                         onClick={cleanup}

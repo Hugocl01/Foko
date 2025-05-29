@@ -87,6 +87,8 @@ class UserController extends Controller
      */
     public function update(UserUpdateRequest $request, User $user)
     {
+        dd($user);
+
         $user->update($request->validated());
 
         return redirect()->route('users.index')
@@ -106,10 +108,6 @@ class UserController extends Controller
 
     public function userPublications(User $user)
     {
-        $user->load(['plan', 'followers', 'following', 'publications', 'presets', 'purchases']);
-        //dd($user);
-        return Inertia::render('profile/publications', [
-            'user' => $user,
-        ]);
+        dd($user);
     }
 }
