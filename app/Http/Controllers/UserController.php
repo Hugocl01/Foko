@@ -103,4 +103,13 @@ class UserController extends Controller
 
         return redirect()->route('users.index')->with('success', 'Usuario eliminado correctamente.');
     }
+
+    public function userPublications(User $user)
+    {
+        $user->load(['plan', 'followers', 'following', 'publications', 'presets', 'purchases']);
+        //dd($user);
+        return Inertia::render('profile/publications', [
+            'user' => $user,
+        ]);
+    }
 }

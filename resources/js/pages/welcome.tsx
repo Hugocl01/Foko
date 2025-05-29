@@ -1,5 +1,6 @@
 import { Head, Link } from "@inertiajs/react"
 import { Camera, ImageIcon, Share2, ArrowRight, Check } from "lucide-react"
+import AppLayout from "@/layouts/app-layout"
 
 const testimonials = [
     {
@@ -73,7 +74,7 @@ const route = (name: string) => {
 
 export default function Welcome() {
     return (
-        <>
+        <AppLayout>
             <Head title="Foko — Plataforma de edición fotográfica">
                 <link rel="preconnect" href="https://fonts.bunny.net" />
                 <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600" rel="stylesheet" />
@@ -84,32 +85,6 @@ export default function Welcome() {
   `}</style>
             </Head>
             <div className="flex min-h-screen flex-col items-center bg-background text-foreground">
-                <header className="w-full border-b border-border/40">
-                    <div className="container mx-auto flex h-16 items-center justify-between px-4">
-                        <Link
-                            href={"/"}
-                            draggable={false}
-                        >
-                            <span className="text-xl font-semibold">Foko</span>
-                        </Link>
-                        <nav className="flex items-center gap-4">
-                            <Link
-                                href={route("login")}
-                                className="px-5 py-1.5 text-sm hover:underline select-none"
-                                draggable={false}>
-                                Iniciar sesión
-                            </Link>
-                            <Link
-                                href={route("register")}
-                                className="rounded-md border border-border px-5 py-1.5 text-sm hover:border-ring select-none"
-                                draggable={false}
-                            >
-                                Registrarse
-                            </Link>
-                        </nav>
-                    </div>
-                </header>
-
                 <main className="flex w-full flex-1 flex-col">
                     {/* Hero */}
                     <section className="container mx-auto grid gap-8 px-4 py-16 md:grid-cols-2 md:py-24 lg:py-32">
@@ -314,6 +289,6 @@ export default function Welcome() {
                     </div>
                 </footer>
             </div>
-        </>
+        </AppLayout>
     )
 }

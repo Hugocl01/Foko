@@ -1,150 +1,118 @@
 import type React from "react"
+
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
-import { Separator } from "@/components/ui/separator"
-import { Grid3X3, Bookmark, Settings, MoreHorizontal } from "lucide-react"
-import Link from "next/link"
-import { usePathname } from "next/navigation"
+import { Badge } from "@/components/ui/badge"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { MoreHorizontal, Settings, UserPlus, Grid3X3, Play, Bookmark } from "lucide-react"
 
-interface ProfileUser {
-    avatar: string
-    name: string
-    username: string
-    description: string
-    postsCount: number
-    followersCount: number
-    followingCount: number
-}
-
-interface ProfileLayoutProps {
-    user: ProfileUser
-    children: React.ReactNode
-}
-
-export default function ProfileLayout({ user, children }: ProfileLayoutProps) {
-    const pathname = usePathname()
-
-    const getActiveTab = () => {
-        if (pathname.includes("/presets")) return "presets"
-        if (pathname.includes("/guardados")) return "guardados"
-        return "publicaciones"
-    }
-
-    const activeTab = getActiveTab()
+export default function ProfileLayout({ children }: { children?: React.ReactNode }) {
 
     return (
-        <div className="min-h-screen bg-background">
-            {/* Main Content Container */}
-            <div className="w-full max-w-4xl mx-auto">
-                {/* Profile Header */}
-                <Card className="border-0 shadow-none bg-background">
-                    <CardContent className="p-6">
-                        {/* Profile Info Section */}
-                        <div className="flex flex-col md:flex-row gap-6 mb-6">
-                            {/* Avatar */}
-                            <div className="flex justify-center md:justify-start">
-                                <Avatar className="w-32 h-32 md:w-40 md:h-40">
-                                    <AvatarImage src={user.avatar || "/placeholder.svg"} alt={user.username} />
-                                    <AvatarFallback className="text-2xl">{user.name.charAt(0).toUpperCase()}</AvatarFallback>
-                                </Avatar>
-                            </div>
-
-                            {/* Profile Details */}
-                            <div className="flex-1 space-y-4">
-                                {/* Username and Action Buttons */}
-                                <div className="flex flex-col sm:flex-row items-center gap-4">
-                                    <h1 className="text-xl font-normal">{user.username}</h1>
-                                    <div className="flex gap-2">
-                                        <Button variant="secondary" size="sm" className="px-6">
-                                            Seguir
-                                        </Button>
-                                        <Button variant="secondary" size="sm" className="px-6">
-                                            Mensaje
-                                        </Button>
-                                        <Button variant="ghost" size="icon">
-                                            <MoreHorizontal className="w-4 h-4" />
-                                        </Button>
-                                    </div>
-                                </div>
-
-                                {/* Stats */}
-                                <div className="flex justify-center md:justify-start gap-8">
-                                    <div className="text-center md:text-left">
-                                        <span className="font-semibold">{user.postsCount.toLocaleString()}</span>
-                                        <span className="text-muted-foreground ml-1">publicaciones</span>
-                                    </div>
-                                    <div className="text-center md:text-left">
-                                        <span className="font-semibold">{user.followersCount.toLocaleString()}</span>
-                                        <span className="text-muted-foreground ml-1">seguidores</span>
-                                    </div>
-                                    <div className="text-center md:text-left">
-                                        <span className="font-semibold">{user.followingCount.toLocaleString()}</span>
-                                        <span className="text-muted-foreground ml-1">seguidos</span>
-                                    </div>
-                                </div>
-
-                                {/* Name and Bio */}
-                                <div className="text-center md:text-left">
-                                    <h2 className="font-semibold">{user.name}</h2>
-                                    <p className="text-sm text-foreground mt-1 whitespace-pre-line">{user.description}</p>
-                                </div>
-                            </div>
-                        </div>
-
-                        <Separator className="my-6" />
-
-                        {/* Navigation Tabs */}
-                        <div className="flex justify-center">
-                            <div className="flex">
-                                <Link href="/profile/publicaciones">
-                                    <Button
-                                        variant="ghost"
-                                        className={`flex items-center gap-2 px-6 py-3 border-t-2 transition-colors ${activeTab === "publicaciones"
-                                                ? "border-foreground text-foreground"
-                                                : "border-transparent text-muted-foreground hover:text-foreground"
-                                            }`}
-                                    >
-                                        <Grid3X3 className="w-4 h-4" />
-                                        <span className="hidden sm:inline text-xs font-semibold uppercase tracking-wide">
-                                            Publicaciones
-                                        </span>
-                                    </Button>
-                                </Link>
-
-                                <Link href="/profile/presets">
-                                    <Button
-                                        variant="ghost"
-                                        className={`flex items-center gap-2 px-6 py-3 border-t-2 transition-colors ${activeTab === "presets"
-                                                ? "border-foreground text-foreground"
-                                                : "border-transparent text-muted-foreground hover:text-foreground"
-                                            }`}
-                                    >
-                                        <Settings className="w-4 h-4" />
-                                        <span className="hidden sm:inline text-xs font-semibold uppercase tracking-wide">Presets</span>
-                                    </Button>
-                                </Link>
-
-                                <Link href="/profile/guardados">
-                                    <Button
-                                        variant="ghost"
-                                        className={`flex items-center gap-2 px-6 py-3 border-t-2 transition-colors ${activeTab === "guardados"
-                                                ? "border-foreground text-foreground"
-                                                : "border-transparent text-muted-foreground hover:text-foreground"
-                                            }`}
-                                    >
-                                        <Bookmark className="w-4 h-4" />
-                                        <span className="hidden sm:inline text-xs font-semibold uppercase tracking-wide">Guardado</span>
-                                    </Button>
-                                </Link>
-                            </div>
-                        </div>
-                    </CardContent>
-                </Card>
-
-                {/* Content Area */}
-                <div className="px-6 pb-6">{children}</div>
+        <div className="max-w-4xl mx-auto bg-background min-h-screen">
+            {/* Header */}
+            <div className="flex items-center justify-between p-4 border-b">
+                <div className="flex items-center gap-2">
+                    <h1 className="text-xl font-semibold">username</h1>
+                    <Badge variant="secondary" className="text-xs">
+                        Verified
+                    </Badge>
+                </div>
+                <div className="flex items-center gap-2">
+                    <Button variant="ghost" size="icon">
+                        <UserPlus className="h-5 w-5" />
+                    </Button>
+                    <Button variant="ghost" size="icon">
+                        <MoreHorizontal className="h-5 w-5" />
+                    </Button>
+                </div>
             </div>
+
+            {/* Profile Info */}
+            <div className="p-4">
+                <div className="flex items-start gap-4 mb-4">
+                    {/* Avatar */}
+                    <Avatar className="w-20 h-20 md:w-32 md:h-32">
+                        <AvatarImage src="/placeholder.svg?height=128&width=128" alt="Profile" />
+                        <AvatarFallback>UN</AvatarFallback>
+                    </Avatar>
+
+                    {/* Stats and Actions */}
+                    <div className="flex-1">
+                        <div className="flex items-center gap-4 mb-4">
+                            <div className="text-center">
+                                <div className="font-semibold text-lg">1,234</div>
+                                <div className="text-sm text-muted-foreground">posts</div>
+                            </div>
+                            <div className="text-center">
+                                <div className="font-semibold text-lg">567K</div>
+                                <div className="text-sm text-muted-foreground">followers</div>
+                            </div>
+                            <div className="text-center">
+                                <div className="font-semibold text-lg">890</div>
+                                <div className="text-sm text-muted-foreground">following</div>
+                            </div>
+                        </div>
+
+                        {/* Action Buttons */}
+                        <div className="flex gap-2">
+                            <Button variant="outline" className="flex-1">
+                                Following
+                            </Button>
+                            <Button variant="outline" className="flex-1">
+                                Message
+                            </Button>
+                            <Button variant="outline" size="icon">
+                                <Settings className="h-4 w-4" />
+                            </Button>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Bio */}
+                <div className="space-y-1">
+                    <h2 className="font-semibold">Display Name</h2>
+                    <p className="text-sm text-muted-foreground">
+                        ✨ Content Creator & Designer
+                        <br />📍 New York, NY
+                        <br />🎨 Sharing my creative journey
+                        <br />👇 Check out my latest work
+                    </p>
+                    <a href="#" className="text-sm text-primary font-medium">
+                        linktr.ee/username
+                    </a>
+                </div>
+            </div>
+
+            {/* Tabs */}
+            <Tabs defaultValue="posts" className="w-full">
+                <TabsList className="grid w-full grid-cols-3 rounded-none border-t">
+                    <TabsTrigger value="posts" className="flex items-center gap-1">
+                        <Grid3X3 className="h-4 w-4" />
+                        <span className="hidden sm:inline">POSTS</span>
+                    </TabsTrigger>
+                    <TabsTrigger value="reels" className="flex items-center gap-1">
+                        <Play className="h-4 w-4" />
+                        <span className="hidden sm:inline">REELS</span>
+                    </TabsTrigger>
+                    <TabsTrigger value="tagged" className="flex items-center gap-1">
+                        <Bookmark className="h-4 w-4" />
+                        <span className="hidden sm:inline">TAGGED</span>
+                    </TabsTrigger>
+                </TabsList>
+
+                <TabsContent value="posts" className="mt-0">
+                    {children}
+                </TabsContent>
+
+                <TabsContent value="reels" className="mt-0">
+                    {children}
+                </TabsContent>
+
+                <TabsContent value="tagged" className="mt-0">
+                    {children}
+                </TabsContent>
+            </Tabs>
         </div>
     )
 }

@@ -7,20 +7,16 @@ use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\PresetController;
 use App\Http\Controllers\PurchaseController;
 
-// Página pública (Landing Page)
+
+// Ruta raíz única: si está logueado → home, si no → welcome
 Route::get('/', function () {
-    return Inertia::
-        render('welcome');
+    return auth()->check()
+        ? Inertia::render('home')
+        : Inertia::render('welcome');
 })->name('home');
 
 // Rutas protegidas por autenticación
 Route::middleware(['auth', 'verified'])->group(function () {
-
-    // Dashboard
-    Route::get('/home', function () {
-        return Inertia::render('home');
-    })->name('home');
-
     // Publicaciones
     Route::get('/publications', function () {
         return Inertia::render('publications');
