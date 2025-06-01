@@ -126,7 +126,7 @@ export default function Welcome() {
                     </section>
 
                     {/* Features */}
-                    <section className="w-full bg-muted/30 py-16 md:py-24">
+                    <section className="w-full bg-muted/30 py-16 md:py-24 rounded-2xl">
                         <div className="container mx-auto px-4">
                             <h2 className="mb-12 text-center text-3xl font-bold md:text-4xl">¿Por qué usar Foko?</h2>
                             <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
@@ -227,7 +227,7 @@ export default function Welcome() {
                     </section>
 
                     {/* Testimonials */}
-                    <section className="w-full bg-muted/20 py-16 md:py-24">
+                    <section className="w-full bg-muted/20 py-16 md:py-24 rounded-2xl">
                         <div className="container mx-auto px-4">
                             <h2 className="mb-12 text-center text-3xl font-bold md:text-4xl">Historias de nuestra comunidad</h2>
                             <div className="grid gap-6 md:grid-cols-3">
@@ -252,7 +252,7 @@ export default function Welcome() {
                     </section>
 
                     {/* CTA */}
-                    <section className="w-full bg-secondary py-16 text-center text-secondary-foreground md:py-24">
+                    <section className="w-full py-16 text-center text-secondary-foreground md:py-24">
                         <div className="container mx-auto px-4">
                             <h2 className="mb-4 text-3xl font-bold md:text-4xl">Empieza tu viaje visual con Foko</h2>
                             <p className="mx-auto mb-8 max-w-2xl text-lg">
