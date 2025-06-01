@@ -1,120 +1,229 @@
 import type React from "react"
-
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { MoreHorizontal, Settings, UserPlus, Grid3X3, Play, Bookmark } from "lucide-react"
+import { Separator } from "@/components/ui/separator"
+import {
+    Settings,
+    Grid3X3,
+    Play,
+    Bookmark,
+    MessageCircle,
+    MapPin,
+    Sparkles,
+    Link,
+} from "lucide-react"
 import AppLayout from "../app-layout"
 
-export default function ProfileLayout({ children }: { children?: React.ReactNode }) {
+type Publication = {
+    id: number
+    url: string
+}
+
+type User = {
+    id: number
+    name: string
+    username?: string
+    profile_image_url: string | null
+    publications: Publication[]
+    followers: { id: number; name: string; avatar_url?: string }[]
+    following: { id: number; name: string; avatar_url?: string }[]
+    isFollowing?: boolean
+    isOwnProfile?: boolean
+}
+
+export default function ProfileLayout({
+    user,
+    children,
+}: {
+    user: User
+    children?: React.ReactNode
+}) {
+    const initials = user.name
+        .split(" ")
+        .map((n) => n[0])
+        .join("")
+        .toUpperCase()
+        .slice(0, 2)
+
+    const formatNumber = (num: number) => {
+        if (num >= 1000000) return `${(num / 1000000).toFixed(1)}M`
+        if (num >= 1000) return `${(num / 1000).toFixed(1)}K`
+        return num.toString()
+    }
 
     return (
         <AppLayout>
-            <div className="">
-                {/* Header */}
-                <div className="flex items-center justify-between p-4 border-b">
-                    <div className="flex items-center gap-2">
-                        <h1 className="text-xl font-semibold">username</h1>
-                        <Badge variant="secondary" className="text-xs">
-                            Verified
-                        </Badge>
-                    </div>
-                    <div className="flex items-center gap-2">
-                        <Button variant="ghost" size="icon">
-                            <UserPlus className="h-5 w-5" />
-                        </Button>
-                        <Button variant="ghost" size="icon">
-                            <MoreHorizontal className="h-5 w-5" />
-                        </Button>
-                    </div>
-                </div>
-
-                {/* Profile Info */}
-                <div className="p-4">
-                    <div className="flex items-start gap-4 mb-4">
-                        {/* Avatar */}
-                        <Avatar className="w-20 h-20 md:w-32 md:h-32">
-                            <AvatarImage src="/placeholder.svg?height=128&width=128" alt="Profile" />
-                            <AvatarFallback>UN</AvatarFallback>
-                        </Avatar>
-
-                        {/* Stats and Actions */}
-                        <div className="flex-1">
-                            <div className="flex items-center gap-4 mb-4">
-                                <div className="text-center">
-                                    <div className="font-semibold text-lg">1,234</div>
-                                    <div className="text-sm text-muted-foreground">posts</div>
-                                </div>
-                                <div className="text-center">
-                                    <div className="font-semibold text-lg">567K</div>
-                                    <div className="text-sm text-muted-foreground">followers</div>
-                                </div>
-                                <div className="text-center">
-                                    <div className="font-semibold text-lg">890</div>
-                                    <div className="text-sm text-muted-foreground">following</div>
-                                </div>
+            <div className="min-h-screen">
+                <div className="mx-auto">
+                    {/* Profile Section */}
+                    <div className="px-4 py-6">
+                        <div className="flex flex-col md:flex-row gap-8">
+                            {/* Avatar */}
+                            <div className="flex justify-center md:justify-start">
+                                <Avatar className="w-32 h-32 md:w-48 md:h-48 bg-gradient-to-br from-pink-500 via-purple-500 to-blue-500">
+                                    <AvatarImage
+                                        src={user.profile_image_url || "/placeholder.svg?height=144&width=144"}
+                                        alt={user.name}
+                                        className="object-cover"
+                                    />
+                                    <AvatarFallback className="text-2xl md:text-3xl font-semibold bg-gradient-to-br from-pink-500 via-purple-500 to-blue-500">
+                                        {initials}
+                                    </AvatarFallback>
+                                </Avatar>
                             </div>
 
-                            {/* Action Buttons */}
-                            <div className="flex gap-2">
-                                <Button variant="outline" className="flex-1">
-                                    Following
-                                </Button>
-                                <Button variant="outline" className="flex-1">
-                                    Message
-                                </Button>
-                                <Button variant="outline" size="icon">
-                                    <Settings className="h-4 w-4" />
-                                </Button>
+                            {/* Profile Info */}
+                            <div className="flex-1 space-y-5">
+                                {/* Name and Username */}
+                                <div className="md:hidden text-center">
+                                    <h2 className="font-semibold text-lg">{user.name}</h2>
+                                    {user.username && user.username !== user.name && (
+                                        <p className="text-muted-foreground">@{user.username}</p>
+                                    )}
+                                </div>
+
+                                {/* Desktop Name and Username */}
+                                <div className="hidden md:block">
+                                    <h2 className="font-semibold text-lg">{user.name}</h2>
+                                    {user.username && user.username !== user.name && (
+                                        <p className="text-muted-foreground">@{user.username}</p>
+                                    )}
+                                </div>
+
+                                {/* Stats */}
+                                <div className="flex justify-center md:justify-start gap-8 md:gap-12">
+                                    <div className="text-center md:text-left">
+                                        <div className="text-xl font-bold">{formatNumber(user.publications.length)}</div>
+                                        <div className="text-sm text-muted-foreground">posts</div>
+                                    </div>
+                                    <div className="text-center md:text-left">
+                                        <div className="text-xl font-bold">{formatNumber(user.followers.length)}</div>
+                                        <div className="text-sm text-muted-foreground">followers</div>
+                                    </div>
+                                    <div className="text-center md:text-left">
+                                        <div className="text-xl font-bold">{formatNumber(user.following.length)}</div>
+                                        <div className="text-sm text-muted-foreground">following</div>
+                                    </div>
+                                </div>
+
+                                {/* Action Buttons */}
+                                <div className="flex gap-2 justify-center md:justify-start">
+                                    {user.isOwnProfile ? (
+                                        <>
+                                            <Button variant="outline" className="flex-1 md:w-auto">
+                                                Edit Profile
+                                            </Button>
+                                            <Button variant="outline" size="icon">
+                                                <Settings className="h-4 w-4" />
+                                            </Button>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <Button variant={user.isFollowing ? "outline" : "default"} className="flex-1 md:w-auto">
+                                                {user.isFollowing ? "Following" : "Follow"}
+                                            </Button>
+                                            <Button variant="outline" className="flex-1 md:w-auto">
+                                                <MessageCircle className="h-4 w-4 mr-2" />
+                                                Message
+                                            </Button>
+                                        </>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Bio Section */}
+                        <div className="mt-6 space-y-3 text-center md:text-left">
+                            <div className="space-y-2">
+                                <p className="text-sm leading-relaxed">
+                                    <span className="inline-flex items-center gap-1">
+                                        <Sparkles className="h-3 w-3" />
+                                        Content Creator & Designer
+                                    </span>
+                                    <br />
+                                    <span className="inline-flex items-center gap-1">
+                                        <MapPin className="h-3 w-3" />
+                                        New York, NY
+                                    </span>
+                                    <br />🎨 Sharing my creative journey
+                                    <br />👇 Check out my latest work
+                                </p>
+                                <a href="#" className="inline-flex items-center gap-1 text-sm text-primary hover:underline font-medium">
+                                    <Link className="h-3 w-3" />
+                                    linktr.ee/username
+                                </a>
                             </div>
                         </div>
                     </div>
 
-                    {/* Bio */}
-                    <div className="space-y-1">
-                        <h2 className="font-semibold">Display Name</h2>
-                        <p className="text-sm text-muted-foreground">
-                            ✨ Content Creator & Designer
-                            <br />📍 New York, NY
-                            <br />🎨 Sharing my creative journey
-                            <br />👇 Check out my latest work
-                        </p>
-                        <a href="#" className="text-sm text-primary font-medium">
-                            linktr.ee/username
-                        </a>
-                    </div>
+                    <Separator className="my-2" />
+
+                    {/* Content Tabs - Manteniendo el selector original */}
+                    <Tabs defaultValue="posts" className="w-full">
+                        <div className="flex justify-center py-4">
+                            <TabsList className="bg-secondary/80 backdrop-blur-sm border border-border/50 p-1 h-auto">
+                                <TabsTrigger
+                                    value="posts"
+                                    className="flex items-center justify-center gap-2 px-4 py-2 data-[state=active]:bg-background data-[state=active]:shadow-sm rounded-md"
+                                >
+                                    <Grid3X3 className="h-4 w-4" />
+                                    <span className="font-medium">Posts</span>
+                                </TabsTrigger>
+                                <TabsTrigger
+                                    value="reels"
+                                    className="flex items-center justify-center gap-2 px-4 py-2 data-[state=active]:bg-background data-[state=active]:shadow-sm rounded-md"
+                                >
+                                    <Play className="h-4 w-4" />
+                                    <span className="font-medium">Reels</span>
+                                </TabsTrigger>
+                                <TabsTrigger
+                                    value="tagged"
+                                    className="flex items-center justify-center gap-2 px-4 py-2 data-[state=active]:bg-background data-[state=active]:shadow-sm rounded-md"
+                                >
+                                    <Bookmark className="h-4 w-4" />
+                                    <span className="font-medium">Saved</span>
+                                </TabsTrigger>
+                            </TabsList>
+                        </div>
+
+                        <TabsContent value="posts" className="mt-0 min-h-[400px]">
+                            <div className="p-4">
+                                {children || (
+                                    <div className="text-center py-12">
+                                        <Grid3X3 className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                                        <h3 className="text-lg font-semibold mb-2">No hay publicaciones aún</h3>
+                                        <p className="text-muted-foreground">Cuando compartas fotos y videos, aparecerán en tu perfil.</p>
+                                    </div>
+                                )}
+                            </div>
+                        </TabsContent>
+
+                        <TabsContent value="reels" className="mt-0 min-h-[400px]">
+                            <div className="p-4">
+                                {children || (
+                                    <div className="text-center py-12">
+                                        <Play className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                                        <h3 className="text-lg font-semibold mb-2">No hay reels aún</h3>
+                                        <p className="text-muted-foreground">Cuando compartas reels, aparecerán aquí.</p>
+                                    </div>
+                                )}
+                            </div>
+                        </TabsContent>
+
+                        <TabsContent value="tagged" className="mt-0 min-h-[400px]">
+                            <div className="p-4">
+                                {children || (
+                                    <div className="text-center py-12">
+                                        <Bookmark className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                                        <h3 className="text-lg font-semibold mb-2">No hay posts guardados</h3>
+                                        <p className="text-muted-foreground">Guarda posts para verlos de nuevo.</p>
+                                    </div>
+                                )}
+                            </div>
+                        </TabsContent>
+                    </Tabs>
                 </div>
-
-                {/* Tabs */}
-                <Tabs defaultValue="posts" className="w-full">
-                    <TabsList className="grid w-full grid-cols-3 rounded-none border-t">
-                        <TabsTrigger value="posts" className="flex items-center gap-1">
-                            <Grid3X3 className="h-4 w-4" />
-                            <span className="hidden sm:inline">POSTS</span>
-                        </TabsTrigger>
-                        <TabsTrigger value="reels" className="flex items-center gap-1">
-                            <Play className="h-4 w-4" />
-                            <span className="hidden sm:inline">REELS</span>
-                        </TabsTrigger>
-                        <TabsTrigger value="tagged" className="flex items-center gap-1">
-                            <Bookmark className="h-4 w-4" />
-                            <span className="hidden sm:inline">TAGGED</span>
-                        </TabsTrigger>
-                    </TabsList>
-
-                    <TabsContent value="posts" className="mt-0">
-                        {children}
-                    </TabsContent>
-
-                    <TabsContent value="reels" className="mt-0">
-                        {children}
-                    </TabsContent>
-
-                    <TabsContent value="tagged" className="mt-0">
-                        {children}
-                    </TabsContent>
-                </Tabs>
             </div>
         </AppLayout>
     )
