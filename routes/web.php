@@ -30,6 +30,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/presets', [PresetController::class, 'index'])
         ->name('presets.index');
 
+    Route::post('/presets', [PresetController::class, 'store'])
+        ->name('presets.store');
+
     Route::get('/presets/{preset}', [PresetController::class, 'show'])
         ->name('presets.show');
 

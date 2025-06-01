@@ -7,6 +7,10 @@ use App\Models\Hashtag;
 use App\Models\Publication;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
+use Intervention\Image\Laravel\Facades\Image;
+use Illuminate\Support\Str;
+
 use Inertia\Inertia;
 
 class PresetController extends Controller
@@ -58,9 +62,7 @@ class PresetController extends Controller
      */
     public function create()
     {
-        return Inertia::render('Presets/Create', [
-            'hashtags' => Hashtag::all(),
-        ]);
+        return Inertia::render('Presets/Create');
     }
 
     /**
@@ -68,27 +70,74 @@ class PresetController extends Controller
      */
     public function store(Request $request)
     {
+        // 1) Validar todos los campos
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string|max:255',
             'price' => 'required|numeric|min:0',
-            'file_path' => 'required|string|max:255',
-            'hashtag_ids' => 'nullable|array',
+            'before_image' => 'required|image|max:4096',  // máx. 4 MB
+            'after_image' => 'required|image|max:4096',  // máx. 4 MB
+            'file' => 'required|file|max:10240',  // máx. 10 MB
         ]);
 
-        $preset = Preset::create([
-            'name' => $validated['name'],
-            'description' => $validated['description'],
-            'price' => $validated['price'],
-            'file_path' => $validated['file_path'],
-            'user_id' => Auth::id(),
-        ]);
+        // 2) Crear instancia de Preset y llenar campos básicos
+        $preset = new Preset();
+        $preset->name = $validated['name'];
+        $preset->description = $validated['description'] ?? '';
+        $preset->price = $validated['price'];
+        $preset->user_id = Auth::id();
+        // (no guardamos aún)
 
-        if (!empty($validated['hashtag_ids'])) {
-            $preset->hashtags()->sync($validated['hashtag_ids']);
+        // 3) Procesar “before_image” (Intervention Image → WebP 800×800)
+        if ($request->hasFile('before_image')) {
+            $beforeUploaded = $request->file('before_image');
+
+            $imgBefore = Image::read($beforeUploaded->getRealPath())
+                ->cover(800, 800)
+                ->encodeByExtension('webp', 80);
+
+            $beforeName = Str::uuid() . '.webp';
+            // Guardarlo en disco 'preset_images' (configurado en filesystems)
+            Storage::disk('preset_images')->put($beforeName, (string) $imgBefore);
+            $preset->before_image = $beforeName;
         }
 
-        return redirect()->route('presets.index')->with('success', 'Preset creado correctamente.');
+        // 4) Procesar “after_image” (misma lógica)
+        if ($request->hasFile('after_image')) {
+            $afterUploaded = $request->file('after_image');
+
+            $imgAfter = Image::read($afterUploaded->getRealPath())
+                ->cover(800, 800)
+                ->encodeByExtension('webp', 80);
+
+            $afterName = Str::uuid() . '.webp';
+            Storage::disk('preset_images')->put($afterName, (string) $imgAfter);
+            $preset->after_image = $afterName;
+        }
+
+        // 5) Guardar el archivo del preset (solo el nombre en la BD)
+        if ($request->hasFile('file')) {
+            $presetFile = $request->file('file');
+            $originalExt = $presetFile->getClientOriginalExtension();
+            $presetName = Str::uuid() . ".{$originalExt}";
+
+            // a) Obtener contenido binario
+            $content = file_get_contents($presetFile->getRealPath());
+
+            // b) Hacer put() directamente con ese contenido, usando $presetName
+            //    Esto lo guardará en: storage/app/public/presets/{presetName}
+            Storage::disk('presets')->put($presetName, $content);
+
+            // c) En la BD solo guardamos el nombre (sin carpetas)
+            $preset->file = $presetName;
+        }
+
+        // 6) Guardar el preset con before_image, after_image y file ya asignados
+        $preset->save();
+
+        return redirect()
+            ->route('presets.index')
+            ->with('success', 'Preset creado correctamente.');
     }
 
     /**
