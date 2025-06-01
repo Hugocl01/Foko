@@ -180,7 +180,7 @@ export default function PresetDetailPage() {
                                 <div className="flex items-center justify-between">
                                     <div className="flex items-center gap-3">
                                         <Avatar className="h-10 w-10">
-                                            <AvatarImage src={avatarUrl(preset.user.profile_image_url)} alt={preset.user.name} />
+                                            <AvatarImage src={preset.user.profile_image} alt={preset.user.name} />
                                             <AvatarFallback className="text-sm">
                                                 {preset.user.name.charAt(0)}
                                             </AvatarFallback>
