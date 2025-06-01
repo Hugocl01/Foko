@@ -1,7 +1,7 @@
 import type React from "react"
 
 import { useState } from "react"
-import { MoreHorizontal, Download, Eye, EyeOff, Plus, ChevronLeft, ChevronRight } from "lucide-react"
+import { MoreHorizontal, Eye, EyeOff, Plus, ChevronLeft, ChevronRight } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
@@ -49,7 +49,6 @@ interface Paginated<T> {
 const breadcrumbs: BreadcrumbItem[] = [{ title: "Presets", href: "/presets" }]
 
 export default function PresetsPage() {
-    // Usamos generics en usePage para tipar correctamente
     const { props } = usePage<{ presets: Paginated<Preset> }>()
     const { data: presets, current_page, last_page, per_page, total } = props.presets
 
@@ -86,7 +85,6 @@ export default function PresetsPage() {
     }
 
     const handleCardClick = (presetId: number, e: React.MouseEvent) => {
-        // Evitar navegación si se hace click en elementos interactivos
         const target = e.target as HTMLElement
         if (
             target.closest("button") ||
@@ -96,7 +94,6 @@ export default function PresetsPage() {
         ) {
             return
         }
-        // Navegar a la vista del preset
         router.get(`/presets/${presetId}`)
     }
 
@@ -237,7 +234,6 @@ export default function PresetsPage() {
                                                         className="inline-block"
                                                         onClick={(e) => {
                                                             e.stopPropagation()
-                                                            // Navegar al filtro por hashtag
                                                             router.get(`/presets?hashtag=${encodeURIComponent(tag)}`)
                                                         }}
                                                     >
@@ -251,13 +247,13 @@ export default function PresetsPage() {
                                         <Button
                                             size="sm"
                                             variant={"default"}
-                                            className="w-full"
+                                            className="w-full cursor-pointer"
                                             onClick={(e) => {
                                                 e.stopPropagation()
-                                                // Lógica de compra
+                                                router.get(`/presets/${preset.id}`)
                                             }}
                                         >
-                                            <Download className="h-4 w-4 mr-1" /> Comprar
+                                            <Eye className="h-4 w-4 mr-1" /> Ver
                                         </Button>
                                     </CardFooter>
                                 </Card>
@@ -404,7 +400,6 @@ export default function PresetsPage() {
                                                     className="inline-block"
                                                     onClick={(e) => {
                                                         e.stopPropagation()
-                                                        // Navegar al filtro por hashtag
                                                         router.get(`/presets?hashtag=${encodeURIComponent(tag)}`)
                                                     }}
                                                 >
@@ -422,12 +417,13 @@ export default function PresetsPage() {
                                         <Button
                                             size="sm"
                                             variant={"default"}
+                                            className="cursor-pointer"
                                             onClick={(e) => {
                                                 e.stopPropagation()
-                                                // Lógica de compra
+                                                router.get(`/presets/${preset.id}`)
                                             }}
                                         >
-                                            <Download className="h-4 w-4 mr-1" /> Comprar
+                                            <Eye className="h-4 w-4 mr-1" /> Ver
                                         </Button>
                                     </div>
                                 </div>
