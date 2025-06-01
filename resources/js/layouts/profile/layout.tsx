@@ -11,9 +11,10 @@ import {
     MessageCircle,
     MapPin,
     Sparkles,
-    Link,
+    LinkIcon,
 } from "lucide-react"
 import AppLayout from "../app-layout"
+import { router } from "@inertiajs/react" // importamos el router de Inertia
 
 type Publication = {
     id: number
@@ -28,8 +29,8 @@ type User = {
     publications: Publication[]
     followers: { id: number; name: string; avatar_url?: string }[]
     following: { id: number; name: string; avatar_url?: string }[]
-    isFollowing?: boolean
-    isOwnProfile?: boolean
+    isFollowing: boolean
+    isOwnProfile: boolean
 }
 
 export default function ProfileLayout({
@@ -39,6 +40,7 @@ export default function ProfileLayout({
     user: User
     children?: React.ReactNode
 }) {
+    // Calculamos iniciales (dos primeras letras de nombre+apellido)
     const initials = user.name
         .split(" ")
         .map((n) => n[0])
@@ -46,10 +48,17 @@ export default function ProfileLayout({
         .toUpperCase()
         .slice(0, 2)
 
+    // Formatea números grandes a K/M
     const formatNumber = (num: number) => {
         if (num >= 1000000) return `${(num / 1000000).toFixed(1)}M`
         if (num >= 1000) return `${(num / 1000).toFixed(1)}K`
         return num.toString()
+    }
+
+    // Función para ir a editar perfil
+    const goToEditProfile = () => {
+        // Asumiendo que existe la ruta named 'profile.edit'
+        router.get(route("profile.edit", user.id))
     }
 
     return (
@@ -63,7 +72,10 @@ export default function ProfileLayout({
                             <div className="flex justify-center md:justify-start">
                                 <Avatar className="w-32 h-32 md:w-48 md:h-48 bg-gradient-to-br from-pink-500 via-purple-500 to-blue-500">
                                     <AvatarImage
-                                        src={user.profile_image_url || "/placeholder.svg?height=144&width=144"}
+                                        src={
+                                            user.profile_image_url ||
+                                            "/placeholder.svg?height=144&width=144"
+                                        }
                                         alt={user.name}
                                         className="object-cover"
                                     />
@@ -75,15 +87,13 @@ export default function ProfileLayout({
 
                             {/* Profile Info */}
                             <div className="flex-1 space-y-5">
-                                {/* Name and Username */}
+                                {/* Name y Username (móvil vs desktop) */}
                                 <div className="md:hidden text-center">
                                     <h2 className="font-semibold text-lg">{user.name}</h2>
                                     {user.username && user.username !== user.name && (
                                         <p className="text-muted-foreground">@{user.username}</p>
                                     )}
                                 </div>
-
-                                {/* Desktop Name and Username */}
                                 <div className="hidden md:block">
                                     <h2 className="font-semibold text-lg">{user.name}</h2>
                                     {user.username && user.username !== user.name && (
@@ -94,33 +104,41 @@ export default function ProfileLayout({
                                 {/* Stats */}
                                 <div className="flex justify-center md:justify-start gap-8 md:gap-12">
                                     <div className="text-center md:text-left">
-                                        <div className="text-xl font-bold">{formatNumber(user.publications.length)}</div>
+                                        <div className="text-xl font-bold">
+                                            {formatNumber(user.publications.length)}
+                                        </div>
                                         <div className="text-sm text-muted-foreground">posts</div>
                                     </div>
                                     <div className="text-center md:text-left">
-                                        <div className="text-xl font-bold">{formatNumber(user.followers.length)}</div>
+                                        <div className="text-xl font-bold">
+                                            {formatNumber(user.followers.length)}
+                                        </div>
                                         <div className="text-sm text-muted-foreground">followers</div>
                                     </div>
                                     <div className="text-center md:text-left">
-                                        <div className="text-xl font-bold">{formatNumber(user.following.length)}</div>
+                                        <div className="text-xl font-bold">
+                                            {formatNumber(user.following.length)}
+                                        </div>
                                         <div className="text-sm text-muted-foreground">following</div>
                                     </div>
                                 </div>
 
-                                {/* Action Buttons */}
+                                {/* Botones de acción */}
                                 <div className="flex gap-2 justify-center md:justify-start">
                                     {user.isOwnProfile ? (
-                                        <>
-                                            <Button variant="outline" className="flex-1 md:w-auto">
-                                                Edit Profile
-                                            </Button>
-                                            <Button variant="outline" size="icon">
-                                                <Settings className="h-4 w-4" />
-                                            </Button>
-                                        </>
+                                        <Button
+                                            variant="outline"
+                                            className="flex-1 md:w-auto"
+                                            onClick={goToEditProfile}
+                                        >
+                                            Editar perfil
+                                        </Button>
                                     ) : (
                                         <>
-                                            <Button variant={user.isFollowing ? "outline" : "default"} className="flex-1 md:w-auto">
+                                            <Button
+                                                variant={user.isFollowing ? "outline" : "default"}
+                                                className="flex-1 md:w-auto"
+                                            >
                                                 {user.isFollowing ? "Following" : "Follow"}
                                             </Button>
                                             <Button variant="outline" className="flex-1 md:w-auto">
@@ -133,7 +151,7 @@ export default function ProfileLayout({
                             </div>
                         </div>
 
-                        {/* Bio Section */}
+                        {/* Bio Section (estática; parametrízala en user si quieres) */}
                         <div className="mt-6 space-y-3 text-center md:text-left">
                             <div className="space-y-2">
                                 <p className="text-sm leading-relaxed">
@@ -149,8 +167,11 @@ export default function ProfileLayout({
                                     <br />🎨 Sharing my creative journey
                                     <br />👇 Check out my latest work
                                 </p>
-                                <a href="#" className="inline-flex items-center gap-1 text-sm text-primary hover:underline font-medium">
-                                    <Link className="h-3 w-3" />
+                                <a
+                                    href="#"
+                                    className="inline-flex items-center gap-1 text-sm text-primary hover:underline font-medium"
+                                >
+                                    <LinkIcon className="h-3 w-3" />
                                     linktr.ee/username
                                 </a>
                             </div>
@@ -159,7 +180,7 @@ export default function ProfileLayout({
 
                     <Separator className="my-2" />
 
-                    {/* Content Tabs - Manteniendo el selector original */}
+                    {/* Pestañas de contenido */}
                     <Tabs defaultValue="posts" className="w-full">
                         <div className="flex justify-center py-4">
                             <TabsList className="bg-secondary/80 backdrop-blur-sm border border-border/50 p-1 h-auto">
@@ -192,8 +213,12 @@ export default function ProfileLayout({
                                 {children || (
                                     <div className="text-center py-12">
                                         <Grid3X3 className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                                        <h3 className="text-lg font-semibold mb-2">No hay publicaciones aún</h3>
-                                        <p className="text-muted-foreground">Cuando compartas fotos y videos, aparecerán en tu perfil.</p>
+                                        <h3 className="text-lg font-semibold mb-2">
+                                            No hay publicaciones aún
+                                        </h3>
+                                        <p className="text-muted-foreground">
+                                            Cuando compartas fotos y videos, aparecerán en tu perfil.
+                                        </p>
                                     </div>
                                 )}
                             </div>
@@ -205,7 +230,9 @@ export default function ProfileLayout({
                                     <div className="text-center py-12">
                                         <Play className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
                                         <h3 className="text-lg font-semibold mb-2">No hay reels aún</h3>
-                                        <p className="text-muted-foreground">Cuando compartas reels, aparecerán aquí.</p>
+                                        <p className="text-muted-foreground">
+                                            Cuando compartas reels, aparecerán aquí.
+                                        </p>
                                     </div>
                                 )}
                             </div>
@@ -216,8 +243,12 @@ export default function ProfileLayout({
                                 {children || (
                                     <div className="text-center py-12">
                                         <Bookmark className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                                        <h3 className="text-lg font-semibold mb-2">No hay posts guardados</h3>
-                                        <p className="text-muted-foreground">Guarda posts para verlos de nuevo.</p>
+                                        <h3 className="text-lg font-semibold mb-2">
+                                            No hay posts guardados
+                                        </h3>
+                                        <p className="text-muted-foreground">
+                                            Guarda posts para verlos de nuevo.
+                                        </p>
                                     </div>
                                 )}
                             </div>
