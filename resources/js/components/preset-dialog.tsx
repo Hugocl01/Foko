@@ -1,4 +1,3 @@
-// resources/js/Components/PresetDialog.tsx
 import React, { useState, useEffect } from "react";
 import { useForm, usePage } from "@inertiajs/react";
 import { X, ImageIcon, File, Plus } from "lucide-react";
