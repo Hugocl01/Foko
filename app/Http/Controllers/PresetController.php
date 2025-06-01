@@ -75,8 +75,8 @@ class PresetController extends Controller
             'name' => 'required|string|max:255',
             'description' => 'nullable|string|max:255',
             'price' => 'required|numeric|min:0',
-            'before_image' => 'required|image|max:4096',  // máx. 4 MB
-            'after_image' => 'required|image|max:4096',  // máx. 4 MB
+            'before_image' => 'required|image',
+            'after_image' => 'required|image',
             'file' => 'required|file|max:10240',  // máx. 10 MB
         ]);
 
@@ -192,18 +192,105 @@ class PresetController extends Controller
      */
     public function update(Request $request, Preset $preset)
     {
+        // 1. Validar datos básicos (sin archivos por ahora)
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'description' => 'nullable|string|max:255',
-            'price' => 'required|numeric|min:0',
-            'file_path' => 'required|string|max:255',
-            'hashtag_ids' => 'nullable|array',
+            'description' => 'required|string',
+            'price' => 'required|numeric',
+            'file' => 'nullable|file|mimes:lrtemplate,xml,xmp,dng',
+            'before_image' => 'nullable|image',
+            'after_image' => 'nullable|image',
+            'hashtags' => 'nullable|string', // JSON con arreglo de nombres
         ]);
 
-        $preset->update($validated);
-        $preset->hashtags()->sync($validated['hashtag_ids'] ?? []);
+        // 2. Actualizar campos de texto
+        $preset->name = $validated['name'];
+        $preset->description = $validated['description'];
+        $preset->price = $validated['price'];
 
-        return redirect()->route('presets.index')->with('success', 'Preset actualizado correctamente.');
+        // 3. Manejar archivo principal de preset
+        if ($request->hasFile('file')) {
+            // Borrar archivo antiguo si existía
+            if ($preset->file && Storage::exists($preset->file)) {
+                Storage::delete($preset->file);
+            }
+            // Guardar nuevo archivo
+            $archivo = $request->file('file');
+            $nombreArchivo = Str::uuid()->toString() . '.' . $archivo->getClientOriginalExtension();
+            $rutaArchivo = $archivo->storeAs('presets/files', $nombreArchivo);
+            $preset->file = $rutaArchivo;
+        }
+        // Si no viene nuevo 'file', dejamos el valor previo (no hacemos nada)
+
+        // 4. Manejar imagen 'before_image'
+        if ($request->hasFile('before_image')) {
+            // Borrar imagen antigua si existía
+            if ($preset->before_image && Storage::exists($preset->before_image)) {
+                Storage::delete($preset->before_image);
+            }
+            // Guardar nueva imagen
+            $imgAntes = $request->file('before_image');
+            $nombreAntes = Str::uuid()->toString() . '.' . $imgAntes->getClientOriginalExtension();
+            $rutaAntes = $imgAntes->storeAs('presets/images/before', $nombreAntes);
+            $preset->before_image = $rutaAntes;
+        }
+        // Si no viene nuevo 'before_image', mantenemos el valor anterior
+
+        // 5. Manejar imagen 'after_image'
+        if ($request->hasFile('after_image')) {
+            // Borrar imagen antigua si existía
+            if ($preset->after_image && Storage::exists($preset->after_image)) {
+                Storage::delete($preset->after_image);
+            }
+            // Guardar nueva imagen
+            $imgDespues = $request->file('after_image');
+            $nombreDespues = Str::uuid()->toString() . '.' . $imgDespues->getClientOriginalExtension();
+            $rutaDespues = $imgDespues->storeAs('presets/images/after', $nombreDespues);
+            $preset->after_image = $rutaDespues;
+        }
+        // Si no viene nuevo 'after_image', mantenemos el valor anterior
+
+        // 6. Guardar cambios en la tabla 'presets'
+        $preset->save();
+
+        // 7. Sincronizar hashtags
+        if (!empty($validated['hashtags'])) {
+            // 'hashtags' llega como JSON-string; convertir a arreglo de nombres
+            $nombres = json_decode($validated['hashtags'], true);
+            if (is_array($nombres)) {
+                $hashtagIds = [];
+                foreach ($nombres as $nombre) {
+                    // Normalizar: eliminar #
+                    $cleanName = ltrim(trim($nombre), '#');
+                    if (empty($cleanName)) {
+                        continue;
+                    }
+                    // Buscar o crear el hashtag
+                    $tag = Hashtag::firstOrCreate(
+                        ['slug' => Str::slug($cleanName)],
+                        ['name' => $cleanName]
+                    );
+                    $hashtagIds[] = $tag->id;
+                }
+                // Asociar únicamente los IDs resultantes
+                $preset->hashtags()->sync($hashtagIds);
+            }
+        } else {
+            // Si envían hashtags como cadena vacía o null, se remueven todas las asociaciones
+            $preset->hashtags()->detach();
+        }
+
+        // 8. Redirigir o devolver respuesta JSON según convenga
+        if ($request->wantsJson()) {
+            return response()->json([
+                'message' => 'Preset actualizado correctamente',
+                'preset' => $preset->load('hashtags'),
+            ]);
+        }
+
+        return redirect()
+            ->route('presets.show', ['preset' => $preset->id])
+            ->with('success', 'Preset actualizado con éxito');
     }
 
     /**

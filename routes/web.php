@@ -36,6 +36,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/presets/{preset}', [PresetController::class, 'show'])
         ->name('presets.show');
 
+    Route::patch('/presets/{preset}', [PresetController::class, 'update'])
+        ->name('presets.update');
+
     Route::post('/presets/{preset}/purchase', [PurchaseController::class, 'store'])
         ->name('purchases.store');
 
