@@ -18,7 +18,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 import AppLayout from "@/layouts/app-layout"
 import { PresetDialog } from "@/components/preset-dialog"
-import { usePage, Head, Link, router } from "@inertiajs/react"
+import { usePage, Head, router } from "@inertiajs/react"
 import type { BreadcrumbItem } from "@/types"
 
 interface Preset {
@@ -42,7 +42,8 @@ interface Paginated<T> {
     data: T[]
     current_page: number
     last_page: number
-    // otros campos de paginación...
+    per_page: number
+    total: number
 }
 
 const breadcrumbs: BreadcrumbItem[] = [{ title: "Presets", href: "/presets" }]
@@ -51,35 +52,38 @@ export default function PresetsPage() {
     // Usamos generics en usePage para tipar correctamente
     const { props } = usePage<{ presets: Paginated<Preset> }>()
     const { data: presets, current_page, last_page, per_page, total } = props.presets
+
     const indexOfFirstItem = (current_page - 1) * per_page + 1
     const indexOfLastItem = Math.min(current_page * per_page, total)
     const [viewMode, setViewMode] = useState<Record<number, "before" | "after">>({})
 
     const getViewMode = (id: number) => viewMode[id] || "after"
-
-    const setPresetViewMode = (id: number, mode: "before" | "after") => setViewMode((prev) => ({ ...prev, [id]: mode }))
+    const setPresetViewMode = (id: number, mode: "before" | "after") =>
+        setViewMode((prev) => ({ ...prev, [id]: mode }))
 
     const avatarUrl = (filename: string | null) => (filename ? filename : "/placeholder.svg")
 
     const getImageUrl = (preset: Preset, mode: "before" | "after") =>
         mode === "before"
             ? preset.before_image ?? "/placeholder.svg"
-            : preset.after_image ?? "/placeholder.svg";
+            : preset.after_image ?? "/placeholder.svg"
 
     const paginate = (page: number) => {
-        if (page < 1 || page > last_page) return;
+        if (page < 1 || page > last_page) return
         router.get(
-            route('presets.index', { page, perPage: per_page }),
-            {}, { preserveState: true }
-        );
-    };
+            route("presets.index", { page, perPage: per_page }),
+            {},
+            { preserveState: true }
+        )
+    }
 
     const changePerPage = (newPerPage: number) => {
         router.get(
-            route('presets.index', { page: 1, perPage: newPerPage }),
-            {}, { preserveState: true }
-        );
-    };
+            route("presets.index", { page: 1, perPage: newPerPage }),
+            {},
+            { preserveState: true }
+        )
+    }
 
     const handleCardClick = (presetId: number, e: React.MouseEvent) => {
         // Evitar navegación si se hace click en elementos interactivos
@@ -92,13 +96,12 @@ export default function PresetsPage() {
         ) {
             return
         }
-
         // Navegar a la vista del preset
-        router.get(`/presets/${presetId}`);
+        router.get(`/presets/${presetId}`)
     }
 
-    const handleCreatePreset = (formData: PresetFormData) => {
-        router.post(route('presets.store'), formData)
+    const handleCreatePreset = (formData: Preset) => {
+        router.post(route("presets.store"), formData)
     }
 
     return (
@@ -124,121 +127,140 @@ export default function PresetsPage() {
                         />
                     </div>
 
-                    {/* GRID VIEW */}
+                    {/* VISTA GRID */}
                     <TabsContent value="grid" className="mt-4">
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                             {presets.map((preset) => (
-                                <Link
+                                <Card
                                     key={preset.id}
-                                    href={route('presets.show', preset.id)}
                                     className="flex flex-col h-full cursor-pointer hover:shadow-lg transition-shadow duration-200"
+                                    onClick={(e) => handleCardClick(preset.id, e)}
                                 >
-                                    <Card
-                                        key={preset.id}
-                                        className="flex flex-col h-full cursor-pointer hover:shadow-lg transition-shadow duration-200"
-                                        onClick={(e) => handleCardClick(preset.id, e)}
-                                    >
-                                        <CardHeader className="px-4">
-                                            <div className="flex items-center justify-between">
-                                                <div className="flex items-center gap-3">
-                                                    <Avatar className="h-10 w-10">
-                                                        <AvatarImage
-                                                            src={avatarUrl(preset.user.profile_image) || "/placeholder.svg"}
-                                                            alt={preset.user.name}
-                                                        />
-                                                        <AvatarFallback className="text-sm">{preset.user.name.charAt(0)}</AvatarFallback>
-                                                    </Avatar>
-                                                    <div className="flex flex-col">
-                                                        <div className="font-medium text-base">{preset.user.name}</div>
-                                                        <div className="text-sm text-muted-foreground">@{preset.user.username || "usuario"}</div>
+                                    <CardHeader className="px-4">
+                                        <div className="flex items-center justify-between">
+                                            <div className="flex items-center gap-3">
+                                                <Avatar className="h-10 w-10">
+                                                    <AvatarImage
+                                                        src={avatarUrl(preset.user.profile_image)}
+                                                        alt={preset.user.name}
+                                                    />
+                                                    <AvatarFallback className="text-sm">
+                                                        {preset.user.name.charAt(0)}
+                                                    </AvatarFallback>
+                                                </Avatar>
+                                                <div className="flex flex-col">
+                                                    <div className="font-medium text-base">
+                                                        {preset.user.name}
+                                                    </div>
+                                                    <div className="text-sm text-muted-foreground">
+                                                        @{preset.user.username ?? "usuario"}
                                                     </div>
                                                 </div>
-                                                <DropdownMenu>
-                                                    <DropdownMenuTrigger asChild>
-                                                        <Button variant="ghost" size="icon" className="h-9 w-9">
-                                                            <MoreHorizontal className="h-5 w-5" />
-                                                            <span className="sr-only">Más opciones</span>
-                                                        </Button>
-                                                    </DropdownMenuTrigger>
-                                                    <DropdownMenuContent align="end">
-                                                        <DropdownMenuItem>Copiar enlace</DropdownMenuItem>
-                                                        <DropdownMenuItem>Ver perfil</DropdownMenuItem>
-                                                        <DropdownMenuSeparator />
-                                                        <DropdownMenuItem className="text-destructive">Reportar</DropdownMenuItem>
-                                                    </DropdownMenuContent>
-                                                </DropdownMenu>
                                             </div>
-                                        </CardHeader>
+                                            <DropdownMenu>
+                                                <DropdownMenuTrigger asChild>
+                                                    <Button variant="ghost" size="icon" className="h-9 w-9">
+                                                        <MoreHorizontal className="h-5 w-5" />
+                                                        <span className="sr-only">Más opciones</span>
+                                                    </Button>
+                                                </DropdownMenuTrigger>
+                                                <DropdownMenuContent align="end">
+                                                    <DropdownMenuItem>Copiar enlace</DropdownMenuItem>
+                                                    <DropdownMenuItem>Ver perfil</DropdownMenuItem>
+                                                    <DropdownMenuSeparator />
+                                                    <DropdownMenuItem className="text-destructive">
+                                                        Reportar
+                                                    </DropdownMenuItem>
+                                                </DropdownMenuContent>
+                                            </DropdownMenu>
+                                        </div>
+                                    </CardHeader>
 
-                                        <CardContent className="relative flex-grow p-0">
-                                            <div className="relative aspect-square overflow-hidden bg-gray-100">
-                                                <img
-                                                    src={getImageUrl(preset, getViewMode(preset.id)) || "/placeholder.svg"}
-                                                    alt={`${preset.name} - ${getViewMode(preset.id)}`}
-                                                    className="w-full h-full object-cover transition-all duration-300"
-                                                />
+                                    <CardContent className="relative flex-grow p-0">
+                                        <div className="relative aspect-square overflow-hidden bg-gray-100">
+                                            <img
+                                                src={getImageUrl(preset, getViewMode(preset.id))}
+                                                alt={`${preset.name} - ${getViewMode(preset.id)}`}
+                                                className="w-full h-full object-cover transition-all duration-300"
+                                            />
 
-                                                {/* Image Toggle Controls */}
-                                                <div className="absolute top-2 left-2 toggle-group">
-                                                    <ToggleGroup
-                                                        type="single"
-                                                        value={getViewMode(preset.id)}
-                                                        onValueChange={(value) => value && setPresetViewMode(preset.id, value as "before" | "after")}
-                                                        className="bg-black/50 rounded-md p-1"
+                                            {/* Controles de toggle de imagen */}
+                                            <div className="absolute top-2 left-2 toggle-group">
+                                                <ToggleGroup
+                                                    type="single"
+                                                    value={getViewMode(preset.id)}
+                                                    onValueChange={(value) =>
+                                                        value &&
+                                                        setPresetViewMode(
+                                                            preset.id,
+                                                            value as "before" | "after"
+                                                        )
+                                                    }
+                                                    className="bg-black/50 rounded-md p-1"
+                                                >
+                                                    <ToggleGroupItem
+                                                        value="before"
+                                                        size="sm"
+                                                        className="text-white data-[state=on]:bg-white data-[state=on]:text-black transition-all duration-200"
                                                     >
-                                                        <ToggleGroupItem
-                                                            value="before"
-                                                            size="sm"
-                                                            className="text-white data-[state=on]:bg-white data-[state=on]:text-black transition-all duration-200"
-                                                        >
-                                                            <EyeOff className="h-3 w-3 mr-1" />
-                                                            Antes
-                                                        </ToggleGroupItem>
-                                                        <ToggleGroupItem
-                                                            value="after"
-                                                            size="sm"
-                                                            className="text-white data-[state=on]:bg-white data-[state=on]:text-black transition-all duration-200"
-                                                        >
-                                                            <Eye className="h-3 w-3 mr-1" />
-                                                            Después
-                                                        </ToggleGroupItem>
-                                                    </ToggleGroup>
-                                                </div>
-
-                                                <Badge variant={"default"} className="absolute top-2 right-2">
-                                                    {Number(preset.price).toFixed(2)} €
-                                                </Badge>
+                                                        <EyeOff className="h-3 w-3 mr-1" />
+                                                        Antes
+                                                    </ToggleGroupItem>
+                                                    <ToggleGroupItem
+                                                        value="after"
+                                                        size="sm"
+                                                        className="text-white data-[state=on]:bg-white data-[state=on]:text-black transition-all duration-200"
+                                                    >
+                                                        <Eye className="h-3 w-3 mr-1" />
+                                                        Después
+                                                    </ToggleGroupItem>
+                                                </ToggleGroup>
                                             </div>
-                                        </CardContent>
 
-                                        <CardFooter className="flex flex-col items-start gap-3 p-4">
-                                            <div className="w-full">
-                                                <div className="font-semibold">{preset.name}</div>
-                                                <div className="text-sm text-muted-foreground line-clamp-2 mb-2">{preset.description}</div>
-                                                <div className="flex flex-wrap gap-1 mb-3">
-                                                    {preset.hashtags.map((tag) => (
-                                                        <Link
-                                                            key={tag}
-                                                            href={`/presets?hashtag=${encodeURIComponent(tag)}`}
-                                                            className="inline-block"
-                                                            onClick={(e) => e.stopPropagation()}
-                                                        >
-                                                            <Badge
-                                                                variant="default"
-                                                                className="cursor-pointer"
-                                                            >
-                                                                #{tag}
-                                                            </Badge>
-                                                        </Link>
-                                                    ))}
-                                                </div>
+                                            <Badge variant={"default"} className="absolute top-2 right-2">
+                                                {Number(preset.price).toFixed(2)} €
+                                            </Badge>
+                                        </div>
+                                    </CardContent>
+
+                                    <CardFooter className="flex flex-col items-start gap-3 p-4">
+                                        <div className="w-full">
+                                            <div className="font-semibold">{preset.name}</div>
+                                            <div className="text-sm text-muted-foreground line-clamp-2 mb-2">
+                                                {preset.description}
                                             </div>
-                                            <Button size="sm" variant={"default"} className="w-full" onClick={(e) => e.stopPropagation()}>
-                                                <Download className="h-4 w-4 mr-1" /> Comprar
-                                            </Button>
-                                        </CardFooter>
-                                    </Card>
-                                </ Link>
+                                            <div className="flex flex-wrap gap-1 mb-3">
+                                                {preset.hashtags.map((tag) => (
+                                                    <a
+                                                        key={tag}
+                                                        href={`/presets?hashtag=${encodeURIComponent(tag)}`}
+                                                        className="inline-block"
+                                                        onClick={(e) => {
+                                                            e.stopPropagation()
+                                                            // Navegar al filtro por hashtag
+                                                            router.get(`/presets?hashtag=${encodeURIComponent(tag)}`)
+                                                        }}
+                                                    >
+                                                        <Badge variant="default" className="cursor-pointer">
+                                                            #{tag}
+                                                        </Badge>
+                                                    </a>
+                                                ))}
+                                            </div>
+                                        </div>
+                                        <Button
+                                            size="sm"
+                                            variant={"default"}
+                                            className="w-full"
+                                            onClick={(e) => {
+                                                e.stopPropagation()
+                                                // Lógica de compra
+                                            }}
+                                        >
+                                            <Download className="h-4 w-4 mr-1" /> Comprar
+                                        </Button>
+                                    </CardFooter>
+                                </Card>
                             ))}
                         </div>
 
@@ -276,7 +298,7 @@ export default function PresetsPage() {
                                         <SelectValue placeholder={`${per_page} por página`} />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        {[5, 10, 20, 50].map(n => (
+                                        {[5, 10, 20, 50].map((n) => (
                                             <SelectItem key={n} value={n.toString()}>
                                                 {n} por página
                                             </SelectItem>
@@ -287,112 +309,129 @@ export default function PresetsPage() {
                         </div>
                     </TabsContent>
 
-                    {/* LIST VIEW */}
+                    {/* VISTA LIST */}
                     <TabsContent value="list" className="mt-4 space-y-4">
                         {presets.map((preset) => (
-                            <Link
+                            <Card
                                 key={preset.id}
-                                href={route('presets.show', preset.id)}
-                                className="flex flex-col h-full cursor-pointer hover:shadow-lg transition-shadow duration-200"
+                                className="flex flex-col md:flex-row overflow-hidden cursor-pointer hover:shadow-lg transition-shadow duration-200"
+                                onClick={(e) => handleCardClick(preset.id, e)}
                             >
-                                <Card
-                                    key={preset.id}
-                                    className="flex flex-col md:flex-row overflow-hidden cursor-pointer hover:shadow-lg transition-shadow duration-200"
-                                    onClick={(e) => handleCardClick(preset.id, e)}
-                                >
-                                    <div className="md:w-1/3 bg-gray-100 aspect-square relative">
-                                        <img
-                                            src={getImageUrl(preset, getViewMode(preset.id)) || "/placeholder.svg"}
-                                            alt={`${preset.name} - ${getViewMode(preset.id)}`}
-                                            className="w-full h-full object-cover transition-all duration-300"
-                                        />
-
-                                        {/* Image Toggle Controls */}
-                                        <div className="absolute top-2 left-2 toggle-group">
-                                            <ToggleGroup
-                                                type="single"
-                                                value={getViewMode(preset.id)}
-                                                onValueChange={(value) => value && setPresetViewMode(preset.id, value as "before" | "after")}
-                                                className="bg-black/50 rounded-md p-1"
+                                <div className="md:w-1/3 bg-gray-100 aspect-square relative">
+                                    <img
+                                        src={getImageUrl(preset, getViewMode(preset.id))}
+                                        alt={`${preset.name} - ${getViewMode(preset.id)}`}
+                                        className="w-full h-full object-cover transition-all duration-300"
+                                    />
+                                    <div className="absolute top-2 left-2 toggle-group">
+                                        <ToggleGroup
+                                            type="single"
+                                            value={getViewMode(preset.id)}
+                                            onValueChange={(value) =>
+                                                value && setPresetViewMode(preset.id, value as "before" | "after")
+                                            }
+                                            className="bg-black/50 rounded-md p-1"
+                                        >
+                                            <ToggleGroupItem
+                                                value="before"
+                                                size="sm"
+                                                className="text-white data-[state=on]:bg-white data-[state=on]:text-black transition-all duration-200"
                                             >
-                                                <ToggleGroupItem
-                                                    value="before"
-                                                    size="sm"
-                                                    className="text-white data-[state=on]:bg-white data-[state=on]:text-black transition-all duration-200"
-                                                >
-                                                    <EyeOff className="h-3 w-3 mr-1" />
-                                                    Antes
-                                                </ToggleGroupItem>
-                                                <ToggleGroupItem
-                                                    value="after"
-                                                    size="sm"
-                                                    className="text-white data-[state=on]:bg-white data-[state=on]:text-black transition-all duration-200"
-                                                >
-                                                    <Eye className="h-3 w-3 mr-1" />
-                                                    Después
-                                                </ToggleGroupItem>
-                                            </ToggleGroup>
-                                        </div>
+                                                <EyeOff className="h-3 w-3 mr-1" />
+                                                Antes
+                                            </ToggleGroupItem>
+                                            <ToggleGroupItem
+                                                value="after"
+                                                size="sm"
+                                                className="text-white data-[state=on]:bg-white data-[state=on]:text-black transition-all duration-200"
+                                            >
+                                                <Eye className="h-3 w-3 mr-1" />
+                                                Después
+                                            </ToggleGroupItem>
+                                        </ToggleGroup>
                                     </div>
-                                    <div className="md:w-2/3 p-4 flex flex-col justify-between">
-                                        <div>
-                                            <div className="flex items-center justify-between mb-2">
-                                                <div className="flex items-center gap-3">
-                                                    <Avatar className="h-12 w-12">
-                                                        <AvatarImage
-                                                            src={avatarUrl(preset.user.profile_image) || "/placeholder.svg"}
-                                                            alt={preset.user.name}
-                                                        />
-                                                        <AvatarFallback className="text-base">{preset.user.name.charAt(0)}</AvatarFallback>
-                                                    </Avatar>
-                                                    <div className="flex flex-col">
-                                                        <div className="font-medium text-lg">{preset.user.name}</div>
-                                                        <div className="text-base text-muted-foreground">@{preset.user.username || "usuario"}</div>
+                                </div>
+                                <div className="md:w-2/3 p-4 flex flex-col justify-between">
+                                    <div>
+                                        <div className="flex items-center justify-between mb-2">
+                                            <div className="flex items-center gap-3">
+                                                <Avatar className="h-12 w-12">
+                                                    <AvatarImage
+                                                        src={avatarUrl(preset.user.profile_image)}
+                                                        alt={preset.user.name}
+                                                    />
+                                                    <AvatarFallback className="text-base">
+                                                        {preset.user.name.charAt(0)}
+                                                    </AvatarFallback>
+                                                </Avatar>
+                                                <div className="flex flex-col">
+                                                    <div className="font-medium text-lg">
+                                                        {preset.user.name}
+                                                    </div>
+                                                    <div className="text-base text-muted-foreground">
+                                                        @{preset.user.username ?? "usuario"}
                                                     </div>
                                                 </div>
-                                                <DropdownMenu>
-                                                    <DropdownMenuTrigger asChild>
-                                                        <Button variant="ghost" size="icon" className="h-9 w-9">
-                                                            <MoreHorizontal className="h-5 w-5" />
-                                                            <span className="sr-only">Más opciones</span>
-                                                        </Button>
-                                                    </DropdownMenuTrigger>
-                                                    <DropdownMenuContent align="end">
-                                                        <DropdownMenuItem>Copiar enlace</DropdownMenuItem>
-                                                        <DropdownMenuItem>Ver perfil</DropdownMenuItem>
-                                                        <DropdownMenuSeparator />
-                                                        <DropdownMenuItem className="text-destructive">Reportar</DropdownMenuItem>
-                                                    </DropdownMenuContent>
-                                                </DropdownMenu>
                                             </div>
-                                            <h3 className="text-xl font-bold flex items-center gap-2 mb-2">
-                                                {preset.name}
-                                            </h3>
-                                            <p className="text-sm text-muted-foreground mb-3">{preset.description}</p>
-                                            <div className="flex flex-wrap gap-2 mb-4">
-                                                {preset.hashtags.map((tag) => (
-                                                    <Link
-                                                        key={tag}
-                                                        href={`/presets?hashtag=${encodeURIComponent(tag)}`}
-                                                        className="inline-block"
-                                                        onClick={(e) => e.stopPropagation()}
-                                                    >
-                                                        <Badge variant="default" className="cursor-pointer">
-                                                            #{tag}
-                                                        </Badge>
-                                                    </Link>
-                                                ))}
-                                            </div>
+                                            <DropdownMenu>
+                                                <DropdownMenuTrigger asChild>
+                                                    <Button variant="ghost" size="icon" className="h-9 w-9">
+                                                        <MoreHorizontal className="h-5 w-5" />
+                                                        <span className="sr-only">Más opciones</span>
+                                                    </Button>
+                                                </DropdownMenuTrigger>
+                                                <DropdownMenuContent align="end">
+                                                    <DropdownMenuItem>Copiar enlace</DropdownMenuItem>
+                                                    <DropdownMenuItem>Ver perfil</DropdownMenuItem>
+                                                    <DropdownMenuSeparator />
+                                                    <DropdownMenuItem className="text-destructive">
+                                                        Reportar
+                                                    </DropdownMenuItem>
+                                                </DropdownMenuContent>
+                                            </DropdownMenu>
                                         </div>
-                                        <div className="flex items-center justify-between">
-                                            <div className="font-bold text-lg">{Number(preset.price).toFixed(2)} €</div>
-                                            <Button size="sm" variant={"default"} onClick={(e) => e.stopPropagation()}>
-                                                <Download className="h-4 w-4 mr-1" /> Comprar
-                                            </Button>
+                                        <h3 className="text-xl font-bold flex items-center gap-2 mb-2">
+                                            {preset.name}
+                                        </h3>
+                                        <p className="text-sm text-muted-foreground mb-3">
+                                            {preset.description}
+                                        </p>
+                                        <div className="flex flex-wrap gap-2 mb-4">
+                                            {preset.hashtags.map((tag) => (
+                                                <a
+                                                    key={tag}
+                                                    href={`/presets?hashtag=${encodeURIComponent(tag)}`}
+                                                    className="inline-block"
+                                                    onClick={(e) => {
+                                                        e.stopPropagation()
+                                                        // Navegar al filtro por hashtag
+                                                        router.get(`/presets?hashtag=${encodeURIComponent(tag)}`)
+                                                    }}
+                                                >
+                                                    <Badge variant="default" className="cursor-pointer">
+                                                        #{tag}
+                                                    </Badge>
+                                                </a>
+                                            ))}
                                         </div>
                                     </div>
-                                </Card>
-                            </Link>
+                                    <div className="flex items-center justify-between">
+                                        <div className="font-bold text-lg">
+                                            {Number(preset.price).toFixed(2)} €
+                                        </div>
+                                        <Button
+                                            size="sm"
+                                            variant={"default"}
+                                            onClick={(e) => {
+                                                e.stopPropagation()
+                                                // Lógica de compra
+                                            }}
+                                        >
+                                            <Download className="h-4 w-4 mr-1" /> Comprar
+                                        </Button>
+                                    </div>
+                                </div>
+                            </Card>
                         ))}
 
                         <div className="flex items-center justify-between mt-4 p-4 bg-card border rounded-lg">
@@ -429,7 +468,7 @@ export default function PresetsPage() {
                                         <SelectValue placeholder={`${per_page} por página`} />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        {[5, 10, 20, 50].map(n => (
+                                        {[5, 10, 20, 50].map((n) => (
                                             <SelectItem key={n} value={n.toString()}>
                                                 {n} por página
                                             </SelectItem>
