@@ -11,18 +11,11 @@ import {
     Camera,
 } from "lucide-react"
 import AppLayout from "../app-layout"
-import { router } from "@inertiajs/react" // Router de Inertia + Ziggy
-import { toast } from "sonner"           // Sonner para los toasts
+import { router, usePage } from "@inertiajs/react"
+import { toast } from "sonner"
 
-type Publication = {
-    id: number
-    url: string
-}
-
-type Preset = {
-    id: number
-    url: string
-}
+type Publication = { id: number; url: string }
+type Preset = { id: number; url: string }
 
 type User = {
     id: number
@@ -34,8 +27,8 @@ type User = {
     presets: Preset[]
     followers: { id: number; name: string; avatar_url?: string }[]
     following: { id: number; name: string; avatar_url?: string }[]
-    isFollowing: boolean      // Si el visitante ya sigue a este usuario
-    isOwnProfile: boolean     // Si este perfil es el del usuario autenticado
+    isFollowing: boolean
+    isOwnProfile: boolean
 }
 
 export default function ProfileLayout({
@@ -45,78 +38,76 @@ export default function ProfileLayout({
     user: User
     children?: React.ReactNode
 }) {
-    // Estado local: si ya sigo a este usuario
+    const { props: pageProps } = usePage<{ flash: { message?: string; error?: string } }>()
+
+    // Mostrar toast cuando Inertia venga con flash
+    useEffect(() => {
+        if (pageProps.flash.message) {
+            toast.success(pageProps.flash.message)
+        } else if (pageProps.flash.error) {
+            toast.error(pageProps.flash.error)
+        }
+    }, [pageProps.flash])
+
+    // isFollowing y followersCount se sincronizan cada vez que cambian los props
     const [isFollowing, setIsFollowing] = useState<boolean>(user.isFollowing)
-    // Estado local: número de seguidores
     const [followersCount, setFollowersCount] = useState<number>(user.followers.length)
-    // Bloqueo mientras se envía la petición
     const [loadingFollow, setLoadingFollow] = useState<boolean>(false)
 
-    // Iniciales para el AvatarFallback
+    useEffect(() => {
+        setIsFollowing(user.isFollowing)
+        setFollowersCount(user.followers.length)
+        setLoadingFollow(false) // Asegurarse de que loading se resetee
+    }, [user.isFollowing, user.followers.length])
+
     const initials = user.name
         .split(" ")
-        .map((n) => n[0])
+        .map(n => n[0])
         .join("")
         .toUpperCase()
         .slice(0, 2)
 
-    // Formatear números grandes (1.2K, 3.4M, etc.)
     const formatNumber = (num: number) => {
-        if (num >= 1000000) return `${(num / 1000000).toFixed(1)}M`
-        if (num >= 1000) return `${(num / 1000).toFixed(1)}K`
+        if (num >= 1_000_000) return `${(num / 1_000_000).toFixed(1)}M`
+        if (num >= 1_000) return `${(num / 1_000).toFixed(1)}K`
         return num.toString()
     }
 
-    // Navegar a editar perfil (solo si es mi propio perfil)
     const goToEditProfile = () => {
         router.get(route("profile.edit", user.id))
     }
 
-    // Manejador de clic en “Seguir” / “Dejar de seguir”
     const handleFollowClick = () => {
         if (loadingFollow) return
         setLoadingFollow(true)
 
         if (isFollowing) {
-            // Si ya sigo, hago DELETE /users/{id}/unfollow
+            // DELETE /users/{id}/unfollow sin preserveState
             router.delete(
                 route("users.unfollow", user.id),
-                {}, // data vacío
+                {},
                 {
-                    preserveState: true,
-                    onSuccess: (page) => {
-                        setIsFollowing(false)
-                        setFollowersCount((prev) => Math.max(prev - 1, 0))
-                        // El controlador debe devolver JSON con { message: "..."}
-                        // Inertia guarda esa respuesta JSON en page.props último llamado
-                        const msg = page.props?.flash?.message || "Has dejado de seguir"
-                        toast.success(msg)
-                        setLoadingFollow(false)
+                    // QUITAMOS preserveState para que se recargue el componente y resetee loadingFollow
+                    onSuccess: () => {
+                        // Ya reinyectamos desde props en el useEffect
                     },
-                    onError: (errors) => {
-                        const errMsg = errors?.message || "Ocurrió un error al dejar de seguir"
-                        toast.error(errMsg)
+                    onError: () => {
+                        toast.error("Ocurrió un error al dejar de seguir")
                         setLoadingFollow(false)
                     },
                 }
             )
         } else {
-            // Si no sigo, hago POST /users/{id}/follow
+            // POST /users/{id}/follow sin preserveState
             router.post(
                 route("users.follow", user.id),
-                {}, // data vacío
+                {},
                 {
-                    preserveState: true,
-                    onSuccess: (page) => {
-                        setIsFollowing(true)
-                        setFollowersCount((prev) => prev + 1)
-                        const msg = page.props?.flash?.message || "Ahora sigues a este usuario"
-                        toast.success(msg)
-                        setLoadingFollow(false)
+                    onSuccess: () => {
+                        // El useEffect sincroniza isFollowing y followersCount
                     },
-                    onError: (errors) => {
-                        const errMsg = errors?.message || "Ocurrió un error al seguir"
-                        toast.error(errMsg)
+                    onError: () => {
+                        toast.error("Ocurrió un error al seguir")
                         setLoadingFollow(false)
                     },
                 }
@@ -124,7 +115,6 @@ export default function ProfileLayout({
         }
     }
 
-    // Estados y lógica para las pestañas (invariante respecto a follow/unfollow)
     const [activeTab, setActiveTab] = useState<string>("publications")
     const baseUrl = `/profile/${user.username}`
 
@@ -161,7 +151,7 @@ export default function ProfileLayout({
                                         alt={user.name}
                                         className="object-cover"
                                     />
-                                    <AvatarFallback className="text-2xl md:text-3xl font-semibold bg-gradient-to-br from-pink-500 via-purple-500 to-blue-500">
+                                    <AvatarFallback className="text-2xl md:text-3xl font-semibold">
                                         {initials}
                                     </AvatarFallback>
                                 </Avatar>
@@ -229,7 +219,7 @@ export default function ProfileLayout({
                                                 variant={isFollowing ? "outline" : "default"}
                                                 className="flex-1 md:w-auto"
                                             >
-                                                {isFollowing ? "Dejar de seguir" : "Seguir"}
+                                                {isFollowing ? "Siguiendo" : "Seguir"}
                                             </Button>
                                             <Button variant="outline" className="flex-1 md:w-auto">
                                                 <MessageCircle className="h-4 w-4 mr-2" />
