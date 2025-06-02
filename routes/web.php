@@ -39,6 +39,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::patch('/presets/{preset}', [PresetController::class, 'update'])
         ->name('presets.update');
 
+    Route::delete('/presets/{preset}', [PresetController::class, 'destroy'])
+        ->name('presets.destroy');
+
     Route::post('/presets/{preset}/purchase', [PurchaseController::class, 'store'])
         ->name('purchases.store');
 

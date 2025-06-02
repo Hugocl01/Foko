@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useMemo } from "react"
+import { useState, useMemo } from "react"
 import {
     ArrowLeft,
     Download,
@@ -9,6 +9,7 @@ import {
     EyeOff,
     MoreHorizontal,
     Calendar,
+    Trash2,
 } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
@@ -28,9 +29,6 @@ import type { BreadcrumbItem } from "@/types"
 import { toast } from "sonner"
 import { PresetDialog } from "@/components/preset-dialog"
 
-/* --------------------------------------------------------------------------
- * Tipos basados en el JSON real que envía el backend
- * -------------------------------------------------------------------------*/
 interface Hashtag {
     id: number
     name: string
@@ -92,12 +90,15 @@ export default function PresetDetailPage() {
 
     const downloadUrl = route("purchases.download", { preset: preset.id })
     const loggedUser = auth.user
+
+    // Saber si ya compró (o si es creador) para mostrar "Descargar"
     const hasPurchased = useMemo(
-        () => preset.purchases.some((p) => p.user.id === loggedUser.id),
+        () => preset.purchases.some((p) => p.user_id === loggedUser.id),
         [preset.purchases, loggedUser.id]
     )
 
     const [viewMode, setViewMode] = useState<"before" | "after">("after")
+    const [isEditOpen, setIsEditOpen] = useState(false)
 
     const breadcrumbs: BreadcrumbItem[] = [
         { title: "Presets", href: "/presets" },
@@ -105,7 +106,6 @@ export default function PresetDetailPage() {
     ]
 
     const avatarUrl = (url: string | null) => url ?? "/placeholder.svg"
-
     const getImageUrl = (mode: "before" | "after") => {
         const url = mode === "before" ? preset.before_image : preset.after_image
         return url ?? "/placeholder.svg"
@@ -124,13 +124,12 @@ export default function PresetDetailPage() {
         }
     }
 
-    const formatDate = (dateString: string) => {
-        return new Date(dateString).toLocaleDateString("es-ES", {
+    const formatDate = (dateString: string) =>
+        new Date(dateString).toLocaleDateString("es-ES", {
             year: "numeric",
             month: "long",
             day: "numeric",
         })
-    }
 
     const handlePurchase = () => {
         router.post(
@@ -139,23 +138,33 @@ export default function PresetDetailPage() {
             {
                 onSuccess: () => {
                     toast.success("¡Compra registrada con éxito!")
-                    setHasPurchased(true)
+                    router.reload() // Forzamos recarga para que aparezca “Descargar”
                 },
                 onError: (errors) => {
-                    if (errors.message) {
-                        toast.error(errors.message)
-                    }
+                    if (errors.message) toast.error(errors.message)
                 },
             }
         )
     }
 
-    // ---------------------------------------------------
-    // Estado para controlar el modal de edición
-    // ---------------------------------------------------
-    const [isEditOpen, setIsEditOpen] = useState(false)
+    const handleDelete = () => {
+        if (
+            confirm(
+                "¿Estás seguro de que deseas eliminar este preset? Esta acción no se puede deshacer."
+            )
+        ) {
+            router.delete(route("presets.destroy", preset.id), {
+                onSuccess: () => {
+                    toast.success("Preset eliminado correctamente")
+                    router.visit(route("presets.index"))
+                },
+                onError: () => {
+                    toast.error("Error al eliminar el preset")
+                },
+            })
+        }
+    }
 
-    // handleUpdatePreset se encarga de enviar PATCH a la ruta correcta
     const handleUpdatePreset = (data: {
         id?: string
         name: string
@@ -169,7 +178,7 @@ export default function PresetDetailPage() {
         router.post(
             route("presets.update", preset.id),
             {
-                _method: "patch", // Asegúrate de usar 'patch'
+                _method: "patch",
                 name: data.name,
                 description: data.description,
                 price: data.price,
@@ -179,11 +188,12 @@ export default function PresetDetailPage() {
                 hashtags: data.hashtags,
             },
             {
-                forceFormData: true, // Convierte automáticamente a multipart/form-data
+                forceFormData: true,
                 preserveScroll: true,
                 onSuccess: () => {
                     toast.success("Preset actualizado con éxito")
                     setIsEditOpen(false)
+                    router.reload()
                 },
                 onError: (errors) => {
                     toast.error("Error al actualizar")
@@ -193,9 +203,6 @@ export default function PresetDetailPage() {
         )
     }
 
-    // ---------------------------------------------------
-    // Preparamos los valores iniciales para pasar a PresetDialog
-    // ---------------------------------------------------
     const initialPresetValues = useMemo(() => {
         return {
             id: String(preset.id),
@@ -213,7 +220,7 @@ export default function PresetDetailPage() {
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title={preset.name} />
             <div className="flex flex-col gap-4 p-4">
-                {/* Encabezado */}
+                {/* ==================== ENCABEZADO ==================== */}
                 <div className="flex items-center gap-4">
                     <Link href="/presets">
                         <Button variant="ghost" size="icon">
@@ -222,7 +229,7 @@ export default function PresetDetailPage() {
                     </Link>
                     <h1 className="text-2xl font-bold">{preset.name}</h1>
 
-                    {/* Botón “Editar” solo si el usuario autenticado es el creador */}
+                    {/* Botón “Editar” SOLO al creador */}
                     {loggedUser.id === preset.user.id && (
                         <Button
                             size="sm"
@@ -232,10 +239,23 @@ export default function PresetDetailPage() {
                             Editar
                         </Button>
                     )}
+
+                    {/* Botón “Eliminar” SOLO al creador */}
+                    {loggedUser.id === preset.user.id && (
+                        <Button
+                            size="sm"
+                            variant="destructive"
+                            onClick={handleDelete}
+                            className="ml-2"
+                        >
+                            <Trash2 className="h-4 w-4 mr-1" />
+                            Eliminar
+                        </Button>
+                    )}
                 </div>
 
+                {/* ==================== CUERPO PRINCIPAL ==================== */}
                 <div className="grid grid-cols-1 xl:grid-cols-4 gap-4">
-                    {/* Imagen principal y contenido */}
                     <div className="xl:col-span-3">
                         <Card className="flex flex-col h-full">
                             <CardHeader className="px-4">
@@ -268,7 +288,9 @@ export default function PresetDetailPage() {
                                             <DropdownMenuItem>Ver perfil</DropdownMenuItem>
                                             <DropdownMenuItem>Seguir usuario</DropdownMenuItem>
                                             <DropdownMenuSeparator />
-                                            <DropdownMenuItem className="text-destructive">Reportar</DropdownMenuItem>
+                                            <DropdownMenuItem className="text-destructive">
+                                                Reportar
+                                            </DropdownMenuItem>
                                         </DropdownMenuContent>
                                     </DropdownMenu>
                                 </div>
@@ -283,7 +305,7 @@ export default function PresetDetailPage() {
                                         className="w-full h-full object-cover transition-all duration-300"
                                     />
 
-                                    {/* Controles de imagen (Antes / Después) */}
+                                    {/* Controles “Antes / Después” */}
                                     <div className="absolute top-2 left-2">
                                         <ToggleGroup
                                             type="single"
@@ -319,21 +341,21 @@ export default function PresetDetailPage() {
                                         </Button>
                                     </div>
 
-                                    {/* Precio en la esquina inferior derecha */}
+                                    {/* Precio */}
                                     <Badge variant="default" className="absolute bottom-2 right-2">
                                         {Number(preset.price).toFixed(2)} €
                                     </Badge>
                                 </div>
 
-                                {/* Miniaturas de "Antes" y "Después" */}
+                                {/* Miniaturas “Antes / Después” */}
                                 <div className="px-4 pb-2">
                                     <div className="grid grid-cols-2 gap-3">
                                         {(["before", "after"] as const).map((mode) => (
                                             <div
                                                 key={mode}
                                                 className={`cursor-pointer rounded-lg overflow-hidden border-2 transition-all duration-200 ${viewMode === mode
-                                                    ? "border-primary shadow-md"
-                                                    : "border-gray-200 hover:border-gray-300"
+                                                        ? "border-primary shadow-md"
+                                                        : "border-gray-200 hover:border-gray-300"
                                                     }`}
                                                 onClick={() => setViewMode(mode)}
                                             >
@@ -376,7 +398,7 @@ export default function PresetDetailPage() {
                                     </div>
                                 </div>
 
-                                {/* Mostrar “Descargar” si es creador o ya compró; sino “Comprar” */}
+                                {/* Botón Descargar o Comprar */}
                                 {loggedUser.id === preset.user.id || hasPurchased ? (
                                     <Button asChild variant="default" size="sm" className="w-full">
                                         <a href={downloadUrl}>
@@ -397,9 +419,8 @@ export default function PresetDetailPage() {
                         </Card>
                     </div>
 
-                    {/* Panel lateral */}
+                    {/* ==================== PANEL LATERAL ==================== */}
                     <div className="xl:col-span-1 space-y-4">
-                        {/* Precio y compra en panel lateral */}
                         <Card>
                             <CardContent className="px-4">
                                 <div className="text-center space-y-4">
@@ -433,7 +454,6 @@ export default function PresetDetailPage() {
                             </CardContent>
                         </Card>
 
-                        {/* Información del preset */}
                         <Card>
                             <CardHeader className="px-4 pb-2">
                                 <h3 className="font-semibold">Información del preset</h3>
@@ -447,9 +467,7 @@ export default function PresetDetailPage() {
                                 </div>
 
                                 <div>
-                                    <h4 className="text-sm font-medium mb-1">
-                                        Fecha de publicación
-                                    </h4>
+                                    <h4 className="text-sm font-medium mb-1">Fecha de publicación</h4>
                                     <div className="flex items-center gap-2">
                                         <Calendar className="h-4 w-4" />
                                         <span className="text-sm text-muted-foreground">
@@ -479,9 +497,7 @@ export default function PresetDetailPage() {
                     </div>
                 </div>
 
-                {/* ============================================
-            PresetDialog para editar el preset
-           ============================================ */}
+                {/* ==================== MODAL EDICIÓN ==================== */}
                 <PresetDialog
                     trigger={null}
                     open={isEditOpen}

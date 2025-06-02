@@ -311,11 +311,25 @@ class PresetController extends Controller
 
     /**
      * Elimina un preset.
+     * Solo el creador puede borrarlo.
      */
-    public function destroy(Preset $preset)
+    public function destroy(Request $request, Preset $preset)
     {
+        // 1) Comprobar que el usuario autenticado es el creador
+        if (Auth::id() !== $preset->user_id) {
+            abort(403, 'No tienes permiso para eliminar este preset.');
+        }
+
+        // 2) Rorrar también las imágenes y el archivo asociado:
+        Storage::disk('preset_images')->delete([$preset->before_image, $preset->after_image]);
+        Storage::disk('presets')->delete($preset->file);
+
+        // 3) Eliminar el preset de la base de datos
         $preset->delete();
 
-        return redirect()->route('presets.index')->with('success', 'Preset eliminado.');
+        // 4) Redirigir con mensaje de éxito
+        return redirect()
+            ->route('presets.index')
+            ->with('success', 'Preset eliminado correctamente.');
     }
 }
