@@ -4,14 +4,10 @@ import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Separator } from "@/components/ui/separator"
 import {
-    Settings,
-    Grid3X3,
-    Play,
     Bookmark,
     MessageCircle,
-    MapPin,
-    Sparkles,
-    LinkIcon,
+    Aperture,
+    Camera,
 } from "lucide-react"
 import AppLayout from "../app-layout"
 import { router } from "@inertiajs/react" // importamos el router de Inertia
@@ -21,12 +17,19 @@ type Publication = {
     url: string
 }
 
+type Preset = {
+    id: number
+    url: string
+}
+
 type User = {
     id: number
     name: string
     username?: string
     profile_image_url: string | null
+    description: string | null
     publications: Publication[]
+    presets: Preset[]
     followers: { id: number; name: string; avatar_url?: string }[]
     following: { id: number; name: string; avatar_url?: string }[]
     isFollowing: boolean
@@ -107,19 +110,25 @@ export default function ProfileLayout({
                                         <div className="text-xl font-bold">
                                             {formatNumber(user.publications.length)}
                                         </div>
-                                        <div className="text-sm text-muted-foreground">posts</div>
+                                        <div className="text-sm text-muted-foreground">Publicaciones</div>
+                                    </div>
+                                    <div className="text-center md:text-left">
+                                        <div className="text-xl font-bold">
+                                            {formatNumber(user.presets.length)}
+                                        </div>
+                                        <div className="text-sm text-muted-foreground">Presets</div>
                                     </div>
                                     <div className="text-center md:text-left">
                                         <div className="text-xl font-bold">
                                             {formatNumber(user.followers.length)}
                                         </div>
-                                        <div className="text-sm text-muted-foreground">followers</div>
+                                        <div className="text-sm text-muted-foreground">Seguidores</div>
                                     </div>
                                     <div className="text-center md:text-left">
                                         <div className="text-xl font-bold">
                                             {formatNumber(user.following.length)}
                                         </div>
-                                        <div className="text-sm text-muted-foreground">following</div>
+                                        <div className="text-sm text-muted-foreground">Seguidos</div>
                                     </div>
                                 </div>
 
@@ -139,11 +148,11 @@ export default function ProfileLayout({
                                                 variant={user.isFollowing ? "outline" : "default"}
                                                 className="flex-1 md:w-auto"
                                             >
-                                                {user.isFollowing ? "Following" : "Follow"}
+                                                {user.isFollowing ? "Siguiendo" : "Seguir"}
                                             </Button>
                                             <Button variant="outline" className="flex-1 md:w-auto">
                                                 <MessageCircle className="h-4 w-4 mr-2" />
-                                                Message
+                                                Mensaje
                                             </Button>
                                         </>
                                     )}
@@ -155,25 +164,8 @@ export default function ProfileLayout({
                         <div className="mt-6 space-y-3 text-center md:text-left">
                             <div className="space-y-2">
                                 <p className="text-sm leading-relaxed">
-                                    <span className="inline-flex items-center gap-1">
-                                        <Sparkles className="h-3 w-3" />
-                                        Content Creator & Designer
-                                    </span>
-                                    <br />
-                                    <span className="inline-flex items-center gap-1">
-                                        <MapPin className="h-3 w-3" />
-                                        New York, NY
-                                    </span>
-                                    <br />🎨 Sharing my creative journey
-                                    <br />👇 Check out my latest work
+                                    {user.description}
                                 </p>
-                                <a
-                                    href="#"
-                                    className="inline-flex items-center gap-1 text-sm text-primary hover:underline font-medium"
-                                >
-                                    <LinkIcon className="h-3 w-3" />
-                                    linktr.ee/username
-                                </a>
                             </div>
                         </div>
                     </div>
@@ -181,73 +173,73 @@ export default function ProfileLayout({
                     <Separator className="my-2" />
 
                     {/* Pestañas de contenido */}
-                    <Tabs defaultValue="posts" className="w-full">
+                    <Tabs defaultValue="publicaciones" className="w-full">
                         <div className="flex justify-center py-4">
                             <TabsList className="bg-secondary/80 backdrop-blur-sm border border-border/50 p-1 h-auto">
                                 <TabsTrigger
-                                    value="posts"
+                                    value="publicaciones"
                                     className="flex items-center justify-center gap-2 px-4 py-2 data-[state=active]:bg-background data-[state=active]:shadow-sm rounded-md"
                                 >
-                                    <Grid3X3 className="h-4 w-4" />
-                                    <span className="font-medium">Posts</span>
+                                    <Camera className="h-4 w-4" />
+                                    <span className="font-medium">Publicaciones</span>
                                 </TabsTrigger>
                                 <TabsTrigger
-                                    value="reels"
+                                    value="presets"
                                     className="flex items-center justify-center gap-2 px-4 py-2 data-[state=active]:bg-background data-[state=active]:shadow-sm rounded-md"
                                 >
-                                    <Play className="h-4 w-4" />
-                                    <span className="font-medium">Reels</span>
+                                    <Aperture className="h-4 w-4" />
+                                    <span className="font-medium">Presets</span>
                                 </TabsTrigger>
                                 <TabsTrigger
-                                    value="tagged"
+                                    value="guardados"
                                     className="flex items-center justify-center gap-2 px-4 py-2 data-[state=active]:bg-background data-[state=active]:shadow-sm rounded-md"
                                 >
                                     <Bookmark className="h-4 w-4" />
-                                    <span className="font-medium">Saved</span>
+                                    <span className="font-medium">Guardados</span>
                                 </TabsTrigger>
                             </TabsList>
                         </div>
 
-                        <TabsContent value="posts" className="mt-0 min-h-[400px]">
+                        <TabsContent value="publicaciones" className="mt-0 min-h-[400px]">
                             <div className="p-4">
                                 {children || (
                                     <div className="text-center py-12">
-                                        <Grid3X3 className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                                        <Camera className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
                                         <h3 className="text-lg font-semibold mb-2">
                                             No hay publicaciones aún
                                         </h3>
                                         <p className="text-muted-foreground">
-                                            Cuando compartas fotos y videos, aparecerán en tu perfil.
+                                            Cuando {user.username} cree una publicación, aparecerán en tu perfil.
                                         </p>
                                     </div>
                                 )}
                             </div>
                         </TabsContent>
 
-                        <TabsContent value="reels" className="mt-0 min-h-[400px]">
+                        <TabsContent value="presets" className="mt-0 min-h-[400px]">
                             <div className="p-4">
                                 {children || (
                                     <div className="text-center py-12">
-                                        <Play className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                                        <h3 className="text-lg font-semibold mb-2">No hay reels aún</h3>
+                                        <Aperture className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                                        <h3 className="text-lg font-semibold mb-2">No hay presets aún</h3>
                                         <p className="text-muted-foreground">
-                                            Cuando compartas reels, aparecerán aquí.
+                                            Cuando {user.username} publique presets, aparecerán aquí.
                                         </p>
                                     </div>
                                 )}
                             </div>
                         </TabsContent>
 
-                        <TabsContent value="tagged" className="mt-0 min-h-[400px]">
+                        <TabsContent value="guardados" className="mt-0 min-h-[400px]">
                             <div className="p-4">
                                 {children || (
                                     <div className="text-center py-12">
                                         <Bookmark className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
                                         <h3 className="text-lg font-semibold mb-2">
-                                            No hay posts guardados
+                                            No hay publicaciones guardados
                                         </h3>
                                         <p className="text-muted-foreground">
-                                            Guarda posts para verlos de nuevo.
+                                            Guarda publicaciones para verlos de nuevo.
                                         </p>
                                     </div>
                                 )}
