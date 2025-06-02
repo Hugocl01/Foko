@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\FollowController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -23,4 +24,14 @@ Route::middleware('auth')->group(function () {
 
     // Guardados
     Route::get('profile/{user}/saved', [UserController::class, 'userSaved'])->name('profile.saved.index');
+
+    // POST  /users/{id}/follow
+    Route::post('/users/{id}/follow', [FollowController::class, 'follow'])
+        ->whereNumber('id')
+        ->name('users.follow');
+
+    // DELETE /users/{id}/unfollow
+    Route::delete('/users/{id}/unfollow', [FollowController::class, 'unfollow'])
+        ->whereNumber('id')
+        ->name('users.unfollow');
 });

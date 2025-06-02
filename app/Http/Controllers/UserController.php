@@ -107,22 +107,169 @@ class UserController extends Controller
     public function userPublications(User $user)
     {
         // 1) Carga relaciones
-        $user->load(['plan', 'followers', 'following', 'publications', 'presets', 'purchases']);
+        $user->load([
+            'plan',
+            'followers',
+            'following',
+            'publications',
+            'presets',
+            'purchases',
+        ]);
 
-        // 2) Saca primero **todos** los atributos de la tabla `users`
+        // 2) Convertimos atributos a array
         $data = $user->attributesToArray();
 
-        // 3) Añade el atributo append y las relaciones cargadas
+        // 3) Añadimos campos “append” y relaciones
         $data['profile_image_url'] = $user->profile_image_url;
         $data['plan'] = $user->plan;
-        $data['followers'] = $user->followers;
-        $data['following'] = $user->following;
-        $data['publications'] = $user->publications;
+        $data['followers'] = $user->followers->map(fn($f) => [
+            'id' => $f->id,
+            'name' => $f->name,
+            'avatar_url' => $f->avatar_url,
+        ])->toArray();
+        $data['following'] = $user->following->map(fn($f) => [
+            'id' => $f->id,
+            'name' => $f->name,
+            'avatar_url' => $f->avatar_url,
+        ])->toArray();
+        $data['publications'] = $user->publications->map(fn($pub) => [
+            'id' => $pub->id,
+            'url' => $pub->url,
+        ])->toArray();
         $data['presets'] = $user->presets;
         $data['purchases'] = $user->purchases;
 
-        // 4) Envía ese array “completo” a Inertia
+        // 4) Bandera para saber si es el perfil propio
+        $data['isOwnProfile'] = $user->id === Auth::id();
+
+        // 5) (Opcional) Si ya estás guardando isFollowing en alguna tabla,
+        //    aquí podrías calcularlo. Para simplificar, lo dejamos false.
+        $data['isFollowing'] = Auth::user()
+            ? Auth::user()->following->contains($user->id)
+            : false;
+
+        // 6) Retornamos todo a Inertia
         return Inertia::render('profile/publications', [
+            'user' => $data,
+        ]);
+    }
+
+    public function userPresets(User $user)
+    {
+        // 1) Carga relaciones (similares a userPublications)
+        $user->load([
+            'plan',
+            'followers',
+            'following',
+            'publications',
+            'presets',
+            'purchases',
+        ]);
+
+        // 2) Convertimos atributos a array
+        $data = $user->attributesToArray();
+
+        // 3) Añadimos campos “append” y relaciones
+        $data['profile_image_url'] = $user->profile_image_url;
+        $data['plan'] = $user->plan;
+        $data['followers'] = $user->followers->map(fn($f) => [
+            'id' => $f->id,
+            'name' => $f->name,
+            'avatar_url' => $f->avatar_url,
+        ])->toArray();
+        $data['following'] = $user->following->map(fn($f) => [
+            'id' => $f->id,
+            'name' => $f->name,
+            'avatar_url' => $f->avatar_url,
+        ])->toArray();
+        $data['publications'] = $user->publications->map(fn($pub) => [
+            'id' => $pub->id,
+            'url' => $pub->url,
+        ])->toArray();
+        $data['presets'] = $user->presets->map(fn($preset) => [
+            'id' => $preset->id,
+            'url' => $preset->url,
+        ])->toArray();
+        $data['purchases'] = $user->purchases->map(fn($purchase) => [
+            'id' => $purchase->id,
+            'preset_id' => $purchase->preset_id,
+            'amount' => $purchase->amount,
+        ])->toArray();
+
+        // 4) Bandera para saber si es el perfil propio
+        $data['isOwnProfile'] = $user->id === Auth::id();
+
+        // 5) Calculamos si el usuario autenticado ya sigue a este perfil
+        $data['isFollowing'] = Auth::user()
+            ? Auth::user()->following->contains($user->id)
+            : false;
+
+        // 6) Retornamos todo a Inertia (vista: presets)
+        return Inertia::render('profile/presets', [
+            'user' => $data,
+        ]);
+    }
+
+    public function userSaved(User $user)
+    {
+        // 1) Carga relaciones. Asumimos que existe una relación 'savedPublications'
+        //    en el modelo User que trae las publicaciones guardadas por el usuario.
+        $user->load([
+            'plan',
+            'followers',
+            'following',
+            'publications',
+            'presets',
+            'purchases',
+            'savedPublications', // Asegúrate de definir esta relación en el modelo User
+        ]);
+
+        // 2) Convertimos atributos a array
+        $data = $user->attributesToArray();
+
+        // 3) Añadimos campos “append” y relaciones
+        $data['profile_image_url'] = $user->profile_image_url;
+        $data['plan'] = $user->plan;
+        $data['followers'] = $user->followers->map(fn($f) => [
+            'id' => $f->id,
+            'name' => $f->name,
+            'avatar_url' => $f->avatar_url,
+        ])->toArray();
+        $data['following'] = $user->following->map(fn($f) => [
+            'id' => $f->id,
+            'name' => $f->name,
+            'avatar_url' => $f->avatar_url,
+        ])->toArray();
+        $data['publications'] = $user->publications->map(fn($pub) => [
+            'id' => $pub->id,
+            'url' => $pub->url,
+        ])->toArray();
+        $data['presets'] = $user->presets->map(fn($preset) => [
+            'id' => $preset->id,
+            'url' => $preset->url,
+        ])->toArray();
+        $data['purchases'] = $user->purchases->map(fn($purchase) => [
+            'id' => $purchase->id,
+            'preset_id' => $purchase->preset_id,
+            'amount' => $purchase->amount,
+        ])->toArray();
+
+        // 3.1) Mapeamos las publicaciones guardadas en un array sencillo:
+        $data['saved'] = $user->savedPublications->map(fn($saved) => [
+            'id' => $saved->id,
+            'url' => $saved->url,
+        ])->toArray();
+
+        // 4) Bandera para saber si es el perfil propio
+        $data['isOwnProfile'] = $user->id === Auth::id();
+
+        // 5) Calculamos si el usuario autenticado ya sigue a este perfil
+        $data['isFollowing'] = Auth::user()
+            ? Auth::user()->following->contains($user->id)
+            : false;
+
+        // 6) Retornamos todo a Inertia (vista: saved)
+        return Inertia::render('profile/saved', [
             'user' => $data,
         ]);
     }

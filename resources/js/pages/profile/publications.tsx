@@ -1,55 +1,56 @@
 import { usePage } from "@inertiajs/react"
 import ProfileLayout from "@/Layouts/profile/layout"
+import { Camera } from "lucide-react"
 
 type Publication = {
-  id: number
-  url: string
+    id: number
+    url: string
 }
 
 type Props = {
-  user: {
-    id: number
-    name: string
-    avatar_url: string
-    publications: Publication[]
-    // Agrega aquí followers/following si los envías desde Laravel
-  }
+    user: {
+        id: number
+        name: string
+        avatar_url: string
+        publications: Publication[]
+        // Agrega aquí followers/following si los envías desde Laravel
+    }
 }
 
 export default function PublicationsPage() {
-  const { user } = usePage<Props>().props
+    const { user } = usePage<Props>().props
 
-  return (
-    <ProfileLayout user={user}>
-      <div className="mt-6">
-        {user.publications.length > 0 ? (
-          <div className="grid grid-cols-3 gap-1 md:gap-4">
-            {user.publications.map((pub) => (
-              <div
-                key={pub.id}
-                className="aspect-square bg-muted rounded-sm overflow-hidden group cursor-pointer"
-              >
-                <img
-                  src={pub.url}
-                  alt={`Publicación ${pub.id}`}
-                  className="w-full h-full object-cover group-hover:opacity-80 transition-opacity"
-                />
-              </div>
-            ))}
-          </div>
-        ) : (
-          <div className="text-center py-12">
-            {/* Estado vacío */}
-            <div className="w-16 h-16 mx-auto mb-4 bg-muted rounded-full flex items-center justify-center">
-              <svg /* icono de cuadrícula */ />
+    return (
+        <ProfileLayout user={user}>
+            <div className="mt-6">
+                {user.publications.length > 0 ? (
+                    <div className="grid grid-cols-3 gap-1 md:gap-4">
+                        {user.publications.map((pub) => (
+                            <div
+                                key={pub.id}
+                                className="aspect-square bg-muted rounded-sm overflow-hidden group cursor-pointer"
+                            >
+                                <img
+                                    src={pub.url}
+                                    alt={`Publicación ${pub.id}`}
+                                    className="w-full h-full object-cover group-hover:opacity-80 transition-opacity"
+                                />
+                            </div>
+                        ))}
+                    </div>
+                ) : (
+                    <div className="text-center py-12">
+                        {/* Estado vacío */}
+                        <div className="w-16 h-16 mx-auto mb-4 bg-muted rounded-full flex items-center justify-center">
+                            <Camera />
+                        </div>
+                        <h3 className="text-lg font-semibold mb-2">No hay publicaciones aún</h3>
+                        <p className="text-muted-foreground">
+                            Cuando compartas fotos y videos, aparecerán en tu perfil.
+                        </p>
+                    </div>
+                )}
             </div>
-            <h3 className="text-lg font-semibold mb-2">No hay publicaciones aún</h3>
-            <p className="text-muted-foreground">
-              Cuando compartas fotos y videos, aparecerán en tu perfil.
-            </p>
-          </div>
-        )}
-      </div>
-    </ProfileLayout>
-  )
+        </ProfileLayout>
+    )
 }
