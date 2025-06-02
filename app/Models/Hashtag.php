@@ -27,5 +27,15 @@ class Hashtag extends Model
             }
         });
     }
+
+    public function publications()
+    {
+        return $this->belongsToMany(
+            Publication::class,
+            'publication_hashtags',
+            'hashtag_id',
+            'publication_id'
+        );
+    }
 }
 

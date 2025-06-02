@@ -66,8 +66,13 @@ class Publication extends Model
         return $this->hasMany(SavedPost::class);
     }
 
-    public function tags()
+    public function hashtags()
     {
-        return $this->belongsToMany(Tag::class, 'publication_tag')->withTimestamps();
+        return $this->belongsToMany(
+            Hashtag::class,
+            'publication_hashtags',
+            'publication_id',
+            'hashtag_id'
+        );
     }
 }

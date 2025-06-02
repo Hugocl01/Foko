@@ -24,6 +24,7 @@ class DatabaseSeeder extends Seeder
         DB::table('users')->delete();
         DB::table('chats')->delete();
         DB::table('presets')->delete();
+        DB::table('publications')->delete();
         DB::table('hashtags')->delete();
         DB::table('purchases')->delete();
 
@@ -36,6 +37,7 @@ class DatabaseSeeder extends Seeder
             UserSeeder::class,          // Crea los usuarios
             ChatSeeder::class,          // Crea los chats con los usuarios y mensajes
             PresetSeeder::class,        // Crea los presets
+            PublicationSeeder::class,   // Crea las publicaciones con sus imagenes
             HashtagSeeder::class,       // Crea los Hashtags con las relaciones a Publicaciones y Presets
             PurchaseSeeder::class,      // Crea las compras de los presets
         ]);
