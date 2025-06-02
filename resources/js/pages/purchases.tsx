@@ -32,7 +32,6 @@ import {
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import type { BreadcrumbItem } from "@/types"
 import AppLayout from "@/layouts/app-layout"
-import { userInfo } from "os"
 
 // Breadcrumbs para la navegación
 const breadcrumbs: BreadcrumbItem[] = [{ title: "Compras", href: "/compras" }]
@@ -118,12 +117,14 @@ export default function PurchasesPage() {
     }
 
     const handlePreview = (presetId: number) => {
-        router.get(route("presets.show", { preset: presetId }));
-    };
+        router.get(route("presets.show", { preset: presetId }))
+    }
 
-    const handleProfile = (userId: number) => {
-        // TODO
-    };
+    // Ahora recibe "username" en lugar de "userId"
+    const handleProfile = (username: string) => {
+        // Esto hará GET a "/profile/{username}/publications"
+        router.get(route("profile.publications.index", { user: username }))
+    }
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -265,7 +266,12 @@ export default function PurchasesPage() {
                         {dateFrom && (
                             <Badge variant="secondary" className="flex items-center gap-1">
                                 Desde: {formatDate(dateFrom)}
-                                <Button variant="ghost" size="icon" className="h-4 w-4 p-0 ml-1 cursor-pointer" onClick={() => setDateFrom("")}>
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-4 w-4 p-0 ml-1 cursor-pointer"
+                                    onClick={() => setDateFrom("")}
+                                >
                                     <X className="h-3 w-3" />
                                 </Button>
                             </Badge>
@@ -273,7 +279,12 @@ export default function PurchasesPage() {
                         {dateTo && (
                             <Badge variant="secondary" className="flex items-center gap-1">
                                 Hasta: {formatDate(dateTo)}
-                                <Button variant="ghost" size="icon" className="h-4 w-4 p-0 ml-1 cursor-pointer" onClick={() => setDateTo("")}>
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-4 w-4 p-0 ml-1 cursor-pointer"
+                                    onClick={() => setDateTo("")}
+                                >
                                     <X className="h-3 w-3" />
                                 </Button>
                             </Badge>
@@ -281,7 +292,12 @@ export default function PurchasesPage() {
                         {priceFrom && (
                             <Badge variant="secondary" className="flex items-center gap-1">
                                 Precio desde: {formatPrice(Number.parseFloat(priceFrom))}
-                                <Button variant="ghost" size="icon" className="h-4 w-4 p-0 ml-1 cursor-pointer" onClick={() => setPriceFrom("")}>
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-4 w-4 p-0 ml-1 cursor-pointer"
+                                    onClick={() => setPriceFrom("")}
+                                >
                                     <X className="h-3 w-3" />
                                 </Button>
                             </Badge>
@@ -289,7 +305,12 @@ export default function PurchasesPage() {
                         {priceTo && (
                             <Badge variant="secondary" className="flex items-center gap-1">
                                 Precio hasta: {formatPrice(Number.parseFloat(priceTo))}
-                                <Button variant="ghost" size="icon" className="h-4 w-4 p-0 ml-1 cursor-pointer" onClick={() => setPriceTo("")}>
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-4 w-4 p-0 ml-1 cursor-pointer"
+                                    onClick={() => setPriceTo("")}
+                                >
                                     <X className="h-3 w-3" />
                                 </Button>
                             </Badge>
@@ -299,8 +320,12 @@ export default function PurchasesPage() {
 
                 <Tabs defaultValue="table" className="w-full">
                     <TabsList>
-                        <TabsTrigger value="table" className="cursor-pointer">Tabla</TabsTrigger>
-                        <TabsTrigger value="grid" className="cursor-pointer">Tarjetas</TabsTrigger>
+                        <TabsTrigger value="table" className="cursor-pointer">
+                            Tabla
+                        </TabsTrigger>
+                        <TabsTrigger value="grid" className="cursor-pointer">
+                            Tarjetas
+                        </TabsTrigger>
                     </TabsList>
 
                     {/* Vista de tabla */}
@@ -365,7 +390,7 @@ export default function PurchasesPage() {
                                                                             variant="secondary"
                                                                             size="icon"
                                                                             className="cursor-pointer"
-                                                                            onClick={() => handleProfile(purchase.preset.user.id)}
+                                                                            onClick={() => handleProfile(purchase.preset.user.username)}
                                                                         >
                                                                             <UserRound className="h-4 w-4" />
                                                                         </Button>
@@ -379,12 +404,7 @@ export default function PurchasesPage() {
                                                             <TooltipProvider>
                                                                 <Tooltip>
                                                                     <TooltipTrigger asChild>
-                                                                        <Button
-                                                                            asChild
-                                                                            variant="default"
-                                                                            size="icon"
-                                                                            className="cursor-pointer"
-                                                                        >
+                                                                        <Button asChild variant="default" size="icon" className="cursor-pointer">
                                                                             <a
                                                                                 href={route("purchases.download", { preset: purchase.preset.id })}
                                                                                 data-inertia="false"
@@ -455,10 +475,18 @@ export default function PurchasesPage() {
                                                 <SelectValue placeholder="5 por página" />
                                             </SelectTrigger>
                                             <SelectContent>
-                                                <SelectItem value="5" className="cursor-pointer">5 por página</SelectItem>
-                                                <SelectItem value="10" className="cursor-pointer">10 por página</SelectItem>
-                                                <SelectItem value="20" className="cursor-pointer">20 por página</SelectItem>
-                                                <SelectItem value="50" className="cursor-pointer">50 por página</SelectItem>
+                                                <SelectItem value="5" className="cursor-pointer">
+                                                    5 por página
+                                                </SelectItem>
+                                                <SelectItem value="10" className="cursor-pointer">
+                                                    10 por página
+                                                </SelectItem>
+                                                <SelectItem value="20" className="cursor-pointer">
+                                                    20 por página
+                                                </SelectItem>
+                                                <SelectItem value="50" className="cursor-pointer">
+                                                    50 por página
+                                                </SelectItem>
                                             </SelectContent>
                                         </Select>
                                     </div>
@@ -488,7 +516,7 @@ export default function PurchasesPage() {
                                                     <DropdownMenuContent align="end">
                                                         <DropdownMenuItem
                                                             className="cursor-pointer"
-                                                            onClick={() => handleProfile(purchase.preset.user.id)}
+                                                            onClick={() => handlePreview(purchase.preset.id)}
                                                         >
                                                             <Eye className="h-4 w-4 mr-2" />
                                                             Ver preset
@@ -496,20 +524,14 @@ export default function PurchasesPage() {
                                                         <DropdownMenuSeparator />
                                                         <DropdownMenuItem
                                                             className="cursor-pointer"
-                                                            onClick={() => handlePreview(purchase.preset.id)}
+                                                            onClick={() => handleProfile(purchase.preset.user.username)}
                                                         >
                                                             <UserRound className="h-4 w-4 mr-2" />
                                                             Ver perfil de usuario
                                                         </DropdownMenuItem>
                                                         <DropdownMenuSeparator />
-                                                        <DropdownMenuItem
-                                                            asChild
-                                                            className="cursor-pointer"
-                                                        >
-                                                            <a
-                                                                href={route("purchases.download", { preset: purchase.preset.id })}
-                                                                data-inertia="false"
-                                                            >
+                                                        <DropdownMenuItem asChild className="cursor-pointer">
+                                                            <a href={route("purchases.download", { preset: purchase.preset.id })} data-inertia="false">
                                                                 <Download className="h-4 w-4 mr-2" />
                                                                 Descargar preset
                                                             </a>
@@ -533,9 +555,7 @@ export default function PurchasesPage() {
                                                 </div>
                                                 <div>
                                                     <div className="text-sm text-muted-foreground">Precio</div>
-                                                    <Badge variant="default">
-                                                        {formatPrice(purchase.preset.price)}
-                                                    </Badge>
+                                                    <Badge variant="default">{formatPrice(purchase.preset.price)}</Badge>
                                                 </div>
                                             </div>
                                         </CardContent>
@@ -561,11 +581,12 @@ export default function PurchasesPage() {
                                             <TooltipProvider>
                                                 <Tooltip>
                                                     <TooltipTrigger asChild>
+                                                        {/* Igual aquí pasamos "username" */}
                                                         <Button
                                                             variant="outline"
                                                             size="sm"
                                                             className="cursor-pointer"
-                                                            onClick={() => handlePreview(purchase.preset.id)}
+                                                            onClick={() => handleProfile(purchase.preset.user.username)}
                                                         >
                                                             <UserRound className="h-4 w-4" />
                                                         </Button>
@@ -577,10 +598,7 @@ export default function PurchasesPage() {
                                             </TooltipProvider>
 
                                             <Button asChild variant="default" size="sm" className="cursor-pointer">
-                                                <a
-                                                    href={route("purchases.download", { preset: purchase.preset.id })}
-                                                    data-inertia="false"
-                                                >
+                                                <a href={route("purchases.download", { preset: purchase.preset.id })} data-inertia="false">
                                                     <Download className="h-4 w-4" />
                                                     Descargar
                                                 </a>
@@ -637,10 +655,18 @@ export default function PurchasesPage() {
                                             <SelectValue placeholder="5 por página" />
                                         </SelectTrigger>
                                         <SelectContent>
-                                            <SelectItem value="5" className="cursor-pointer">5 por página</SelectItem>
-                                            <SelectItem value="10" className="cursor-pointer">10 por página</SelectItem>
-                                            <SelectItem value="20" className="cursor-pointer">20 por página</SelectItem>
-                                            <SelectItem value="50" className="cursor-pointer">50 por página</SelectItem>
+                                            <SelectItem value="5" className="cursor-pointer">
+                                                5 por página
+                                            </SelectItem>
+                                            <SelectItem value="10" className="cursor-pointer">
+                                                10 por página
+                                            </SelectItem>
+                                            <SelectItem value="20" className="cursor-pointer">
+                                                20 por página
+                                            </SelectItem>
+                                            <SelectItem value="50" className="cursor-pointer">
+                                                50 por página
+                                            </SelectItem>
                                         </SelectContent>
                                     </Select>
                                 </div>
