@@ -90,8 +90,6 @@ export default function PresetDetailPage() {
         props: { preset, auth },
     } = usePage<{ preset: Preset; auth: { user: User } }>()
 
-    console.log(preset)
-
     const downloadUrl = route("purchases.download", { preset: preset.id })
     const loggedUser = auth.user
     const hasPurchased = useMemo(

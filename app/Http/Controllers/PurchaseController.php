@@ -71,10 +71,13 @@ class PurchaseController extends Controller
     public function download(Request $request, Preset $preset)
     {
         $user = $request->user();
-
-        // Comprueba si lo ha comprado
-        if (!$user->purchases()->where('preset_id', $preset->id)->exists()) {
-            abort(403, 'No tienes permiso para descargar este preset.');
+        // Permitir si es el creador
+        if ($user->id !== $preset->user_id) {
+            // Si no es creador, comprueba que lo haya comprado
+            $hasPurchased = $user->purchases()->where('preset_id', $preset->id)->exists();
+            if (!$hasPurchased) {
+                abort(403, 'No tienes permiso para descargar este preset.');
+            }
         }
 
         // Usa el disco 'presets'
@@ -85,7 +88,6 @@ class PurchaseController extends Controller
         }
 
         $filename = $preset->name . '.' . pathinfo($preset->file, PATHINFO_EXTENSION);
-
         return $disk->download($preset->file, $filename);
     }
 }
