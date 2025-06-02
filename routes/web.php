@@ -6,7 +6,8 @@ use Inertia\Inertia;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\PresetController;
 use App\Http\Controllers\PurchaseController;
-
+use Illuminate\Http\Request;
+use Symfony\Component\HttpFoundation\Response;
 
 // Ruta raíz única: si está logueado → home, si no → welcome
 Route::get('/', function () {
@@ -66,6 +67,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Compras
     Route::get('/purchases', [PurchaseController::class, 'index'])->name('purchases.index');
+});
+
+// Para mostrar la pagina de error 404
+Route::fallback(function (Request $request) {
+    return Inertia::render('errors/error404')
+                ->toResponse($request)
+                ->setStatusCode(Response::HTTP_NOT_FOUND);
 });
 
 // Archivos adicionales
