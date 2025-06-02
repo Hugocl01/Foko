@@ -141,19 +141,26 @@ export function PresetDialog({
     // --------------------------------------------------
     // VALIDACIÓN ANTES DE ENVIAR
     // --------------------------------------------------
-    // Requerimos: nombre, descripción, precio y los tres archivos (no null)
     const isNameValid = formData.name.trim().length > 0
     const isDescriptionValid = formData.description.trim().length > 0
     const isPriceValid = (() => {
         const p = formData.price.trim()
         return p !== "" && !isNaN(Number(p))
     })()
+
+    // Solo para CREACIÓN (= isEditing === false) requerimos archivos:
     const areFilesPresent =
         formData.file !== null &&
         formData.before_image !== null &&
         formData.after_image !== null
 
-    const isFormValid = isNameValid && isDescriptionValid && isPriceValid && areFilesPresent
+    // En modo edición, omitimos la parte de ‘areFilesPresent’
+    const isFormValid =
+        isNameValid &&
+        isDescriptionValid &&
+        isPriceValid &&
+        (isEditing ? true : areFilesPresent)
+
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault()
@@ -178,8 +185,8 @@ export function PresetDialog({
     }) => (
         <div
             className={`relative border-2 border-dashed rounded-lg p-4 transition-colors ${dragActive === field
-                    ? "border-primary bg-primary/5"
-                    : "border-muted-foreground/25 hover:border-muted-foreground/50"
+                ? "border-primary bg-primary/5"
+                : "border-muted-foreground/25 hover:border-muted-foreground/50"
                 }`}
             onDragEnter={(e) => handleDrag(e, field)}
             onDragLeave={(e) => handleDrag(e, field)}
