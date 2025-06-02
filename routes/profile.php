@@ -5,13 +5,22 @@ use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
 Route::middleware('auth')->group(function () {
-    // 1) Redirige "/profile" a "/profile/publications/{id}"
+    // Redirige "/profile" a "/profile/{user}/publications"
     Route::get('profile', function () {
-        return redirect()->route('profile.publications.index', auth()->id());
+        return redirect()->route('profile.publications.index', auth()->user());
+    });
+
+    // Redirige "/profile/{user}" a "/profile/{user}/publications"
+    Route::get('profile/{user}', function () {
+        return redirect()->route('profile.publications.index', auth()->user());
     });
 
     // Publicaciones
     Route::get('profile/{user}/publications', [UserController::class, 'userPublications'])->name('profile.publications.index');
-    // Route::get('profile/presets', [UserController::class, 'index'])->name('profile.publications.index');
-    // Route::get('profile/saved', [UserController::class, 'index'])->name('profile.publications.index');
+
+    // Presets
+    Route::get('profile/{user}/presets', [UserController::class, 'userPresets'])->name('profile.presets.index');
+
+    // Guardados
+    Route::get('profile/{user}/saved', [UserController::class, 'userSaved'])->name('profile.saved.index');
 });
