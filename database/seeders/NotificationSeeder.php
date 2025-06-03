@@ -2,11 +2,10 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+
 use Illuminate\Database\Seeder;
-use App\Models\Notification;
-use App\Models\User;
-use Illuminate\Support\Str;
+use Illuminate\Support\Facades\DB;
+use Faker\Factory as Faker;
 use Carbon\Carbon;
 
 class NotificationSeeder extends Seeder
@@ -16,24 +15,83 @@ class NotificationSeeder extends Seeder
      */
     public function run(): void
     {
-        // Asegúrate de tener al menos un usuario
-        $user = User::first();
+        $faker = Faker::create();
 
-        if (!$user) {
-            $this->command->warn('⚠️ No se encontraron usuarios.');
+        // Obtener los IDs de las tablas relacionadas
+        $userIds = DB::table('users')->pluck('id')->toArray();
+        $publicationIds = DB::table('publications')->pluck('id')->toArray();
+        $commentIds = DB::table('comments')->pluck('id')->toArray();
+        $presetIds = DB::table('presets')->pluck('id')->toArray();
+
+        $types = ['like', 'comment', 'follow', 'message', 'purchase', 'report'];
+
+        // Construir dinámicamente una lista de entity_types válidos
+        $entityTypes = [];
+        if (!empty($publicationIds)) {
+            $entityTypes[] = 'publication';
+        }
+        if (!empty($commentIds)) {
+            $entityTypes[] = 'comment';
+        }
+        if (!empty($presetIds)) {
+            $entityTypes[] = 'preset';
+        }
+        if (!empty($userIds)) {
+            $entityTypes[] = 'user';
+        }
+
+        if (empty($entityTypes)) {
+            $this->command->error("No hay ninguna entidad disponible para entity_type. Asegúrate de tener al menos un usuario en la tabla 'users'.");
             return;
         }
 
-        for ($i = 1; $i <= 10; $i++) {
-            Notification::create([
-                'user_id' => $user->id,
-                'message' => 'Esta es una notificación de prueba #' . $i,
-                'is_read' => false,
-                'created_at' => Carbon::now()->subHours(2 * $i),
-                'updated_at' => Carbon::now()->subHours(2 * $i),
+        // Crear 50 notificaciones de prueba
+        for ($i = 0; $i < 50; $i++) {
+            // Elegir actor y destinatario distintos
+            $actorId = $faker->randomElement($userIds);
+            do {
+                $recipientId = $faker->randomElement($userIds);
+            } while ($recipientId === $actorId);
+
+            $type = $faker->randomElement($types);
+            $entityType = $faker->randomElement($entityTypes);
+
+            // Determinar entity_id según el entity_type
+            switch ($entityType) {
+                case 'publication':
+                    // Aquí nunca ocurre si publicationIds está vacío
+                    $entityId = $faker->randomElement($publicationIds);
+                    break;
+
+                case 'comment':
+                    $entityId = $faker->randomElement($commentIds);
+                    break;
+
+                case 'preset':
+                    $entityId = $faker->randomElement($presetIds);
+                    break;
+
+                case 'user':
+                    // Asignar otro user distinto de actor y recipient
+                    do {
+                        $entityId = $faker->randomElement($userIds);
+                    } while ($entityId === $actorId || $entityId === $recipientId);
+                    break;
+
+                default:
+                    // Nunca debería llegar aquí porque entityType sale de $entityTypes
+                    $entityId = null;
+            }
+
+            DB::table('notifications')->insert([
+                'recipient_id' => $recipientId,
+                'actor_id' => $actorId,
+                'type' => $type,
+                'entity_type' => $entityType,
+                'entity_id' => $entityId,
+                'created_at' => Carbon::now()->subDays(rand(0, 30)),
+                'updated_at' => Carbon::now(),
             ]);
         }
-
-        $this->command->info('✅ Se insertaron 10 notificaciones para el usuario ID ' . $user->id);
     }
 }

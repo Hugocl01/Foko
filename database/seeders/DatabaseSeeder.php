@@ -27,6 +27,7 @@ class DatabaseSeeder extends Seeder
         DB::table('publications')->delete();
         DB::table('hashtags')->delete();
         DB::table('purchases')->delete();
+        DB::table('notifications')->delete();
 
         // Llama a los seeders
         $this->call([
@@ -40,6 +41,7 @@ class DatabaseSeeder extends Seeder
             PublicationSeeder::class,   // Crea las publicaciones con sus imagenes
             HashtagSeeder::class,       // Crea los Hashtags con las relaciones a Publicaciones y Presets
             PurchaseSeeder::class,      // Crea las compras de los presets
+            NotificationSeeder::class,  // Crea las notificaciones
         ]);
     }
 }
