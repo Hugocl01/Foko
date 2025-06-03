@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\PublicationController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -9,23 +10,24 @@ use App\Http\Controllers\PurchaseController;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
-// Ruta raíz única: si está logueado → home, si no → welcome
-Route::get('/', function () {
-    return auth()->check()
-        ? Inertia::render('home')
-        : Inertia::render('welcome');
+// Ruta raíz: protegida con 'guest' para que sólo la vean usuarios NO autenticados
+Route::middleware('guest')->get('/', function () {
+    return Inertia::render('welcome');
+})->name('welcome');
+
+// Si el usuario está autenticado, lo mandamos a 'home'
+Route::middleware('auth')->get('/home', function () {
+    return Inertia::render('home');
 })->name('home');
 
 // Rutas protegidas por autenticación
 Route::middleware(['auth', 'verified'])->group(function () {
     // Publicaciones
-    Route::get('/publications', function () {
-        return Inertia::render('publications');
-    })->name('publications.index');
+    Route::get('/publications', [PublicationController::class, 'index'])
+        ->name('publications.index');
 
-    Route::get('/publications/{id}', function ($id) {
-        return Inertia::render('publication', ['id' => $id]);
-    })->name('publications.show');
+    Route::get('/publications/{id}', [PublicationController::class, 'show'])
+        ->name('publications.show');
 
     // Presets
     Route::get('/presets', [PresetController::class, 'index'])
@@ -42,6 +44,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::delete('/presets/{preset}', [PresetController::class, 'destroy'])
         ->name('presets.destroy');
+
+    // Compras
+    Route::get('/purchases', [PurchaseController::class, 'index'])
+        ->name('purchases.index');
 
     Route::post('/presets/{preset}/purchase', [PurchaseController::class, 'store'])
         ->name('purchases.store');
@@ -64,16 +70,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::delete('/notifications/{notification}', [NotificationController::class, 'destroy'])
         ->name('notifications.destroy');
-
-    // Compras
-    Route::get('/purchases', [PurchaseController::class, 'index'])->name('purchases.index');
 });
 
 // Para mostrar la pagina de error 404
 Route::fallback(function (Request $request) {
     return Inertia::render('errors/error404')
-                ->toResponse($request)
-                ->setStatusCode(Response::HTTP_NOT_FOUND);
+        ->toResponse($request)
+        ->setStatusCode(Response::HTTP_NOT_FOUND);
 });
 
 // Archivos adicionales

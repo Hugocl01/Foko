@@ -47,7 +47,12 @@ class Preset extends Model
 
     public function hashtags()
     {
-        return $this->belongsToMany(Hashtag::class, 'preset_hashtags');
+        return $this->belongsToMany(
+            Hashtag::class,
+            'preset_hashtags',
+            'preset_id',
+            'hashtag_id'
+        );
     }
 
     public function purchases(): HasMany

@@ -1,5 +1,4 @@
 import type React from "react"
-
 import { useState } from "react"
 import { MoreHorizontal, Eye, EyeOff, Plus, ChevronLeft, ChevronRight } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -12,14 +11,14 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from "@/components/ui/select"
-import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
+import { Badge } from "@/components/ui/badge"
 import AppLayout from "@/layouts/app-layout"
 import { PresetDialog } from "@/components/preset-dialog"
 import { usePage, Head, router } from "@inertiajs/react"
 import type { BreadcrumbItem } from "@/types"
+import { PlaceholderPattern } from "@/components/ui/placeholder-pattern"
 
 interface Preset {
     id: number
@@ -63,22 +62,12 @@ export default function PresetsPage() {
     const avatarUrl = (filename: string | null) => (filename ? filename : "/placeholder.svg")
 
     const getImageUrl = (preset: Preset, mode: "before" | "after") =>
-        mode === "before"
-            ? preset.before_image ?? "/placeholder.svg"
-            : preset.after_image ?? "/placeholder.svg"
+        mode === "before" ? preset.before_image ?? "/placeholder.svg" : preset.after_image ?? "/placeholder.svg"
 
     const paginate = (page: number) => {
         if (page < 1 || page > last_page) return
         router.get(
             route("presets.index", { page, perPage: per_page }),
-            {},
-            { preserveState: true }
-        )
-    }
-
-    const changePerPage = (newPerPage: number) => {
-        router.get(
-            route("presets.index", { page: 1, perPage: newPerPage }),
             {},
             { preserveState: true }
         )
@@ -146,9 +135,7 @@ export default function PresetsPage() {
                                                     </AvatarFallback>
                                                 </Avatar>
                                                 <div className="flex flex-col">
-                                                    <div className="font-medium text-base">
-                                                        {preset.user.name}
-                                                    </div>
+                                                    <div className="font-medium text-base">{preset.user.name}</div>
                                                     <div className="text-sm text-muted-foreground">
                                                         @{preset.user.username ?? "usuario"}
                                                     </div>
@@ -188,10 +175,7 @@ export default function PresetsPage() {
                                                     value={getViewMode(preset.id)}
                                                     onValueChange={(value) =>
                                                         value &&
-                                                        setPresetViewMode(
-                                                            preset.id,
-                                                            value as "before" | "after"
-                                                        )
+                                                        setPresetViewMode(preset.id, value as "before" | "after")
                                                     }
                                                     className="bg-black/50 rounded-md p-1"
                                                 >
@@ -214,7 +198,7 @@ export default function PresetsPage() {
                                                 </ToggleGroup>
                                             </div>
 
-                                            <Badge variant={"default"} className="absolute top-2 right-2">
+                                            <Badge variant="default" className="absolute top-2 right-2">
                                                 {Number(preset.price).toFixed(2)} €
                                             </Badge>
                                         </div>
@@ -246,7 +230,7 @@ export default function PresetsPage() {
                                         </div>
                                         <Button
                                             size="sm"
-                                            variant={"default"}
+                                            variant="default"
                                             className="w-full cursor-pointer"
                                             onClick={(e) => {
                                                 e.stopPropagation()
@@ -260,6 +244,7 @@ export default function PresetsPage() {
                             ))}
                         </div>
 
+                        {/* Paginador igual que publicaciones */}
                         <div className="flex items-center justify-between mt-4 p-4 bg-card border rounded-lg">
                             <div className="text-sm text-muted-foreground">
                                 Mostrando {indexOfFirstItem}-{indexOfLastItem} de {total} presets
@@ -284,23 +269,6 @@ export default function PresetsPage() {
                                 >
                                     <ChevronRight className="h-4 w-4" />
                                 </Button>
-                            </div>
-                            <div className="flex items-center gap-2">
-                                <Select
-                                    value={per_page.toString()}
-                                    onValueChange={(value) => changePerPage(Number(value))}
-                                >
-                                    <SelectTrigger className="w-[100px]">
-                                        <SelectValue placeholder={`${per_page} por página`} />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {[5, 10, 20, 50].map((n) => (
-                                            <SelectItem key={n} value={n.toString()}>
-                                                {n} por página
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
                             </div>
                         </div>
                     </TabsContent>
@@ -361,9 +329,7 @@ export default function PresetsPage() {
                                                     </AvatarFallback>
                                                 </Avatar>
                                                 <div className="flex flex-col">
-                                                    <div className="font-medium text-lg">
-                                                        {preset.user.name}
-                                                    </div>
+                                                    <div className="font-medium text-lg">{preset.user.name}</div>
                                                     <div className="text-base text-muted-foreground">
                                                         @{preset.user.username ?? "usuario"}
                                                     </div>
@@ -416,7 +382,7 @@ export default function PresetsPage() {
                                         </div>
                                         <Button
                                             size="sm"
-                                            variant={"default"}
+                                            variant="default"
                                             className="cursor-pointer"
                                             onClick={(e) => {
                                                 e.stopPropagation()
@@ -430,6 +396,7 @@ export default function PresetsPage() {
                             </Card>
                         ))}
 
+                        {/* Paginador igual que publicaciones en lista */}
                         <div className="flex items-center justify-between mt-4 p-4 bg-card border rounded-lg">
                             <div className="text-sm text-muted-foreground">
                                 Mostrando {indexOfFirstItem}-{indexOfLastItem} de {total} presets
@@ -454,23 +421,6 @@ export default function PresetsPage() {
                                 >
                                     <ChevronRight className="h-4 w-4" />
                                 </Button>
-                            </div>
-                            <div className="flex items-center gap-2">
-                                <Select
-                                    value={per_page.toString()}
-                                    onValueChange={(value) => changePerPage(Number(value))}
-                                >
-                                    <SelectTrigger className="w-[100px]">
-                                        <SelectValue placeholder={`${per_page} por página`} />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {[5, 10, 20, 50].map((n) => (
-                                            <SelectItem key={n} value={n.toString()}>
-                                                {n} por página
-                                            </SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
                             </div>
                         </div>
                     </TabsContent>
