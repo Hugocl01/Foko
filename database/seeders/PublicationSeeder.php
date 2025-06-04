@@ -216,7 +216,7 @@ class PublicationSeeder extends Seeder
             }
 
             // ------------------------------------------------------
-            // Generar registros aleatorios en la tabla `saved`
+            // Generar registros aleatorios en la tabla `saveds`
             // ------------------------------------------------------
             $savedCount = rand(0, count($userIds));
             if ($savedCount > 0) {
@@ -241,7 +241,7 @@ class PublicationSeeder extends Seeder
                 }
 
                 if (!empty($savedInserts)) {
-                    DB::table('saved')->insert($savedInserts);
+                    DB::table('saveds')->insert($savedInserts);
                 }
             }
 

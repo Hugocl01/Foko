@@ -13,7 +13,7 @@ type Props = {
         name: string
         username: string
         avatar_url: string
-        saved: SavedItem[]
+        saveds: SavedItem[]
         // Agrega aquí followers/following si los envías desde Laravel
     }
 }
@@ -24,9 +24,9 @@ export default function SavedPage() {
     return (
         <ProfileLayout user={user}>
             <div className="mt-6">
-                {user.saved.length > 0 ? (
+                {user.saveds.length > 0 ? (
                     <div className="grid grid-cols-3 gap-1 md:gap-4">
-                        {user.saved.map((item) => (
+                        {user.saveds.map((item) => (
                             <div
                                 key={item.id}
                                 className="aspect-square bg-muted rounded-sm overflow-hidden group cursor-pointer"

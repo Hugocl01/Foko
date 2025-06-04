@@ -122,7 +122,7 @@ export default function ProfileLayout({
         if (typeof window !== "undefined") {
             const segments = window.location.pathname.split("/")
             const last = segments[segments.length - 1]
-            if (["publications", "presets", "saved"].includes(last)) {
+            if (["publications", "presets", "saveds"].includes(last)) {
                 setActiveTab(last)
             }
         }
@@ -263,7 +263,7 @@ export default function ProfileLayout({
                                 </TabsTrigger>
                                 {user.isOwnProfile && (
                                     <TabsTrigger
-                                        value="saved"
+                                        value="saveds"
                                         className="flex items-center justify-center gap-2 px-4 py-2 data-[state=active]:bg-background data-[state=active]:shadow-sm rounded-md"
                                     >
                                         <Bookmark className="h-4 w-4" />
@@ -306,7 +306,7 @@ export default function ProfileLayout({
                         </TabsContent>
 
                         {user.isOwnProfile && (
-                            <TabsContent value="saved" className="mt-0 min-h-[400px]">
+                            <TabsContent value="saveds" className="mt-0 min-h-[400px]">
                                 <div className="p-4">
                                     {children || (
                                         <div className="text-center py-12">

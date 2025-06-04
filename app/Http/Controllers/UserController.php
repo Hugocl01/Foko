@@ -212,7 +212,7 @@ class UserController extends Controller
 
     public function userSaved(User $user)
     {
-        // 1) Carga relaciones. Asumimos que existe una relación 'savedPublications'
+        // 1) Carga relaciones. Asumimos que existe una relación 'saveds'
         //    en el modelo User que trae las publicaciones guardadas por el usuario.
         $user->load([
             'plan',
@@ -221,7 +221,7 @@ class UserController extends Controller
             'publications',
             'presets',
             'purchases',
-            'savedPublications', // Asegúrate de definir esta relación en el modelo User
+            'saveds', // Asegúrate de definir esta relación en el modelo User
         ]);
 
         // 2) Convertimos atributos a array
@@ -255,7 +255,7 @@ class UserController extends Controller
         ])->toArray();
 
         // 3.1) Mapeamos las publicaciones guardadas en un array sencillo:
-        $data['saved'] = $user->savedPublications->map(fn($saved) => [
+        $data['saveds'] = $user->saveds->map(fn($saved) => [
             'id' => $saved->id,
             'url' => $saved->url,
         ])->toArray();
