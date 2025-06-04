@@ -11,9 +11,8 @@ type Props = {
     user: {
         id: number
         name: string
-        avatar_url: string
+        profile_image: string
         publications: Publication[]
-        // Agrega aquí followers/following si los envías desde Laravel
     }
 }
 

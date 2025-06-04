@@ -269,7 +269,7 @@ class UserController extends Controller
             : false;
 
         // 6) Retornamos todo a Inertia (vista: saved)
-        return Inertia::render('profile/saved', [
+        return Inertia::render('profile/saveds', [
             'user' => $data,
         ]);
     }

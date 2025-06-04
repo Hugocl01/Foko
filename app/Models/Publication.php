@@ -51,9 +51,9 @@ class Publication extends Model
         return $this->hasMany(Like::class);
     }
 
-    public function saves(): HasMany
+    public function saveds(): HasMany
     {
-        return $this->hasMany(SavedPost::class, 'publication_id');
+        return $this->hasMany(Saved::class, 'publication_id');
     }
 
     public function comments()

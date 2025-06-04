@@ -12,9 +12,8 @@ type Props = {
         id: number
         name: string
         username: string
-        avatar_url: string
+        profile_image: string
         presets: Preset[]
-        // Agrega aquí followers/following si los envías desde Laravel
     }
 }
 

@@ -12,13 +12,12 @@ type Props = {
         id: number
         name: string
         username: string
-        avatar_url: string
+        profile_image: string
         saveds: SavedItem[]
-        // Agrega aquí followers/following si los envías desde Laravel
     }
 }
 
-export default function SavedPage() {
+export default function SavedsPage() {
     const { user } = usePage<Props>().props
 
     return (

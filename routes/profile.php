@@ -24,7 +24,7 @@ Route::middleware('auth')->group(function () {
     Route::get('profile/{user}/presets', [UserController::class, 'userPresets'])->name('profile.presets.index');
 
     // Guardados
-    Route::get('profile/{user}/saveds', [UserController::class, 'userSaved'])->name('profile.saved.index');
+    Route::get('profile/{user}/saveds', [UserController::class, 'userSaved'])->name('profile.saveds.index');
 
     // POST  /users/{id}/follow
     Route::post('/users/{id}/follow', [FollowController::class, 'follow'])
