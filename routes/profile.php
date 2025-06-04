@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\FollowController;
 use App\Http\Controllers\UserController;
+use App\Models\User;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
@@ -12,8 +13,8 @@ Route::middleware('auth')->group(function () {
     });
 
     // Redirige "/profile/{user}" a "/profile/{user}/publications"
-    Route::get('profile/{user}', function () {
-        return redirect()->route('profile.publications.index', auth()->user());
+    Route::get('profile/{user}', function (User $user) {
+        return redirect()->route('profile.publications.index', $user);
     });
 
     // Publicaciones
