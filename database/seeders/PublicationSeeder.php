@@ -6,7 +6,10 @@ use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use App\Models\Publication;
 use App\Models\User;
+use App\Models\Comment;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\DB;
+use Faker\Factory as Faker;
 
 class PublicationSeeder extends Seeder
 {
@@ -15,8 +18,11 @@ class PublicationSeeder extends Seeder
      */
     public function run(): void
     {
-        // Recogemos todos los IDs de usuario
+        // Obtenemos todos los IDs de usuario
         $userIds = User::pluck('id')->toArray();
+
+        // Inicializamos Faker para generar comentarios
+        $faker = Faker::create();
 
         $publicationsData = [
             [
@@ -147,11 +153,11 @@ class PublicationSeeder extends Seeder
         ];
 
         foreach ($publicationsData as $data) {
-            // Elegimos un usuario aleatorio para esta publicación
+            // Elegimos un usuario aleatorio como autor de la publicación
             $randomUserId = Arr::random($userIds);
             $user = User::find($randomUserId);
 
-            // Creamos la publicación con el user_id elegido
+            // Creamos la publicación
             $publication = Publication::create([
                 'user_id' => $randomUserId,
                 'title' => $data['title'],
@@ -159,24 +165,107 @@ class PublicationSeeder extends Seeder
                 'preset_id' => $data['preset_id'],
             ]);
 
-            // Determinamos cuántas imágenes debe tener esta publicación según el plan
+            // Determinamos cuántas imágenes agregar según el plan del usuario
             $plan = strtolower($user->plan->name);
-
-            if ($plan === 'Básico') {
+            if ($plan === 'básico') {
                 $numImages = 1;
-            } elseif (in_array($plan, ['Premium', 'Ilimitado'])) {
-                $numImages = rand(1,3);
+            } elseif (in_array($plan, ['premium', 'ilimitado'])) {
+                $numImages = rand(1, 3);
             } else {
                 $numImages = 1;
             }
 
-            // Creamos las imágenes con nombres aleatorios entre prueba1.jpg y prueba10.jpg
+            // Creamos imágenes con nombres aleatorios (prueba1.jpg … prueba10.jpg)
             for ($i = 0; $i < $numImages; $i++) {
                 $randomNumber = rand(1, 10);
                 $filename = "prueba{$randomNumber}.jpg";
 
                 $publication->images()->create([
                     'url' => $filename,
+                ]);
+            }
+
+            // ---------------------------------------------------
+            // Generar registros aleatorios en la tabla `likes`
+            // ---------------------------------------------------
+            $likesCount = rand(0, count($userIds));
+            if ($likesCount > 0) {
+                $likeUserIds = Arr::random($userIds, $likesCount);
+                if (!is_array($likeUserIds)) {
+                    $likeUserIds = [$likeUserIds];
+                }
+
+                $likesInserts = [];
+                $now = now();
+                foreach ($likeUserIds as $likeUserId) {
+                    // Evitar que el autor de la publicación se marque a sí mismo (opcional)
+                    if ($likeUserId === $randomUserId) {
+                        continue;
+                    }
+                    $likesInserts[] = [
+                        'user_id' => $likeUserId,
+                        'publication_id' => $publication->id,
+                        'created_at' => $now,
+                        'updated_at' => $now,
+                    ];
+                }
+
+                if (!empty($likesInserts)) {
+                    DB::table('likes')->insert($likesInserts);
+                }
+            }
+
+            // ------------------------------------------------------
+            // Generar registros aleatorios en la tabla `saved`
+            // ------------------------------------------------------
+            $savedCount = rand(0, count($userIds));
+            if ($savedCount > 0) {
+                $savedUserIds = Arr::random($userIds, $savedCount);
+                if (!is_array($savedUserIds)) {
+                    $savedUserIds = [$savedUserIds];
+                }
+
+                $savedInserts = [];
+                $now = now();
+                foreach ($savedUserIds as $savedUserId) {
+                    // Evitar que el autor se guarde a sí mismo (opcional)
+                    if ($savedUserId === $randomUserId) {
+                        continue;
+                    }
+                    $savedInserts[] = [
+                        'user_id' => $savedUserId,
+                        'publication_id' => $publication->id,
+                        'created_at' => $now,
+                        'updated_at' => $now,
+                    ];
+                }
+
+                if (!empty($savedInserts)) {
+                    DB::table('saved')->insert($savedInserts);
+                }
+            }
+
+            // ------------------------------------------------------
+            // Generar comentarios aleatorios para esta publicación
+            // ------------------------------------------------------
+            // Decidimos cuántos comentarios tendrá (0 a 5)
+            $commentsCount = rand(0, 5);
+            for ($j = 0; $j < $commentsCount; $j++) {
+                // Elegimos un usuario aleatorio para el comentario,
+                // evitando (opcionalmente) que sea el mismo autor de la publicación:
+                $commentUserId = Arr::random($userIds);
+                if ($commentUserId === $randomUserId) {
+                    // Si coincide, lo ignoramos y tomamos otro distinto
+                    $possible = array_diff($userIds, [$randomUserId]);
+                    if (!empty($possible)) {
+                        $commentUserId = Arr::random($possible);
+                    }
+                }
+
+                Comment::create([
+                    'user_id' => $commentUserId,
+                    'publication_id' => $publication->id,
+                    'content' => $faker->sentence(8, true), // frase de 8 palabras aprox.
                 ]);
             }
         }

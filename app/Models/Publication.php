@@ -61,11 +61,6 @@ class Publication extends Model
         return $this->hasMany(Comment::class);
     }
 
-    public function savedPosts()
-    {
-        return $this->hasMany(SavedPost::class);
-    }
-
     public function hashtags()
     {
         return $this->belongsToMany(

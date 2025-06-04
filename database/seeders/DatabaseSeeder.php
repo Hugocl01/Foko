@@ -22,6 +22,7 @@ class DatabaseSeeder extends Seeder
         DB::table('features')->delete();
         DB::table('plan_features')->delete();
         DB::table('users')->delete();
+        DB::table('followers')->delete();
         DB::table('chats')->delete();
         DB::table('presets')->delete();
         DB::table('publications')->delete();
@@ -36,6 +37,7 @@ class DatabaseSeeder extends Seeder
             FeatureSeeder::class,       // Crea los Caracteristicas
             PlanFeatureSeeder::class,   // Crea los datos de la tabla intermedia
             UserSeeder::class,          // Crea los usuarios
+            FollowerSeeder::class,      // Crea los seguidores
             ChatSeeder::class,          // Crea los chats con los usuarios y mensajes
             PresetSeeder::class,        // Crea los presets
             PublicationSeeder::class,   // Crea las publicaciones con sus imagenes
