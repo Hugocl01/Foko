@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Servidor: 127.0.0.1
--- Tiempo de generación: 25-05-2025 a las 19:41:27
+-- Tiempo de generación: 04-06-2025 a las 20:27:13
 -- Versión del servidor: 10.4.32-MariaDB
 -- Versión de PHP: 8.2.12
 
@@ -122,7 +122,8 @@ CREATE TABLE `followers` (
 
 CREATE TABLE `hashtags` (
   `id` bigint(20) UNSIGNED NOT NULL,
-  `tag` varchar(100) NOT NULL,
+  `name` varchar(100) NOT NULL,
+  `slug` varchar(100) NOT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -230,11 +231,8 @@ CREATE TABLE `notifications` (
   `type` enum('like','comment','follow','message','purchase','report') NOT NULL,
   `entity_type` enum('publication','comment','user','preset') NOT NULL,
   `entity_id` bigint(20) UNSIGNED NOT NULL,
-  `reason` varchar(255) DEFAULT NULL,
-  `status` enum('pending','reviewed','resolved') NOT NULL DEFAULT 'pending',
   `created_at` timestamp NULL DEFAULT NULL,
-  `updated_at` timestamp NULL DEFAULT NULL,
-  `read_at` timestamp NULL DEFAULT NULL
+  `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
@@ -287,8 +285,9 @@ CREATE TABLE `presets` (
   `name` varchar(255) NOT NULL,
   `description` varchar(255) DEFAULT NULL,
   `price` decimal(10,2) NOT NULL,
-  `before_image` bigint(20) UNSIGNED DEFAULT NULL,
-  `after_image_id` bigint(20) UNSIGNED DEFAULT NULL,
+  `file` varchar(255) NOT NULL,
+  `before_image` varchar(255) DEFAULT NULL,
+  `after_image` varchar(255) DEFAULT NULL,
   `user_id` bigint(20) UNSIGNED NOT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
@@ -346,7 +345,6 @@ CREATE TABLE `purchases` (
   `id` bigint(20) UNSIGNED NOT NULL,
   `user_id` bigint(20) UNSIGNED NOT NULL,
   `preset_id` bigint(20) UNSIGNED NOT NULL,
-  `purchase_date` timestamp NOT NULL DEFAULT current_timestamp(),
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -368,10 +366,10 @@ CREATE TABLE `roles` (
 -- --------------------------------------------------------
 
 --
--- Estructura de tabla para la tabla `saved`
+-- Estructura de tabla para la tabla `saveds`
 --
 
-CREATE TABLE `saved` (
+CREATE TABLE `saveds` (
   `id` bigint(20) UNSIGNED NOT NULL,
   `user_id` bigint(20) UNSIGNED NOT NULL,
   `publication_id` bigint(20) UNSIGNED NOT NULL,
@@ -483,7 +481,8 @@ ALTER TABLE `followers`
 --
 ALTER TABLE `hashtags`
   ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `hashtags_tag_unique` (`tag`);
+  ADD UNIQUE KEY `hashtags_name_unique` (`name`),
+  ADD UNIQUE KEY `hashtags_slug_unique` (`slug`);
 
 --
 -- Indices de la tabla `images`
@@ -559,7 +558,7 @@ ALTER TABLE `plan_features`
 --
 ALTER TABLE `presets`
   ADD PRIMARY KEY (`id`),
-  ADD KEY `presets_user_id_foreign` (`user_id`),
+  ADD KEY `presets_user_id_foreign` (`user_id`);
 
 --
 -- Indices de la tabla `preset_hashtags`
@@ -599,12 +598,12 @@ ALTER TABLE `roles`
   ADD UNIQUE KEY `roles_name_unique` (`name`);
 
 --
--- Indices de la tabla `saved`
+-- Indices de la tabla `saveds`
 --
-ALTER TABLE `saved`
+ALTER TABLE `saveds`
   ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `saved_user_id_publication_id_unique` (`user_id`,`publication_id`),
-  ADD KEY `saved_publication_id_foreign` (`publication_id`);
+  ADD UNIQUE KEY `saveds_user_id_publication_id_unique` (`user_id`,`publication_id`),
+  ADD KEY `saveds_publication_id_foreign` (`publication_id`);
 
 --
 -- Indices de la tabla `sessions`
@@ -732,9 +731,9 @@ ALTER TABLE `roles`
   MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
 
 --
--- AUTO_INCREMENT de la tabla `saved`
+-- AUTO_INCREMENT de la tabla `saveds`
 --
-ALTER TABLE `saved`
+ALTER TABLE `saveds`
   MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
 
 --
@@ -830,11 +829,11 @@ ALTER TABLE `purchases`
   ADD CONSTRAINT `purchases_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
 
 --
--- Filtros para la tabla `saved`
+-- Filtros para la tabla `saveds`
 --
-ALTER TABLE `saved`
-  ADD CONSTRAINT `saved_publication_id_foreign` FOREIGN KEY (`publication_id`) REFERENCES `publications` (`id`) ON DELETE CASCADE,
-  ADD CONSTRAINT `saved_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
+ALTER TABLE `saveds`
+  ADD CONSTRAINT `saveds_publication_id_foreign` FOREIGN KEY (`publication_id`) REFERENCES `publications` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `saveds_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
 
 --
 -- Filtros para la tabla `sessions`
