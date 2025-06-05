@@ -37,4 +37,26 @@ class PublicationController extends Controller
             'publications' => $publications,
         ]);
     }
+
+    /**
+     * Mostrar una sola publicación, inyectando en cada imagen
+     * el campo “url” que llama a getImageUrlAttribute().
+     */
+    public function show($id)
+    {
+        // 1) Buscamos la publicación con sus relaciones (o fallamos si no existe)
+        $publication = Publication::with('user', 'images', 'preset', 'hashtags')
+            ->findOrFail($id);
+
+        // 2) Transformamos la colección de imágenes para agregarles "url"
+        $publication->images->transform(function ($image) {
+            $image->url = $image->getImageUrlAttribute();
+            return $image;
+        });
+
+        // 3) Devolvemos la publicación a Inertia
+        return Inertia::render('publication', [
+            'publication' => $publication,
+        ]);
+    }
 }
