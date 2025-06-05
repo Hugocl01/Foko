@@ -104,51 +104,122 @@ class UserController extends Controller
         return redirect()->route('users.index')->with('success', 'Usuario eliminado correctamente.');
     }
 
-    public function userPublications(User $user)
+    /**
+     * Construye y devuelve el array con los datos comunes de un perfil:
+     * - atributos del usuario
+     * - profile_image, plan, followers, following, purchases
+     * - el número total de publicaciones y presets
+     * - isOwnProfile, isFollowing
+     */
+    protected function getCommonUserData(User $user): array
     {
-        // 1) Carga relaciones
+        // 1) Carga todas las relaciones necesarias para los contadores y banderas
         $user->load([
             'plan',
             'followers',
             'following',
-            'publications',
-            'presets',
+            'publications', // para contar
+            'presets',      // para contar
             'purchases',
+            'saveds',        // para contar
         ]);
 
-        // 2) Convertimos atributos a array
+        // 2) Base con los atributos del modelo User
         $data = $user->attributesToArray();
 
-        // 3) Añadimos campos “append” y relaciones
-        $data['profile_image_url'] = $user->profile_image_url;
+        // 3) Campos “append” generales
+        $data['profile_image'] = $user->getProfileImageUrlAttribute();
         $data['plan'] = $user->plan;
-        $data['followers'] = $user->followers->map(fn($f) => [
-            'id' => $f->id,
-            'name' => $f->name,
-            'avatar_url' => $f->avatar_url,
-        ])->toArray();
-        $data['following'] = $user->following->map(fn($f) => [
-            'id' => $f->id,
-            'name' => $f->name,
-            'avatar_url' => $f->avatar_url,
-        ])->toArray();
-        $data['publications'] = $user->publications->map(fn($pub) => [
-            'id' => $pub->id,
-            'url' => $pub->url,
-        ])->toArray();
-        $data['presets'] = $user->presets;
-        $data['purchases'] = $user->purchases;
 
-        // 4) Bandera para saber si es el perfil propio
+        // 4) Followers y following (solo id, name y avatar_url)
+        $data['followers'] = $user->followers
+            ->map(fn($f) => [
+                'id' => $f->id,
+                'name' => $f->name,
+                'avatar_url' => $f->avatar_url,
+            ])->toArray();
+
+        $data['following'] = $user->following
+            ->map(fn($f) => [
+                'id' => $f->id,
+                'name' => $f->name,
+                'avatar_url' => $f->avatar_url,
+            ])->toArray();
+
+        // 5) Compras (solo id, preset_id y amount)
+        $data['purchases'] = $user->purchases
+            ->map(fn($purchase) => [
+                'id' => $purchase->id,
+                'preset_id' => $purchase->preset_id,
+                'amount' => $purchase->amount,
+            ])->toArray();
+
+        // 6) Contadores (publications_count, presets_count y saveds_count)
+        $data['publications_count'] = $user->publications->count();
+        $data['presets_count'] = $user->presets->count();
+        $data['saveds_count'] = $user->saveds->count();
+
+        // 7) Banderas de perfil
         $data['isOwnProfile'] = $user->id === Auth::id();
-
-        // 5) (Opcional) Si ya estás guardando isFollowing en alguna tabla,
-        //    aquí podrías calcularlo. Para simplificar, lo dejamos false.
         $data['isFollowing'] = Auth::user()
             ? Auth::user()->following->contains($user->id)
             : false;
 
-        // 6) Retornamos todo a Inertia
+        return $data;
+    }
+
+    public function userPublications(User $user)
+    {
+        // 1) Obtener el array base con datos comunes (sin publicaciones/presets, etc.)
+        $data = $this->getCommonUserData($user);
+
+        // 2) Cargar cada publicación con sus relaciones necesarias:
+        $publications = $user->publications()
+            ->with(['images'])
+            ->orderBy('created_at', 'desc')
+            ->get()
+            ->map(function ($pub) {
+                // Mapear imágenes para incluir el campo "url" usando el accessor:
+                $images = $pub->images->map(function ($img) {
+                    return [
+                        'id' => $img->id,
+                        'publication_id' => $img->publication_id,
+                        'url' => $img->getImageUrlAttribute(),
+                        'created_at' => $img->created_at->toDateTimeString(),
+                        'updated_at' => $img->updated_at->toDateTimeString(),
+                    ];
+                })->toArray();
+
+                // Mapear hashtags:
+                $hashtags = $pub->hashtags->map(function ($h) {
+                    return [
+                        'id' => $h->id,
+                        'name' => $h->name,
+                        'slug' => $h->slug,
+                        'created_at' => $h->created_at->toDateTimeString(),
+                        'updated_at' => $h->updated_at->toDateTimeString(),
+                    ];
+                })->toArray();
+
+                // Devolver toda la publicación en formato array:
+                return [
+                    'id' => $pub->id,
+                    'user_id' => $pub->user_id,
+                    'title' => $pub->title,
+                    'description' => $pub->description,
+                    'preset_id' => $pub->preset_id,
+                    'created_at' => $pub->created_at->toDateTimeString(),
+                    'updated_at' => $pub->updated_at->toDateTimeString(),
+                    // Todas las imágenes mapeadas:
+                    'images' => $images,
+                ];
+            })
+            ->toArray();
+
+        // 3) Asignar el array completo de publicaciones al data:
+        $data['publications'] = $publications;
+
+        // 4) Devolver a Inertia:
         return Inertia::render('profile/publications', [
             'user' => $data,
         ]);
@@ -156,55 +227,26 @@ class UserController extends Controller
 
     public function userPresets(User $user)
     {
-        // 1) Carga relaciones (similares a userPublications)
-        $user->load([
-            'plan',
-            'followers',
-            'following',
-            'publications',
-            'presets',
-            'purchases',
-        ]);
+        $data = $this->getCommonUserData($user);
 
-        // 2) Convertimos atributos a array
-        $data = $user->attributesToArray();
+        $allPresets = $user->presets()
+            ->orderBy('created_at', 'desc')
+            ->get()
+            ->map(function ($preset) {
+                return [
+                    'id' => $preset->id,
+                    'name' => $preset->name,
+                    'description' => $preset->description,
+                    'price' => $preset->price,
+                    // Aquí exponemos la URL completa:
+                    'before_image_url' => $preset->before_image_url,
+                    'after_image_url' => $preset->after_image_url,
+                    // …otros campos que necesites…
+                ];
+            })->toArray();
 
-        // 3) Añadimos campos “append” y relaciones
-        $data['profile_image_url'] = $user->profile_image_url;
-        $data['plan'] = $user->plan;
-        $data['followers'] = $user->followers->map(fn($f) => [
-            'id' => $f->id,
-            'name' => $f->name,
-            'avatar_url' => $f->avatar_url,
-        ])->toArray();
-        $data['following'] = $user->following->map(fn($f) => [
-            'id' => $f->id,
-            'name' => $f->name,
-            'avatar_url' => $f->avatar_url,
-        ])->toArray();
-        $data['publications'] = $user->publications->map(fn($pub) => [
-            'id' => $pub->id,
-            'url' => $pub->url,
-        ])->toArray();
-        $data['presets'] = $user->presets->map(fn($preset) => [
-            'id' => $preset->id,
-            'url' => $preset->url,
-        ])->toArray();
-        $data['purchases'] = $user->purchases->map(fn($purchase) => [
-            'id' => $purchase->id,
-            'preset_id' => $purchase->preset_id,
-            'amount' => $purchase->amount,
-        ])->toArray();
+        $data['presets'] = $allPresets;
 
-        // 4) Bandera para saber si es el perfil propio
-        $data['isOwnProfile'] = $user->id === Auth::id();
-
-        // 5) Calculamos si el usuario autenticado ya sigue a este perfil
-        $data['isFollowing'] = Auth::user()
-            ? Auth::user()->following->contains($user->id)
-            : false;
-
-        // 6) Retornamos todo a Inertia (vista: presets)
         return Inertia::render('profile/presets', [
             'user' => $data,
         ]);
@@ -212,63 +254,33 @@ class UserController extends Controller
 
     public function userSaved(User $user)
     {
-        // 1) Carga relaciones. Asumimos que existe una relación 'saveds'
-        //    en el modelo User que trae las publicaciones guardadas por el usuario.
-        $user->load([
-            'plan',
-            'followers',
-            'following',
-            'publications',
-            'presets',
-            'purchases',
-            'saveds', // Asegúrate de definir esta relación en el modelo User
-        ]);
+        // 1) Datos comunes
+        $data = $this->getCommonUserData($user);
 
-        // 2) Convertimos atributos a array
-        $data = $user->attributesToArray();
+        // 2) Cargar publicaciones guardadas (relación ‘saveds’) con imágenes
+        $savedPubs = $user->saveds()
+            ->with('images')            // para poder usar getImageUrlAttribute() en cada imagen
+            ->orderBy('pivot_created_at', 'desc') // opcional: orden por cuando se guardó
+            ->get()
+            ->map(function ($pub) {
+                // Obtener la primera imagen de la publicación
+                $firstImage = $pub->images->first();
+                return [
+                    'id' => $pub->id,
+                    'url' => $firstImage
+                        ? $firstImage->getImageUrlAttribute()
+                        : null,
+                    // Puedes añadir más campos aquí: título, descripción, etc.
+                ];
+            })
+            ->filter(fn($item) => $item['url'] !== null) // opcional: filtrar publicaciones sin imagen
+            ->toArray();
 
-        // 3) Añadimos campos “append” y relaciones
-        $data['profile_image_url'] = $user->profile_image_url;
-        $data['plan'] = $user->plan;
-        $data['followers'] = $user->followers->map(fn($f) => [
-            'id' => $f->id,
-            'name' => $f->name,
-            'avatar_url' => $f->avatar_url,
-        ])->toArray();
-        $data['following'] = $user->following->map(fn($f) => [
-            'id' => $f->id,
-            'name' => $f->name,
-            'avatar_url' => $f->avatar_url,
-        ])->toArray();
-        $data['publications'] = $user->publications->map(fn($pub) => [
-            'id' => $pub->id,
-            'url' => $pub->url,
-        ])->toArray();
-        $data['presets'] = $user->presets->map(fn($preset) => [
-            'id' => $preset->id,
-            'url' => $preset->url,
-        ])->toArray();
-        $data['purchases'] = $user->purchases->map(fn($purchase) => [
-            'id' => $purchase->id,
-            'preset_id' => $purchase->preset_id,
-            'amount' => $purchase->amount,
-        ])->toArray();
+        // 3) Asignar al array de datos
+        $data['saveds'] = $savedPubs;
+        $data['saveds_count'] = count($savedPubs);
 
-        // 3.1) Mapeamos las publicaciones guardadas en un array sencillo:
-        $data['saveds'] = $user->saveds->map(fn($saved) => [
-            'id' => $saved->id,
-            'url' => $saved->url,
-        ])->toArray();
-
-        // 4) Bandera para saber si es el perfil propio
-        $data['isOwnProfile'] = $user->id === Auth::id();
-
-        // 5) Calculamos si el usuario autenticado ya sigue a este perfil
-        $data['isFollowing'] = Auth::user()
-            ? Auth::user()->following->contains($user->id)
-            : false;
-
-        // 6) Retornamos todo a Inertia (vista: saved)
+        // 4) Renderizar Inertia con la vista 'profile/saveds'
         return Inertia::render('profile/saveds', [
             'user' => $data,
         ]);

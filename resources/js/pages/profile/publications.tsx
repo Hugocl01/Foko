@@ -1,18 +1,22 @@
-import { usePage } from "@inertiajs/react"
-import ProfileLayout from "@/Layouts/profile/layout"
+import { usePage, Link } from "@inertiajs/react"
 import { Camera } from "lucide-react"
-
-type Publication = {
-    id: number
-    url: string
-}
+import ProfileLayout, { User, Publication } from "@/Layouts/profile/layout"
 
 type Props = {
     user: {
         id: number
         name: string
-        profile_image: string
-        publications: Publication[]
+        username: string
+        profile_image?: string
+        profile_image_url: string | null
+        description?: string | null
+        publications: Publication[]  // cada Publication tiene un campo `images: { url: string }[]`
+        presets?: any[]   // no es estrictamente necesario aquí, pero el layout lo puede recibir
+        saveds?: any[]    // idem
+        followers?: any[]
+        following?: any[]
+        isFollowing: boolean
+        isOwnProfile: boolean
     }
 }
 
@@ -23,18 +27,19 @@ export default function PublicationsPage() {
         <ProfileLayout user={user}>
             <div className="mt-6">
                 {user.publications.length > 0 ? (
-                    <div className="grid grid-cols-3 gap-1 md:gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                         {user.publications.map((pub) => (
-                            <div
+                            <Link
                                 key={pub.id}
+                                href={route("publications.show", pub.id)}
                                 className="aspect-square bg-muted rounded-sm overflow-hidden group cursor-pointer"
                             >
                                 <img
-                                    src={pub.url}
+                                    src={pub.images[0]?.url || "/placeholder.svg"}
                                     alt={`Publicación ${pub.id}`}
                                     className="w-full h-full object-cover group-hover:opacity-80 transition-opacity"
                                 />
-                            </div>
+                            </Link>
                         ))}
                     </div>
                 ) : (

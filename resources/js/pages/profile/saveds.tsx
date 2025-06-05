@@ -1,33 +1,39 @@
-import { usePage } from "@inertiajs/react"
-import ProfileLayout from "@/Layouts/profile/layout"
+import { usePage, Link } from "@inertiajs/react"
 import { Bookmark } from "lucide-react"
-
-type SavedItem = {
-    id: number
-    url: string
-}
+import ProfileLayout, { User, SavedPublication } from "@/Layouts/profile/layout"
 
 type Props = {
     user: {
         id: number
         name: string
         username: string
-        profile_image: string
-        saveds: SavedItem[]
+        profile_image?: string
+        profile_image_url: string | null
+        description?: string | null
+        publications?: any[]
+        presets?: any[]
+        saveds: SavedPublication[]     // Aquí recibes el array de saved pubs
+        followers?: any[]
+        following?: any[]
+        isFollowing: boolean
+        isOwnProfile: boolean
     }
 }
 
 export default function SavedsPage() {
     const { user } = usePage<Props>().props
-
+console.log(user)
     return (
         <ProfileLayout user={user}>
             <div className="mt-6">
                 {user.saveds.length > 0 ? (
-                    <div className="grid grid-cols-3 gap-1 md:gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                         {user.saveds.map((item) => (
-                            <div
+                            <Link
                                 key={item.id}
+                                // Aquí llamas la ruta a publications.show, para abrir el detalle de la publicación guardada:
+                                // Asegúrate de que esa ruta existe y coincide con tu backend.
+                                href={route("publications.show", item.id)}
                                 className="aspect-square bg-muted rounded-sm overflow-hidden group cursor-pointer"
                             >
                                 <img
@@ -35,12 +41,11 @@ export default function SavedsPage() {
                                     alt={`Guardado ${item.id}`}
                                     className="w-full h-full object-cover group-hover:opacity-80 transition-opacity"
                                 />
-                            </div>
+                            </Link>
                         ))}
                     </div>
                 ) : (
                     <div className="text-center py-12">
-                        {/* Estado vacío */}
                         <div className="w-16 h-16 mx-auto mb-4 bg-muted rounded-full flex items-center justify-center">
                             <Bookmark />
                         </div>

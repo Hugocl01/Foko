@@ -97,7 +97,12 @@ class User extends Authenticatable implements MustVerifyEmail
 
     public function saveds()
     {
-        return $this->hasMany(Saved::class);
+        return $this->belongsToMany(
+            Publication::class,
+            'saveds',
+            'user_id',
+            'publication_id'
+        )->withTimestamps();
     }
 
     public function purchases(): HasMany

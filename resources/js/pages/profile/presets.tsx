@@ -1,19 +1,30 @@
-import { usePage } from "@inertiajs/react"
-import ProfileLayout from "@/Layouts/profile/layout"
+import { usePage, Link } from "@inertiajs/react"
 import { Aperture } from "lucide-react"
-
-type Preset = {
-    id: number
-    url: string
-}
+import ProfileLayout, { Preset } from "@/Layouts/profile/layout"
 
 type Props = {
     user: {
         id: number
         name: string
         username: string
-        profile_image: string
-        presets: Preset[]
+        profile_image?: string
+        profile_image_url: string | null
+        description?: string | null
+        presets: Array<{
+            id: number
+            name: string
+            description: string
+            price: string
+            before_image_url: string | null
+            after_image_url: string | null
+            // …si añadiste otros campos…
+        }>
+        publications?: any[]
+        saveds?: any[]
+        followers?: any[]
+        following?: any[]
+        isFollowing: boolean
+        isOwnProfile: boolean
     }
 }
 
@@ -24,23 +35,23 @@ export default function PresetsPage() {
         <ProfileLayout user={user}>
             <div className="mt-6">
                 {user.presets.length > 0 ? (
-                    <div className="grid grid-cols-3 gap-1 md:gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                         {user.presets.map((preset) => (
-                            <div
+                            <Link
                                 key={preset.id}
+                                href={route("presets.show", preset.id)}
                                 className="aspect-square bg-muted rounded-sm overflow-hidden group cursor-pointer"
                             >
                                 <img
-                                    src={preset.url}
-                                    alt={`Preset ${preset.id}`}
+                                    src={preset.after_image_url || "/placeholder.svg"}
+                                    alt={`Preset ${preset.name}`}
                                     className="w-full h-full object-cover group-hover:opacity-80 transition-opacity"
                                 />
-                            </div>
+                            </Link>
                         ))}
                     </div>
                 ) : (
                     <div className="text-center py-12">
-                        {/* Estado vacío */}
                         <div className="w-16 h-16 mx-auto mb-4 bg-muted rounded-full flex items-center justify-center">
                             <Aperture />
                         </div>
