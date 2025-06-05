@@ -17,7 +17,7 @@ class PublicationController extends Controller
         // 1) Traemos las publicaciones con sus relaciones
         $publications = Publication::with('user', 'images', 'preset', 'hashtags')
             ->orderBy('created_at', 'desc')
-            ->paginate(10);
+            ->paginate(5);
 
         // 2) Recorremos la colección interna de publicaciones para
         //    ajustar cada imagen y añadirle dinámicamente "url"
