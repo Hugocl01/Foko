@@ -1,5 +1,4 @@
-import type React from "react"
-import { useState } from "react"
+import React, { useState, useEffect } from "react"
 import {
     Heart,
     Bookmark,
@@ -20,27 +19,79 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { Badge } from "@/components/ui/badge"
 import AppLayout from "@/layouts/app-layout"
 import { usePage, Head, router } from "@inertiajs/react"
 import type { BreadcrumbItem } from "@/types"
 import { PlaceholderPattern } from "@/components/ui/placeholder-pattern"
 
+// ——— 1. Interfaces actualizadas según tu JSON real ———
+
+interface BackendImage {
+    id: number
+    publication_id: number
+    url: string
+    created_at: string
+    updated_at: string
+}
+
+interface BackendUser {
+    id: number
+    name: string
+    username: string
+    email: string
+    profile_image: string | null
+    status: number
+    plan_id: number
+    role_id: number
+    description: string
+    email_verified_at: string | null
+    created_at: string
+    updated_at: string
+    profile_image_url: string | null
+}
+
+interface BackendHashtag {
+    id: number
+    name: string
+    slug: string
+    created_at: string
+    updated_at: string
+    pivot: {
+        publication_id: number
+        hashtag_id: number
+    }
+}
+
+interface BackendPublication {
+    id: number
+    user_id: number
+    title: string
+    description: string
+    preset_id: number
+    created_at: string
+    updated_at: string
+    user: BackendUser
+    images: BackendImage[]
+    preset: any // no lo usamos en el componente, lo dejamos como any
+    hashtags: BackendHashtag[]
+}
+
+// Nosotros queremos este shape “en memoria”, incluyendo likes_count, comments_count, etc.
 interface Publication {
     id: number
     user: {
         name: string
-        avatar_url: string | null
         username: string
+        avatar_url: string | null
     }
-    images: string[]
-    content: string
+    images: BackendImage[]      // seguimos usando el array de objetos, con el campo .url
+    content: string             // lo mapearé desde description
     likes_count: number
     comments_count: number
     created_at: string
     liked: boolean
     saved: boolean
-    hashtags: string[]
+    hashtags: string[]          // solo nombres de hashtag, por ejemplo
 }
 
 interface Paginated<T> {
@@ -54,45 +105,80 @@ interface Paginated<T> {
 const breadcrumbs: BreadcrumbItem[] = [{ title: "Publicaciones", href: "/publications" }]
 
 export default function PublicationsPage() {
-    const { props } = usePage<{ publications: Paginated<Publication> }>()
-    const { data: publications, current_page, last_page, per_page, total } = props.publications
+    // 2. Desestructuramos el prop que viene de Inertia (este es el JSON “raw” que mostraste en tu pregunta)
+    const { props } = usePage<{ publications: Paginated<BackendPublication> }>()
+    const {
+        data: backendPubs,
+        current_page,
+        last_page,
+        per_page,
+        total,
+    } = props.publications
 
-    const indexOfFirstItem = (current_page - 1) * per_page + 1
-    const indexOfLastItem = Math.min(current_page * per_page, total)
+    // 3. Transformamos UNA SOLA VEZ los BackendPublication a Publication,
+    //    inyectando likes_count = 0, comments_count = 0, liked = false, saved = false,
+    //    y mapeando user y contenido.
+    const [localPublications, setLocalPublications] = useState<Publication[]>([])
 
-    // Carrusel de imágenes por publicación
+    useEffect(() => {
+        const mapped: Publication[] = backendPubs.map((pub) => ({
+            id: pub.id,
+            user: {
+                name: pub.user.name,
+                username: pub.user.username,
+                avatar_url: pub.user.profile_image_url, // viene como profile_image_url en tu JSON
+            },
+            images: pub.images, // mantenemos el array de objetos, con { id, publication_id, url, … }
+            content: pub.description,
+            likes_count: 0,
+            comments_count: 0,
+            created_at: pub.created_at,
+            liked: false,
+            saved: false,
+            // si necesitas los hashtags como array de strings, extraemos solo el nombre:
+            hashtags: pub.hashtags.map((h) => h.name),
+        }))
+
+        setLocalPublications(mapped)
+    }, [backendPubs])
+
+    // Helper para índice de imagen actual por publicación:
     const [currentImageIndex, setCurrentImageIndex] = useState<Record<number, number>>({})
+
     const nextImage = (pubId: number, totalImages: number) => {
         setCurrentImageIndex((prev) => {
             const current = prev[pubId] || 0
             return { ...prev, [pubId]: (current + 1) % totalImages }
         })
     }
+
     const prevImage = (pubId: number, totalImages: number) => {
         setCurrentImageIndex((prev) => {
             const current = prev[pubId] || 0
             return { ...prev, [pubId]: (current - 1 + totalImages) % totalImages }
         })
     }
+
     const getCurrentImageIndex = (pubId: number) => currentImageIndex[pubId] || 0
 
-    // Likes y guardado (solo en estado local)
-    const [localPublications, setLocalPublications] = useState<Publication[]>(publications)
+    // Toggle de “Me gusta” (solo a nivel UI, sin persistencia aún)
     const toggleLike = (id: number) => {
         setLocalPublications((prev) =>
             prev.map((pub) => {
                 if (pub.id === id) {
-                    const liked = !pub.liked
+                    const newLiked = !pub.liked
                     return {
                         ...pub,
-                        liked,
-                        likes_count: liked ? pub.likes_count + 1 : pub.likes_count - 1,
+                        liked: newLiked,
+                        likes_count: newLiked ? pub.likes_count + 1 : pub.likes_count - 1,
                     }
                 }
                 return pub
             })
         )
     }
+
+    // Toggle de “Guardar” (solo a nivel UI)
     const toggleSave = (id: number) => {
         setLocalPublications((prev) =>
             prev.map((pub) => {
@@ -111,9 +197,14 @@ export default function PublicationsPage() {
         )
     }
 
+    // Cálculo índice de items mostrados (solo para el texto de “Mostrando X–Y de Z”)
+    const indexOfFirstItem = (current_page - 1) * per_page + 1
+    const indexOfLastItem = Math.min(current_page * per_page, total)
+
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Publicaciones" />
+
             <div className="flex flex-col gap-4 p-4">
                 <h1 className="text-2xl font-bold">Publicaciones</h1>
 
@@ -124,7 +215,7 @@ export default function PublicationsPage() {
                     </Button>
                 </div>
 
-                {/* CONTENEDOR CENTRADO Y COLUMNA ÚNICA MÁS ESTRECHA */}
+                {/* Contenedor centralizado con una columna más estrecha */}
                 <div className="max-w-xl mx-auto grid grid-cols-1 gap-4">
                     {localPublications.map((pub) => (
                         <Card
@@ -136,6 +227,7 @@ export default function PublicationsPage() {
                                     <div className="flex items-center gap-3">
                                         <Avatar className="h-10 w-10">
                                             <AvatarImage
+                                                // Usamos profile_image_url (mapeado a avatar_url)
                                                 src={pub.user.avatar_url || "/placeholder.svg"}
                                                 alt={pub.user.name}
                                             />
@@ -161,9 +253,7 @@ export default function PublicationsPage() {
                                             <DropdownMenuItem>Copiar enlace</DropdownMenuItem>
                                             <DropdownMenuItem>Seguir usuario</DropdownMenuItem>
                                             <DropdownMenuSeparator />
-                                            <DropdownMenuItem className="text-destructive">
-                                                Reportar
-                                            </DropdownMenuItem>
+                                            <DropdownMenuItem className="text-destructive">Reportar</DropdownMenuItem>
                                         </DropdownMenuContent>
                                     </DropdownMenu>
                                 </div>
@@ -172,8 +262,9 @@ export default function PublicationsPage() {
                             <CardContent className="relative flex-grow p-0">
                                 <div className="relative aspect-square overflow-hidden bg-gray-100">
                                     {pub.images && pub.images.length > 0 ? (
+                                        // 4. IMPORTANTE: ahora accedemos a pub.images[index].url
                                         <img
-                                            src={pub.images[getCurrentImageIndex(pub.id)]}
+                                            src={pub.images[getCurrentImageIndex(pub.id)].url}
                                             alt={`Publicación ${pub.id}`}
                                             className="w-full h-full object-cover transition-all duration-300"
                                         />
@@ -209,8 +300,8 @@ export default function PublicationsPage() {
                                                     <div
                                                         key={idx}
                                                         className={`h-1.5 rounded-full ${getCurrentImageIndex(pub.id) === idx
-                                                                ? "w-4 bg-white"
-                                                                : "w-1.5 bg-white/60"
+                                                            ? "w-4 bg-white"
+                                                            : "w-1.5 bg-white/60"
                                                             }`}
                                                     />
                                                 ))}
@@ -258,6 +349,7 @@ export default function PublicationsPage() {
                                 <div>
                                     <div className="font-medium">{pub.likes_count} me gusta</div>
                                     <div className="mt-1 line-clamp-2">
+                                        {/* Sustituimos pub.content (que sacamos de description) */}
                                         <span className="font-medium">@{pub.user.username}</span>{" "}
                                         <span>{pub.content}</span>
                                     </div>
