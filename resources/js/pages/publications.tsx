@@ -221,6 +221,7 @@ export default function PublicationsPage() {
                         <Card
                             key={pub.id}
                             className="flex flex-col h-full cursor-pointer hover:shadow-lg transition-shadow duration-200"
+                            onClick={() => router.get(route("publications.show", pub.id))}
                         >
                             <CardHeader className="px-4">
                                 <div className="flex items-center justify-between">
@@ -253,7 +254,9 @@ export default function PublicationsPage() {
                                             <DropdownMenuItem>Copiar enlace</DropdownMenuItem>
                                             <DropdownMenuItem>Seguir usuario</DropdownMenuItem>
                                             <DropdownMenuSeparator />
-                                            <DropdownMenuItem className="text-destructive">Reportar</DropdownMenuItem>
+                                            <DropdownMenuItem className="text-destructive">
+                                                Reportar
+                                            </DropdownMenuItem>
                                         </DropdownMenuContent>
                                     </DropdownMenu>
                                 </div>
@@ -281,7 +284,10 @@ export default function PublicationsPage() {
                                                 variant="ghost"
                                                 size="icon"
                                                 className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/30 hover:bg-black/50 text-white rounded-full h-8 w-8"
-                                                onClick={() => prevImage(pub.id, pub.images.length)}
+                                                onClick={(e) => {
+                                                    e.stopPropagation()
+                                                    prevImage(pub.id, pub.images.length)
+                                                }}
                                             >
                                                 <ChevronLeft className="h-5 w-5" />
                                                 <span className="sr-only">Anterior</span>
@@ -290,7 +296,10 @@ export default function PublicationsPage() {
                                                 variant="ghost"
                                                 size="icon"
                                                 className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/30 hover:bg-black/50 text-white rounded-full h-8 w-8"
-                                                onClick={() => nextImage(pub.id, pub.images.length)}
+                                                onClick={(e) => {
+                                                    e.stopPropagation()
+                                                    nextImage(pub.id, pub.images.length)
+                                                }}
                                             >
                                                 <ChevronRight className="h-5 w-5" />
                                                 <span className="sr-only">Siguiente</span>
@@ -300,8 +309,8 @@ export default function PublicationsPage() {
                                                     <div
                                                         key={idx}
                                                         className={`h-1.5 rounded-full ${getCurrentImageIndex(pub.id) === idx
-                                                            ? "w-4 bg-white"
-                                                            : "w-1.5 bg-white/60"
+                                                                ? "w-4 bg-white"
+                                                                : "w-1.5 bg-white/60"
                                                             }`}
                                                     />
                                                 ))}
@@ -317,7 +326,10 @@ export default function PublicationsPage() {
                                         <Button
                                             variant="ghost"
                                             size="icon"
-                                            onClick={() => toggleLike(pub.id)}
+                                            onClick={(e) => {
+                                                e.stopPropagation()
+                                                toggleLike(pub.id)
+                                            }}
                                             className={pub.liked ? "text-destructive" : ""}
                                         >
                                             <Heart
@@ -325,11 +337,19 @@ export default function PublicationsPage() {
                                             />
                                             <span className="sr-only">Me gusta</span>
                                         </Button>
-                                        <Button variant="ghost" size="icon">
+                                        <Button
+                                            variant="ghost"
+                                            size="icon"
+                                            onClick={(e) => e.stopPropagation()}
+                                        >
                                             <MessageCircle className="h-6 w-6" />
                                             <span className="sr-only">Comentar</span>
                                         </Button>
-                                        <Button variant="ghost" size="icon">
+                                        <Button
+                                            variant="ghost"
+                                            size="icon"
+                                            onClick={(e) => e.stopPropagation()}
+                                        >
                                             <Share2 className="h-6 w-6" />
                                             <span className="sr-only">Compartir</span>
                                         </Button>
@@ -337,7 +357,10 @@ export default function PublicationsPage() {
                                     <Button
                                         variant="ghost"
                                         size="icon"
-                                        onClick={() => toggleSave(pub.id)}
+                                        onClick={(e) => {
+                                            e.stopPropagation()
+                                            toggleSave(pub.id)
+                                        }}
                                         className={pub.saved ? "text-primary" : ""}
                                     >
                                         <Bookmark
