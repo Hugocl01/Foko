@@ -16,7 +16,7 @@ Route::middleware('guest')->get('/', function () {
 })->name('welcome');
 
 // Si el usuario está autenticado, lo mandamos a 'home'
-Route::middleware('auth')->get('/home', function () {
+Route::middleware(['auth', 'verified'])->get('/home', function () {
     return Inertia::render('home');
 })->name('home');
 
