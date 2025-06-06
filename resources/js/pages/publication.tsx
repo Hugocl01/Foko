@@ -278,12 +278,10 @@ export default function PublicationShow() {
                         </div>
 
                         {/* Conteo de me gusta y descripción de la publicación */}
-                        <div className="w-full">
+                        <div className="w-full flex flex-col gap-2">
                             <div className="font-medium">{likesCount} me gusta</div>
-                            <div className="mt-1">
-                                <span className="font-medium">@{pub.user.username}</span>{" "}
-                                <span>{pub.description}</span>
-                            </div>
+                            <div className="font-medium">{pub.title}</div>
+                            <div>{pub.description}</div>
                             <div className="text-xs text-muted-foreground mt-2">
                                 {new Date(pub.created_at).toLocaleString("es-ES", {
                                     day: "2-digit",

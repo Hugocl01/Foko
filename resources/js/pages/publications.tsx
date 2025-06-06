@@ -85,7 +85,8 @@ interface Publication {
         avatar_url: string | null
     }
     images: BackendImage[]      // seguimos usando el array de objetos, con el campo .url
-    content: string             // lo mapearé desde description
+    title: string
+    description: string
     likes_count: number
     comments_count: number
     created_at: string
@@ -129,7 +130,8 @@ export default function PublicationsPage() {
                 avatar_url: pub.user.profile_image_url, // viene como profile_image_url en tu JSON
             },
             images: pub.images, // mantenemos el array de objetos, con { id, publication_id, url, … }
-            content: pub.description,
+            title: pub.title,
+            description: pub.description,
             likes_count: 0,
             comments_count: 0,
             created_at: pub.created_at,
@@ -228,7 +230,6 @@ export default function PublicationsPage() {
                                     <div className="flex items-center gap-3">
                                         <Avatar className="h-10 w-10">
                                             <AvatarImage
-                                                // Usamos profile_image_url (mapeado a avatar_url)
                                                 src={pub.user.avatar_url || "/placeholder.svg"}
                                                 alt={pub.user.name}
                                             />
@@ -265,7 +266,6 @@ export default function PublicationsPage() {
                             <CardContent className="relative flex-grow p-0">
                                 <div className="relative aspect-square overflow-hidden bg-gray-100">
                                     {pub.images && pub.images.length > 0 ? (
-                                        // 4. IMPORTANTE: ahora accedemos a pub.images[index].url
                                         <img
                                             src={pub.images[getCurrentImageIndex(pub.id)].url}
                                             alt={`Publicación ${pub.id}`}
@@ -320,7 +320,8 @@ export default function PublicationsPage() {
                                 </div>
                             </CardContent>
 
-                            <CardFooter className="flex flex-col items-start gap-3 p-4">
+                            <CardFooter className="flex flex-col gap-4 p-4">
+                                {/* Botones de interacción */}
                                 <div className="flex items-center justify-between w-full">
                                     <div className="flex items-center gap-4">
                                         <Button
@@ -369,13 +370,19 @@ export default function PublicationsPage() {
                                         <span className="sr-only">Guardar</span>
                                     </Button>
                                 </div>
-                                <div>
+
+                                {/* Información de la publicación */}
+                                <div className="flex flex-col gap-2 w-full">
+                                    {/* Me gusta */}
                                     <div className="font-medium">{pub.likes_count} me gusta</div>
-                                    <div className="mt-1 line-clamp-2">
-                                        {/* Sustituimos pub.content (que sacamos de description) */}
-                                        <span className="font-medium">@{pub.user.username}</span>{" "}
-                                        <span>{pub.content}</span>
-                                    </div>
+
+                                    {/* Título */}
+                                    <div className="font-medium">{pub.title}</div>
+
+                                    {/* Descripción */}
+                                    <div>{pub.description}</div>
+
+                                    {/* Fecha */}
                                     <div className="text-xs text-muted-foreground mt-2">
                                         {new Date(pub.created_at).toLocaleString("es-ES", {
                                             day: "2-digit",
