@@ -16,9 +16,8 @@ import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 import { Badge } from "@/components/ui/badge"
 import AppLayout from "@/layouts/app-layout"
 import { PresetDialog } from "@/components/preset-dialog"
-import { usePage, Head, router } from "@inertiajs/react"
+import { usePage, Head, router, Link } from "@inertiajs/react"
 import type { BreadcrumbItem } from "@/types"
-import { PlaceholderPattern } from "@/components/ui/placeholder-pattern"
 
 interface Preset {
     id: number
@@ -125,17 +124,22 @@ export default function PresetsPage() {
                                     <CardHeader className="px-4">
                                         <div className="flex items-center justify-between">
                                             <div className="flex items-center gap-3">
-                                                <Avatar className="h-10 w-10">
-                                                    <AvatarImage
-                                                        src={avatarUrl(preset.user.profile_image)}
-                                                        alt={preset.user.name}
-                                                    />
-                                                    <AvatarFallback className="text-sm">
-                                                        {preset.user.name.charAt(0)}
-                                                    </AvatarFallback>
-                                                </Avatar>
+                                                {/* Avatar envuelto en Link a profile.user */}
+                                                <Link href={route("profile.user", { user: preset.user.username })}>
+                                                    <Avatar className="h-10 w-10 cursor-pointer">
+                                                        <AvatarImage
+                                                            src={avatarUrl(preset.user.profile_image)}
+                                                            alt={preset.user.name}
+                                                        />
+                                                        <AvatarFallback className="text-sm">
+                                                            {preset.user.name.charAt(0)}
+                                                        </AvatarFallback>
+                                                    </Avatar>
+                                                </Link>
                                                 <div className="flex flex-col">
-                                                    <div className="font-medium text-base">{preset.user.name}</div>
+                                                    <div className="font-medium text-base">
+                                                        {preset.user.name}
+                                                    </div>
                                                     <div className="text-sm text-muted-foreground">
                                                         @{preset.user.username ?? "usuario"}
                                                     </div>
@@ -319,17 +323,22 @@ export default function PresetsPage() {
                                     <div>
                                         <div className="flex items-center justify-between mb-2">
                                             <div className="flex items-center gap-3">
-                                                <Avatar className="h-12 w-12">
-                                                    <AvatarImage
-                                                        src={avatarUrl(preset.user.profile_image)}
-                                                        alt={preset.user.name}
-                                                    />
-                                                    <AvatarFallback className="text-base">
-                                                        {preset.user.name.charAt(0)}
-                                                    </AvatarFallback>
-                                                </Avatar>
+                                                {/* Avatar envuelto en Link a profile.user (vista lista) */}
+                                                <Link href={route("profile.user", { user: preset.user.username })}>
+                                                    <Avatar className="h-12 w-12 cursor-pointer">
+                                                        <AvatarImage
+                                                            src={avatarUrl(preset.user.profile_image)}
+                                                            alt={preset.user.name}
+                                                        />
+                                                        <AvatarFallback className="text-base">
+                                                            {preset.user.name.charAt(0)}
+                                                        </AvatarFallback>
+                                                    </Avatar>
+                                                </Link>
                                                 <div className="flex flex-col">
-                                                    <div className="font-medium text-lg">{preset.user.name}</div>
+                                                    <div className="font-medium text-lg">
+                                                        {preset.user.name}
+                                                    </div>
                                                     <div className="text-base text-muted-foreground">
                                                         @{preset.user.username ?? "usuario"}
                                                     </div>

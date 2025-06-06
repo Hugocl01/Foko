@@ -267,15 +267,18 @@ export default function PresetDetailPage() {
                             <CardHeader className="px-4">
                                 <div className="flex items-center justify-between">
                                     <div className="flex items-center gap-3">
-                                        <Avatar className="h-10 w-10">
-                                            <AvatarImage
-                                                src={avatarUrl(preset.user.profile_image)}
-                                                alt={preset.user.name}
-                                            />
-                                            <AvatarFallback className="text-sm">
-                                                {preset.user.name.charAt(0)}
-                                            </AvatarFallback>
-                                        </Avatar>
+                                        {/*  Aquí envolvemos Avatar en un Link que apunta a profile.user */}
+                                        <Link href={route("profile.user", { user: preset.user.username })}>
+                                            <Avatar className="h-10 w-10 cursor-pointer">
+                                                <AvatarImage
+                                                    src={avatarUrl(preset.user.profile_image)}
+                                                    alt={preset.user.name}
+                                                />
+                                                <AvatarFallback className="text-sm">
+                                                    {preset.user.name.charAt(0)}
+                                                </AvatarFallback>
+                                            </Avatar>
+                                        </Link>
                                         <div className="flex flex-col">
                                             <div className="font-medium text-base">{preset.user.name}</div>
                                             <div className="text-sm text-muted-foreground">
