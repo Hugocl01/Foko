@@ -281,11 +281,11 @@ export default function PresetsPage() {
                                 className="flex flex-col md:flex-row overflow-hidden cursor-pointer hover:shadow-lg transition-shadow duration-200"
                                 onClick={(e) => handleCardClick(preset.id, e)}
                             >
-                                <div className="md:w-1/3 bg-gray-100 aspect-square relative">
+                                <div className="md:w-1/3 ml-4 bg-transparent aspect-square relative">
                                     <img
                                         src={getImageUrl(preset, getViewMode(preset.id))}
                                         alt={`${preset.name} - ${getViewMode(preset.id)}`}
-                                        className="w-full h-full object-cover transition-all duration-300"
+                                        className="w-full h-full object-cover transition-all duration-300 rounded-2xl"
                                     />
                                     <div className="absolute top-2 left-2 toggle-group">
                                         <ToggleGroup
