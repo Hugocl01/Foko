@@ -20,7 +20,7 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import AppLayout from "@/layouts/app-layout"
-import { usePage, Head, router } from "@inertiajs/react"
+import { usePage, Head, router, Link } from "@inertiajs/react"
 import type { BreadcrumbItem } from "@/types"
 import { PlaceholderPattern } from "@/components/ui/placeholder-pattern"
 
@@ -228,15 +228,21 @@ export default function PublicationsPage() {
                             <CardHeader className="px-4">
                                 <div className="flex items-center justify-between">
                                     <div className="flex items-center gap-3">
-                                        <Avatar className="h-10 w-10">
-                                            <AvatarImage
-                                                src={pub.user.avatar_url || "/placeholder.svg"}
-                                                alt={pub.user.name}
-                                            />
-                                            <AvatarFallback className="text-sm">
-                                                {pub.user.name.charAt(0)}
-                                            </AvatarFallback>
-                                        </Avatar>
+                                        {/* Envolvemos el Avatar en un <Link> para redirigir al perfil */}
+                                        <Link
+                                            href={route("profile.user", pub.user.username)}
+                                            onClick={(e) => e.stopPropagation()}
+                                        >
+                                            <Avatar className="h-10 w-10">
+                                                <AvatarImage
+                                                    src={pub.user.avatar_url || "/placeholder.svg"}
+                                                    alt={pub.user.name}
+                                                />
+                                                <AvatarFallback className="text-sm">
+                                                    {pub.user.name.charAt(0)}
+                                                </AvatarFallback>
+                                            </Avatar>
+                                        </Link>
                                         <div className="flex flex-col">
                                             <div className="font-medium text-base">{pub.user.name}</div>
                                             <div className="text-sm text-muted-foreground">

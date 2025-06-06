@@ -97,15 +97,14 @@ export default function PublicationShow() {
     const { props } = usePage<{ publication: BackendPublication }>()
     const pub = props.publication
 
-    // Añadimos el breadcrumb de la publicación actual (solo título, sin href)
+    // Breadcrumb: Publicaciones > Título actual
     const pageBreadcrumbs: BreadcrumbItem[] = [
         { title: "Publicaciones", href: "/publications" },
         { title: pub.title, href: "" },
     ]
 
-    // Estado local para carrusel de imágenes (solo índice actual)
+    // Carrusel: índice de imagen
     const [currentImageIndex, setCurrentImageIndex] = useState<number>(0)
-
     const totalImages = pub.images.length
 
     const nextImage = () => {
@@ -115,22 +114,21 @@ export default function PublicationShow() {
         setCurrentImageIndex((prev) => (prev - 1 + totalImages) % totalImages)
     }
 
-    // Estados locales de “me gusta” y “guardar” (solo UI)
+    // “Me gusta” y “Guardar”
     const [liked, setLiked] = useState<boolean>(false)
-    const [likesCount, setLikesCount] = useState<number>(0) // Podrías inicializar desde pub.likes_count si lo envías
+    const [likesCount, setLikesCount] = useState<number>(0)
     const [saved, setSaved] = useState<boolean>(false)
 
     const toggleLike = () => {
         const nuevoLiked = !liked
         setLiked(nuevoLiked)
         setLikesCount((prev) => (nuevoLiked ? prev + 1 : Math.max(prev - 1, 0)))
-        // Aquí podrías hacer la llamada al servidor:
-        // router.post(route("publications.like", pub.id))
+        // Aquí podrías llamar al back: router.post(route("publications.like", pub.id))
     }
 
     const toggleSave = () => {
         setSaved((prev) => !prev)
-        // Aquí podrías hacer la llamada para “guardar publicación”
+        // Aquí podrías llamar al back para guardar la publicación
     }
 
     return (
@@ -138,7 +136,7 @@ export default function PublicationShow() {
             <Head title={pub.title} />
 
             <div className="flex flex-col gap-4 p-4 max-w-2xl mx-auto">
-                {/* Botón “Volver a listado” */}
+                {/* Volver a listado + título */}
                 <div className="flex items-center gap-4">
                     <Link href="/publications">
                         <Button variant="ghost" size="icon">
@@ -153,15 +151,21 @@ export default function PublicationShow() {
                     <CardHeader className="px-4">
                         <div className="flex items-center justify-between">
                             <div className="flex items-center gap-3">
-                                <Avatar className="h-10 w-10">
-                                    <AvatarImage
-                                        src={pub.user.profile_image_url || "/placeholder.svg"}
-                                        alt={pub.user.name}
-                                    />
-                                    <AvatarFallback className="text-sm">
-                                        {pub.user.name.charAt(0)}
-                                    </AvatarFallback>
-                                </Avatar>
+                                {/* Envolvemos el Avatar en Link para ir al perfil */}
+                                <Link
+                                    href={route("profile.user", pub.user.username)}
+                                    onClick={(e) => e.stopPropagation()}
+                                >
+                                    <Avatar className="h-10 w-10">
+                                        <AvatarImage
+                                            src={pub.user.profile_image_url || "/placeholder.svg"}
+                                            alt={pub.user.name}
+                                        />
+                                        <AvatarFallback className="text-sm">
+                                            {pub.user.name.charAt(0)}
+                                        </AvatarFallback>
+                                    </Avatar>
+                                </Link>
                                 <div className="flex flex-col">
                                     <div className="font-medium text-base">{pub.user.name}</div>
                                     <div className="text-sm text-muted-foreground">
@@ -180,9 +184,7 @@ export default function PublicationShow() {
                                     <DropdownMenuItem>Copiar enlace</DropdownMenuItem>
                                     <DropdownMenuItem>Seguir usuario</DropdownMenuItem>
                                     <DropdownMenuSeparator />
-                                    <DropdownMenuItem className="text-destructive">
-                                        Reportar
-                                    </DropdownMenuItem>
+                                    <DropdownMenuItem className="text-destructive">Reportar</DropdownMenuItem>
                                 </DropdownMenuContent>
                             </DropdownMenu>
                         </div>
@@ -227,9 +229,7 @@ export default function PublicationShow() {
                                         {pub.images.map((_, idx) => (
                                             <div
                                                 key={idx}
-                                                className={`h-1.5 rounded-full ${currentImageIndex === idx
-                                                    ? "w-4 bg-white"
-                                                    : "w-1.5 bg-white/60"
+                                                className={`h-1.5 rounded-full ${currentImageIndex === idx ? "w-4 bg-white" : "w-1.5 bg-white/60"
                                                     }`}
                                             />
                                         ))}
@@ -239,7 +239,7 @@ export default function PublicationShow() {
                         </div>
                     </CardContent>
 
-                    {/* — Footer: “Me gusta”, “Guardar”, descripción, hashtags, preset, fecha — */}
+                    {/* — Footer: botones, likes, descripción, hashtags, preset, fecha — */}
                     <CardFooter className="flex flex-col items-start gap-4 p-4">
                         {/* Botones de interacción */}
                         <div className="flex items-center justify-between w-full">
@@ -250,9 +250,7 @@ export default function PublicationShow() {
                                     onClick={toggleLike}
                                     className={liked ? "text-destructive" : ""}
                                 >
-                                    <Heart
-                                        className={`h-6 w-6 ${liked ? "fill-destructive" : ""}`}
-                                    />
+                                    <Heart className={`h-6 w-6 ${liked ? "fill-destructive" : ""}`} />
                                     <span className="sr-only">Me gusta</span>
                                 </Button>
                                 <Button variant="ghost" size="icon">
@@ -270,9 +268,7 @@ export default function PublicationShow() {
                                 onClick={toggleSave}
                                 className={saved ? "text-primary" : ""}
                             >
-                                <Bookmark
-                                    className={`h-6 w-6 ${saved ? "fill-primary" : ""}`}
-                                />
+                                <Bookmark className={`h-6 w-6 ${saved ? "fill-primary" : ""}`} />
                                 <span className="sr-only">Guardar</span>
                             </Button>
                         </div>
@@ -304,7 +300,7 @@ export default function PublicationShow() {
                             </div>
                         )}
 
-                        {/* — Datos del preset aplicado, envueltos en Link para redirigir a preset.show — */}
+                        {/* — Preset aplicado, con Link a preset.show — */}
                         <Card className="w-full group hover:shadow-lg transition-all duration-300 hover:-translate-y-1 border-border/50 hover:border-border">
                             <Link href={route("presets.show", pub.preset.id)} className="block">
                                 <CardHeader className="pb-3">
@@ -319,7 +315,9 @@ export default function PublicationShow() {
                                     <h3 className="text-lg font-semibold text-foreground mb-2 group-hover:text-primary transition-colors duration-200">
                                         {pub.preset.name}
                                     </h3>
-                                    <p className="text-sm text-muted-foreground leading-relaxed line-clamp-2">{pub.preset.description}</p>
+                                    <p className="text-sm text-muted-foreground leading-relaxed line-clamp-2">
+                                        {pub.preset.description}
+                                    </p>
                                 </CardContent>
 
                                 <CardFooter className="pt-4 border-t bg-muted/30">

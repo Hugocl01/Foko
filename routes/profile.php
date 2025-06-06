@@ -10,12 +10,12 @@ Route::middleware('auth')->group(function () {
     // Redirige "/profile" a "/profile/{user}/publications"
     Route::get('profile', function () {
         return redirect()->route('profile.publications.index', auth()->user());
-    });
+    })->name('profile');
 
     // Redirige "/profile/{user}" a "/profile/{user}/publications"
     Route::get('profile/{user}', function (User $user) {
         return redirect()->route('profile.publications.index', $user);
-    });
+    })->name('profile.user');
 
     // Publicaciones
     Route::get('profile/{user}/publications', [UserController::class, 'userPublications'])->name('profile.publications.index');
