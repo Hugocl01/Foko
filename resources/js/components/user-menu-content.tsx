@@ -62,18 +62,20 @@ export function UserMenuContent({ user }: UserMenuContentProps) {
                         Configuración
                     </Link>
                 </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                    <Link
-                        className="block w-full cursor-pointer"
-                        href={route('users.index')}
-                        as="button"
-                        prefetch
-                        onClick={cleanup}
-                    >
-                        <ShieldUser className="mr-2" />
-                        Administración
-                    </Link>
-                </DropdownMenuItem>
+                {user.role_id === 1 && (
+                    <DropdownMenuItem asChild>
+                        <Link
+                            className="block w-full cursor-pointer"
+                            href={route('users.index')}
+                            as="button"
+                            prefetch
+                            onClick={cleanup}
+                        >
+                            <ShieldUser className="mr-2" />
+                            Administración
+                        </Link>
+                    </DropdownMenuItem>
+                )}
                 <DropdownMenuSeparator />
             </DropdownMenuGroup>
             <DropdownMenuItem asChild>

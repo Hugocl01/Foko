@@ -6,21 +6,21 @@ const testimonials = [
     {
         name: "Sara Ortega",
         role: "Editora visual freelance",
-        avatar: "/placeholder.svg",
+        avatar: "images/sara_ortega.webp",
         quote:
             "Foko me permite mantener mi estilo en todas mis publicaciones. La facilidad para aplicar presets ha cambiado mi flujo de trabajo.",
     },
     {
         name: "Daniel Álvarez",
         role: "Estudiante de fotografía",
-        avatar: "/placeholder.svg",
+        avatar: "images/daniel_alvarez.webp",
         quote:
             "Descubrí Foko por recomendación y me ha sorprendido. Ideal para portafolios y compartir resultados sin complicaciones.",
     },
     {
         name: "Lucía Torres",
         role: "Creadora de contenido visual",
-        avatar: "/placeholder.svg",
+        avatar: "images/lucia_torres.webp",
         quote:
             "La interfaz es tan intuitiva que no necesitas experiencia previa. Me encanta la comunidad que se está formando.",
     },
