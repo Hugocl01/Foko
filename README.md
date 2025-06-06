@@ -40,7 +40,7 @@ composer install
 npm install
 ```
 
-4. Copia el archivo `.env.example` a `.env` y configura tus credenciales de base de datos:
+4. Copia el archivo `.env.example` a `.env` y configura tus credenciales de base de datos y el mail como Mailtrap:
 
 ```bash
 cp .env.example .env
@@ -72,3 +72,8 @@ php artisan serve
 
 9. Abre tu navegador y visita `http://localhost:8000` para ver la aplicación en funcionamiento.
 
+10. Una vez que la aplicación esté en funcionamiento, puedes acceder debes iniciar sesión, para ello puedes usar los usuarios de ejemplo creados por los seeders
+
+11. Una vez iniciada la sesión, se mostrará una página que te informa que debes verificar tu correo electrónico, ya que si inicias sesión con un usario creado a través de los seeders, este no tiene verificado el correo electrónico. Para verificarlo, debes pulsar el botón "Reenviar correo de verificación" y luego revisar tu bandeja de entrada en Mailtrap, donde encontrarás un correo con un enlace para verificar tu cuenta.
+
+12. Una vez verificado el correo electrónico, podrás acceder a todas las funcionalidades de la aplicación.
