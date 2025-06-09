@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react"
+import React, { useState, useMemo, useEffect } from "react"
 import { Head, usePage, Link, router } from "@inertiajs/react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
@@ -37,17 +37,31 @@ interface BackendPublication {
     title: string
     description: string
     created_at: string
-    user: BackendUser
+    user: BackendUser & { profile_image_url?: string }
     images: BackendImage[]
-    preset: BackendPreset
+    preset: BackendPreset & { price: number; description: string }
     hashtags: BackendHashtag[]
+    likes_count: number
+    liked: boolean
 }
 
 export default function PublicationShow() {
     const {
-        props: { publication: pub, auth },
-    } = usePage<{ publication: BackendPublication; auth: { user: BackendUser } }>()
+        props: { publication: pub, auth, flash },
+    } = usePage<{
+        publication: BackendPublication
+        auth: { user: BackendUser }
+        flash: { success?: string }
+    }>()
+
     const loggedUser = auth.user
+
+    // toast flash success
+    useEffect(() => {
+        if (flash.success) {
+            toast.success(flash.success)
+        }
+    }, [flash.success])
 
     // Solo el creador puede editar
     const isOwner = useMemo(
@@ -59,14 +73,17 @@ export default function PublicationShow() {
     const [isEditOpen, setIsEditOpen] = useState(false)
 
     // Valores iniciales para el formulario de edición
-    const initialPostValues = useMemo(() => ({
-        id: String(pub.id),
-        title: pub.title,
-        content: pub.description,
-        featured_image: null,
-        images: [] as File[],
-        hashtags: pub.hashtags.map((h) => h.name),
-    }), [pub])
+    const initialPostValues = useMemo(
+        () => ({
+            id: String(pub.id),
+            title: pub.title,
+            content: pub.description,
+            featured_image: null,
+            images: [] as File[],
+            hashtags: pub.hashtags.map((h) => h.name),
+        }),
+        [pub]
+    )
 
     // Handler para enviar la actualización
     const handleUpdatePublication = (data: {
@@ -110,21 +127,31 @@ export default function PublicationShow() {
     // Carrusel de imágenes
     const [currentImageIndex, setCurrentImageIndex] = useState(0)
     const totalImages = pub.images.length
-    const nextImage = () =>
-        setCurrentImageIndex((i) => (i + 1) % totalImages)
-    const prevImage = () =>
-        setCurrentImageIndex((i) => (i - 1 + totalImages) % totalImages)
+    const nextImage = () => setCurrentImageIndex((i) => (i + 1) % totalImages)
+    const prevImage = () => setCurrentImageIndex((i) => (i - 1 + totalImages) % totalImages)
 
-    // Likes y guardado
-    const [liked, setLiked] = useState(false)
-    const [likesCount, setLikesCount] = useState(0)
+    // Likes y guardado (estado inicial desde el servidor)
+    const [liked, setLiked] = useState(pub.liked)
+    const [likesCount, setLikesCount] = useState(pub.likes_count)
     const [saved, setSaved] = useState(false)
+
     const toggleLike = () => {
-        const nl = !liked
-        setLiked(nl)
-        setLikesCount((c) => (nl ? c + 1 : Math.max(c - 1, 0)))
-        // router.post(route("publications.like", pub.id))
+        router.post(
+            route("publications.toggleLike", pub.id),
+            {},
+            {
+                preserveState: true,
+                preserveScroll: true,
+                onSuccess: (page) => {
+                    // lee los nuevos valores desde props.publication
+                    const updated: BackendPublication = page.props.publication
+                    setLiked(updated.liked)
+                    setLikesCount(updated.likes_count)
+                },
+            }
+        )
     }
+
     const toggleSave = () => setSaved((s) => !s)
 
     return (
@@ -141,41 +168,29 @@ export default function PublicationShow() {
                     </Link>
                     <h1 className="text-2xl font-bold">{pub.title}</h1>
                     {isOwner && (
-                        <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => setIsEditOpen(true)}
-                        >
+                        <Button size="sm" variant="outline" onClick={() => setIsEditOpen(true)}>
                             Editar
                         </Button>
                     )}
                 </div>
 
                 <Card className="flex flex-col h-full">
-                    {/* — Header: Avatar y usuario — */}
+                    {/* Header */}
                     <CardHeader className="px-4">
                         <div className="flex items-center justify-between">
                             <div className="flex items-center gap-3">
-                                {/* Envolvemos el Avatar en Link para ir al perfil */}
-                                <Link
-                                    href={route("profile.user", pub.user.username)}
-                                    onClick={(e) => e.stopPropagation()}
-                                >
+                                <Link href={route("profile.user", pub.user.username)} onClick={(e) => e.stopPropagation()}>
                                     <Avatar className="h-10 w-10">
                                         <AvatarImage
                                             src={pub.user.profile_image_url || "/placeholder.svg"}
                                             alt={pub.user.name}
                                         />
-                                        <AvatarFallback className="text-sm">
-                                            {pub.user.name.charAt(0)}
-                                        </AvatarFallback>
+                                        <AvatarFallback className="text-sm">{pub.user.name.charAt(0)}</AvatarFallback>
                                     </Avatar>
                                 </Link>
                                 <div className="flex flex-col">
                                     <div className="font-medium text-base">{pub.user.name}</div>
-                                    <div className="text-sm text-muted-foreground">
-                                        @{pub.user.username}
-                                    </div>
+                                    <div className="text-sm text-muted-foreground">@{pub.user.username}</div>
                                 </div>
                             </div>
                             <DropdownMenu>
@@ -195,7 +210,7 @@ export default function PublicationShow() {
                         </div>
                     </CardHeader>
 
-                    {/* — Carrusel de imágenes — */}
+                    {/* Carrusel */}
                     <CardContent className="relative flex-grow p-0">
                         <div className="relative aspect-square overflow-hidden bg-gray-100">
                             {totalImages > 0 ? (
@@ -244,9 +259,8 @@ export default function PublicationShow() {
                         </div>
                     </CardContent>
 
-                    {/* — Footer: botones, likes, descripción, hashtags, preset, fecha — */}
+                    {/* Footer */}
                     <CardFooter className="flex flex-col items-start gap-4 p-4">
-                        {/* Botones de interacción */}
                         <div className="flex items-center justify-between w-full">
                             <div className="flex items-center gap-4">
                                 <Button
@@ -278,7 +292,6 @@ export default function PublicationShow() {
                             </Button>
                         </div>
 
-                        {/* Conteo de me gusta y descripción de la publicación */}
                         <div className="w-full flex flex-col gap-2">
                             <div className="font-medium">{likesCount} me gusta</div>
                             <div className="font-medium">{pub.title}</div>
@@ -294,7 +307,6 @@ export default function PublicationShow() {
                             </div>
                         </div>
 
-                        {/* — Hashtags — */}
                         {pub.hashtags.length > 0 && (
                             <div className="flex flex-wrap gap-2">
                                 {pub.hashtags.map((h) => (
@@ -305,15 +317,12 @@ export default function PublicationShow() {
                             </div>
                         )}
 
-                        {/* — Preset aplicado, con Link a preset.show — */}
                         <Card className="w-full group hover:shadow-lg transition-all duration-300 hover:-translate-y-1 border-border/50 hover:border-border">
                             <Link href={route("presets.show", pub.preset.id)} className="block">
                                 <CardHeader className="pb-3">
-                                    <div className="flex items-center justify-between">
-                                        <Badge variant="secondary" className="text-xs font-medium">
-                                            Preset aplicado
-                                        </Badge>
-                                    </div>
+                                    <Badge variant="secondary" className="text-xs font-medium">
+                                        Preset aplicado
+                                    </Badge>
                                 </CardHeader>
 
                                 <CardContent className="pb-4">
@@ -338,7 +347,6 @@ export default function PublicationShow() {
                     </CardFooter>
                 </Card>
 
-                {/* Diálogo de edición */}
                 <PostDialog
                     trigger={null}
                     open={isEditOpen}

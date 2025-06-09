@@ -27,6 +27,7 @@ import { PostDialog } from "@/components/publication-dialog"
 import { Role } from "@/types/Role"
 import { Preset } from "@/types/Preset"
 import { SharedData } from "@/types"
+import { toast } from "sonner"
 
 // ——— 1. Interfaces actualizadas según tu JSON real ———
 interface BackendImage {
@@ -139,16 +140,16 @@ export default function PublicationsPage() {
             images: pub.images,
             title: pub.title,
             description: pub.description,
-            likes_count: 0,
-            comments_count: 0,
+            likes_count: pub.likes_count,        // ← ahora usa el valor real
+            comments_count: pub.comments_count,  // ← idem
+            liked: pub.liked,                    // ← el booleano calculado en el controller
+            saved: pub.saved ?? false,           // ← si lo envías, o false por defecto
             created_at: pub.created_at,
-            liked: false,
-            saved: false,
             hashtags: pub.hashtags.map((h) => h.name),
-        }))
+        }));
 
-        setLocalPublications(mapped)
-    }, [backendPubs])
+        setLocalPublications(mapped);
+    }, [backendPubs]);
 
     // Helper para índice de imagen actual por publicación:
     const [currentImageIndex, setCurrentImageIndex] = useState<Record<number, number>>({})
@@ -199,20 +200,35 @@ export default function PublicationsPage() {
 
     // Toggle de “Me gusta” (solo a nivel UI, sin persistencia aún)
     const toggleLike = (id: number) => {
-        setLocalPublications((prev) =>
-            prev.map((pub) => {
-                if (pub.id === id) {
-                    const newLiked = !pub.liked
-                    return {
-                        ...pub,
-                        liked: newLiked,
-                        likes_count: newLiked ? pub.likes_count + 1 : pub.likes_count - 1,
-                    }
+        router.post(
+            route('publications.toggleLike', id),
+            {}, // no enviamos payload adicional
+            {
+                preserveState: true,   // mantiene el estado de la página actual
+                preserveScroll: true,  // no pierde la posición de scroll
+                onSuccess: (page) => {
+                    // page.props contiene el JSON que devolviste en el controlador
+                    const { liked, likes_count } = page.props
+                    setLocalPublications(prev =>
+                        prev.map(pub =>
+                            pub.id === id
+                                ? { ...pub, liked, likes_count }
+                                : pub
+                        )
+                    )
                 }
-                return pub
-            })
+            }
         )
-    }
+    };
+
+    // En tu componente React:
+    const { flash } = usePage().props;
+    useEffect(() => {
+        if (flash.success) {
+            toast.success(flash.success);
+        }
+    }, [flash.success]);
+
 
     // Toggle de “Guardar” (solo a nivel UI)
     const toggleSave = (id: number) => {

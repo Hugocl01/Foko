@@ -26,8 +26,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/publications', [PublicationController::class, 'index'])
         ->name('publications.index');
 
-    Route::get('/publications/{id}', [PublicationController::class, 'show'])
+    Route::get('/publications/{publication}', [PublicationController::class, 'show'])
         ->name('publications.show');
+
+    Route::post('publications/{publication}/like', [PublicationController::class, 'toggleLike'])
+        ->name('publications.toggleLike');
 
     // Presets
     Route::get('/presets', [PresetController::class, 'index'])

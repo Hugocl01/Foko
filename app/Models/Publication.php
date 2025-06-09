@@ -48,7 +48,7 @@ class Publication extends Model
 
     public function likes(): HasMany
     {
-        return $this->hasMany(Like::class);
+        return $this->hasMany(Like::class, 'publication_id');
     }
 
     public function saveds(): HasMany
@@ -58,7 +58,7 @@ class Publication extends Model
 
     public function comments()
     {
-        return $this->hasMany(Comment::class);
+        return $this->hasMany(Comment::class, 'publication_id');
     }
 
     public function hashtags()
