@@ -32,6 +32,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('publications/{publication}/like', [PublicationController::class, 'toggleLike'])
         ->name('publications.toggleLike');
 
+    Route::post('publications/{publication}/save', [PublicationController::class, 'toggleSave'])
+        ->name('publications.toggleSave');
+
     // Presets
     Route::get('/presets', [PresetController::class, 'index'])
         ->name('presets.index');

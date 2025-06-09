@@ -53,51 +53,64 @@ class PublicationController extends Controller
      */
     public function show(Publication $publication)
     {
-        $userId = Auth::id();
+        $userId = Auth::user()->id;
 
-        // Eager-load relaciones necesarias y conteos
+        // 1) Carga eager de todas las relaciones y conteos, incluyendo saves
         $publication->load([
             'user:id,name,username,profile_image',
             'images',
             'preset:id,name',
-            'hashtags:id,name'
+            'hashtags:id,name',
         ])
-        ->loadCount(['likes', 'comments'])
-        ->loadCount(['likes as liked_by_user_count' => function ($q) use ($userId) {
-            $q->where('user_id', $userId);
-        }]);
+            ->loadCount(['likes', 'comments'])
+            ->loadCount([
+                // ¿Le ha gustado?
+                'likes as liked_by_user_count' => function ($q) use ($userId) {
+                    $q->where('user_id', $userId);
+                },
+                // ¿La tiene guardada?
+                'saveds as saved_by_user_count' => function ($q) use ($userId) {
+                    $q->where('user_id', $userId);
+                },
+            ]);
 
-        // Añadir URL a cada imagen
+        // 2) Añadir URL a cada imagen
         $publication->images->transform(function ($img) {
             $img->url = $img->getImageUrlAttribute();
             return $img;
         });
 
-        // Preparar payload con misma estructura que index()
+        // 3) Preparar payload replicando la estructura de index()
         $item = [
-            'id'             => $publication->id,
-            'user'           => [
-                'id'       => $publication->user->id,
-                'name'     => $publication->user->name,
+            'id' => $publication->id,
+            'user' => [
+                'id' => $publication->user->id,
+                'name' => $publication->user->name,
                 'username' => $publication->user->username,
-                'avatar'   => $publication->user->profile_image_url,
+                'avatar' => $publication->user->profile_image_url,
             ],
-            'images'         => $publication->images->map(function ($img) {
-                return ['id' => $img->id, 'url' => $img->url];
-            }),
-            'preset'         => $publication->preset ? [
-                'id'   => $publication->preset->id,
-                'name' => $publication->preset->name,
-            ] : null,
-            'hashtags'       => $publication->hashtags->pluck('name'),
-            'likes_count'    => $publication->likes_count,
+            'images' => $publication->images->map(fn($img) => [
+                'id' => $img->id,
+                'url' => $img->url,
+            ])->all(),
+            'preset' => $publication->preset
+                ? ['id' => $publication->preset->id, 'name' => $publication->preset->name]
+                : null,
+            'hashtags' => $publication->hashtags->map(fn($tag) => [
+                'id' => $tag->id,
+                'name' => $tag->name,
+            ])->all(),
+            'likes_count' => $publication->likes_count,
             'comments_count' => $publication->comments_count,
-            'liked'          => $publication->liked_by_user_count > 0,
-            'title'          => $publication->title,
-            'description'    => $publication->description,
-            'created_at'     => $publication->created_at->toDateTimeString(),
+            'liked' => $publication->liked_by_user_count > 0,
+            // Nuevo campo “saved”
+            'saved' => $publication->saved_by_user_count > 0,
+            'title' => $publication->title,
+            'description' => $publication->description,
+            'created_at' => $publication->created_at->toDateTimeString(),
         ];
 
+        // 4) Renderizar con Inertia
         return Inertia::render('publication', [
             'publication' => $item,
         ]);
@@ -125,5 +138,26 @@ class PublicationController extends Controller
         return redirect()
             ->back()
             ->with('success', $message);
+    }
+
+    /**
+     * /**
+     * Ruta: POST publications/{publication}/save
+     * Toggle "saved" para la publicación y redirigir de vuelta con flash.
+     */
+    public function toggleSave(Request $request, Publication $publication)
+    {
+        $userId = Auth::id();
+        $saveQuery = $publication->saveds()->where('user_id', $userId);
+
+        if ($saveQuery->exists()) {
+            $saveQuery->delete();
+            $message = 'Guardado eliminado';
+        } else {
+            $publication->saveds()->create(['user_id' => $userId]);
+            $message = 'Guardado agregado';
+        }
+
+        return redirect()->back()->with('success', $message);
     }
 }

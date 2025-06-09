@@ -27,22 +27,44 @@ import { PlaceholderPattern } from "@/components/ui/placeholder-pattern"
 import { toast } from "sonner"
 import { PostDialog } from "@/components/publication-dialog"
 
-interface BackendImage { /* ... */ }
-interface BackendUser { /* ... */ }
-interface BackendPreset { /* ... */ }
-interface BackendHashtag { id: number; name: string; /* ... */ }
+interface BackendImage {
+    id: number
+    url: string
+    // otros campos si los hubiera...
+}
+
+interface BackendUser {
+    id: number
+    name: string
+    username: string
+    profile_image_url?: string
+}
+
+interface BackendPreset {
+    id: number
+    name: string
+    price: number
+    description: string
+}
+
+interface BackendHashtag {
+    id: number
+    name: string
+}
+
 interface BackendPublication {
     id: number
     user_id: number
     title: string
     description: string
     created_at: string
-    user: BackendUser & { profile_image_url?: string }
+    user: BackendUser
     images: BackendImage[]
-    preset: BackendPreset & { price: number; description: string }
+    preset: BackendPreset
     hashtags: BackendHashtag[]
     likes_count: number
     liked: boolean
+    saved: boolean          // <-- añadido
 }
 
 export default function PublicationShow() {
@@ -56,14 +78,12 @@ export default function PublicationShow() {
 
     const loggedUser = auth.user
 
-    // toast flash success
+    // Mostrar toast de éxito si viene flash
     useEffect(() => {
-        if (flash.success) {
-            toast.success(flash.success)
-        }
+        if (flash.success) toast.success(flash.success)
     }, [flash.success])
 
-    // Solo el creador puede editar
+    // Determinar si el usuario actual es el creador
     const isOwner = useMemo(
         () => Number(pub.user.id) === Number(loggedUser.id),
         [pub.user.id, loggedUser.id]
@@ -78,12 +98,48 @@ export default function PublicationShow() {
             id: String(pub.id),
             title: pub.title,
             content: pub.description,
-            featured_image: null,
+            featured_image: null as File | null,
             images: [] as File[],
             hashtags: pub.hashtags.map((h) => h.name),
         }),
         [pub]
     )
+
+    // Handlers de like y save
+    const [liked, setLiked] = useState(pub.liked)
+    const [likesCount, setLikesCount] = useState(pub.likes_count)
+    const [saved, setSaved] = useState(pub.saved)  // <-- inicializado desde prop
+
+    const toggleLike = () => {
+        router.post(
+            route("publications.toggleLike", pub.id),
+            {},
+            {
+                preserveState: true,
+                preserveScroll: true,
+                onSuccess: (page) => {
+                    const updated: BackendPublication = page.props.publication
+                    setLiked(updated.liked)
+                    setLikesCount(updated.likes_count)
+                },
+            }
+        )
+    }
+
+    const toggleSave = () => {
+        router.post(
+            route("publications.toggleSave", pub.id),
+            {},
+            {
+                preserveState: true,
+                preserveScroll: true,
+                onSuccess: (page) => {
+                    const updated: BackendPublication = page.props.publication
+                    setSaved(updated.saved)     // <-- actualizar estado
+                },
+            }
+        )
+    }
 
     // Handler para enviar la actualización
     const handleUpdatePublication = (data: {
@@ -110,9 +166,8 @@ export default function PublicationShow() {
                     setIsEditOpen(false)
                     router.reload()
                 },
-                onError: (errors) => {
+                onError: () => {
                     toast.error("Error al actualizar la publicación")
-                    console.error(errors)
                 },
             }
         )
@@ -129,30 +184,6 @@ export default function PublicationShow() {
     const totalImages = pub.images.length
     const nextImage = () => setCurrentImageIndex((i) => (i + 1) % totalImages)
     const prevImage = () => setCurrentImageIndex((i) => (i - 1 + totalImages) % totalImages)
-
-    // Likes y guardado (estado inicial desde el servidor)
-    const [liked, setLiked] = useState(pub.liked)
-    const [likesCount, setLikesCount] = useState(pub.likes_count)
-    const [saved, setSaved] = useState(false)
-
-    const toggleLike = () => {
-        router.post(
-            route("publications.toggleLike", pub.id),
-            {},
-            {
-                preserveState: true,
-                preserveScroll: true,
-                onSuccess: (page) => {
-                    // lee los nuevos valores desde props.publication
-                    const updated: BackendPublication = page.props.publication
-                    setLiked(updated.liked)
-                    setLikesCount(updated.likes_count)
-                },
-            }
-        )
-    }
-
-    const toggleSave = () => setSaved((s) => !s)
 
     return (
         <AppLayout breadcrumbs={pageBreadcrumbs}>
@@ -179,18 +210,25 @@ export default function PublicationShow() {
                     <CardHeader className="px-4">
                         <div className="flex items-center justify-between">
                             <div className="flex items-center gap-3">
-                                <Link href={route("profile.user", pub.user.username)} onClick={(e) => e.stopPropagation()}>
+                                <Link
+                                    href={route("profile.user", pub.user.username)}
+                                    onClick={(e) => e.stopPropagation()}
+                                >
                                     <Avatar className="h-10 w-10">
                                         <AvatarImage
                                             src={pub.user.profile_image_url || "/placeholder.svg"}
                                             alt={pub.user.name}
                                         />
-                                        <AvatarFallback className="text-sm">{pub.user.name.charAt(0)}</AvatarFallback>
+                                        <AvatarFallback className="text-sm">
+                                            {pub.user.name.charAt(0)}
+                                        </AvatarFallback>
                                     </Avatar>
                                 </Link>
                                 <div className="flex flex-col">
                                     <div className="font-medium text-base">{pub.user.name}</div>
-                                    <div className="text-sm text-muted-foreground">@{pub.user.username}</div>
+                                    <div className="text-sm text-muted-foreground">
+                                        @{pub.user.username}
+                                    </div>
                                 </div>
                             </div>
                             <DropdownMenu>
@@ -204,7 +242,9 @@ export default function PublicationShow() {
                                     <DropdownMenuItem>Copiar enlace</DropdownMenuItem>
                                     <DropdownMenuItem>Seguir usuario</DropdownMenuItem>
                                     <DropdownMenuSeparator />
-                                    <DropdownMenuItem className="text-destructive">Reportar</DropdownMenuItem>
+                                    <DropdownMenuItem className="text-destructive">
+                                        Reportar
+                                    </DropdownMenuItem>
                                 </DropdownMenuContent>
                             </DropdownMenu>
                         </div>
@@ -220,9 +260,7 @@ export default function PublicationShow() {
                                     className="w-full h-full object-cover transition-all duration-300"
                                 />
                             ) : (
-                                <div className="w-full h-full">
-                                    <PlaceholderPattern />
-                                </div>
+                                <PlaceholderPattern />
                             )}
 
                             {totalImages > 1 && (
@@ -249,7 +287,9 @@ export default function PublicationShow() {
                                         {pub.images.map((_, idx) => (
                                             <div
                                                 key={idx}
-                                                className={`h-1.5 rounded-full ${currentImageIndex === idx ? "w-4 bg-white" : "w-1.5 bg-white/60"
+                                                className={`h-1.5 rounded-full ${currentImageIndex === idx
+                                                        ? "w-4 bg-white"
+                                                        : "w-1.5 bg-white/60"
                                                     }`}
                                             />
                                         ))}
