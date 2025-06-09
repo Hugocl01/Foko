@@ -23,9 +23,12 @@ import AppLayout from "@/layouts/app-layout"
 import { usePage, Head, router, Link } from "@inertiajs/react"
 import type { BreadcrumbItem } from "@/types"
 import { PlaceholderPattern } from "@/components/ui/placeholder-pattern"
+import { PostDialog } from "@/components/publication-dialog"
+import { Role } from "@/types/Role"
+import { Preset } from "@/types/Preset"
+import { SharedData } from "@/types"
 
 // ——— 1. Interfaces actualizadas según tu JSON real ———
-
 interface BackendImage {
     id: number
     publication_id: number
@@ -72,7 +75,7 @@ interface BackendPublication {
     updated_at: string
     user: BackendUser
     images: BackendImage[]
-    preset: any // no lo usamos en el componente, lo dejamos como any
+    preset: Preset
     hashtags: BackendHashtag[]
 }
 
@@ -83,8 +86,9 @@ interface Publication {
         name: string
         username: string
         avatar_url: string | null
+        role: Role
     }
-    images: BackendImage[]      // seguimos usando el array de objetos, con el campo .url
+    images: BackendImage[]
     title: string
     description: string
     likes_count: number
@@ -92,7 +96,7 @@ interface Publication {
     created_at: string
     liked: boolean
     saved: boolean
-    hashtags: string[]          // solo nombres de hashtag, por ejemplo
+    hashtags: string[]
 }
 
 interface Paginated<T> {
@@ -108,6 +112,8 @@ const breadcrumbs: BreadcrumbItem[] = [{ title: "Publicaciones", href: "/publica
 export default function PublicationsPage() {
     // 2. Desestructuramos el prop que viene de Inertia (este es el JSON “raw” que mostraste en tu pregunta)
     const { props } = usePage<{ publications: Paginated<BackendPublication> }>()
+    const page = usePage<SharedData>();
+    const { auth } = page.props;
     const {
         data: backendPubs,
         current_page,
@@ -120,6 +126,7 @@ export default function PublicationsPage() {
     //    inyectando likes_count = 0, comments_count = 0, liked = false, saved = false,
     //    y mapeando user y contenido.
     const [localPublications, setLocalPublications] = useState<Publication[]>([])
+    const [createOpen, setCreateOpen] = useState(false) // estado del diálogo
 
     useEffect(() => {
         const mapped: Publication[] = backendPubs.map((pub) => ({
@@ -127,9 +134,9 @@ export default function PublicationsPage() {
             user: {
                 name: pub.user.name,
                 username: pub.user.username,
-                avatar_url: pub.user.profile_image_url, // viene como profile_image_url en tu JSON
+                avatar_url: pub.user.profile_image_url,
             },
-            images: pub.images, // mantenemos el array de objetos, con { id, publication_id, url, … }
+            images: pub.images,
             title: pub.title,
             description: pub.description,
             likes_count: 0,
@@ -137,7 +144,6 @@ export default function PublicationsPage() {
             created_at: pub.created_at,
             liked: false,
             saved: false,
-            // si necesitas los hashtags como array de strings, extraemos solo el nombre:
             hashtags: pub.hashtags.map((h) => h.name),
         }))
 
@@ -162,6 +168,34 @@ export default function PublicationsPage() {
     }
 
     const getCurrentImageIndex = (pubId: number) => currentImageIndex[pubId] || 0
+
+    // --- Función para manejar creación de publicación ---
+    const handleCreateSubmit = (data: {
+        title: string
+        content: string
+        featured_image: File | null
+        attachments: File[]
+        hashtags: string[]
+    }) => {
+        const formData = new FormData()
+        formData.append("title", data.title)
+        formData.append("description", data.content)
+        if (data.featured_image) {
+            formData.append("featured_image", data.featured_image)
+        }
+        data.attachments.forEach((file, idx) => {
+            formData.append(`attachments[${idx}]`, file)
+        })
+        data.hashtags.forEach((tag, idx) => {
+            formData.append(`hashtags[${idx}]`, tag)
+        })
+        router.post(route("publications.store"), formData, {
+            preserveState: true,
+            onSuccess: () => {
+                setCreateOpen(false)
+            },
+        })
+    }
 
     // Toggle de “Me gusta” (solo a nivel UI, sin persistencia aún)
     const toggleLike = (id: number) => {
@@ -202,7 +236,7 @@ export default function PublicationsPage() {
     // Cálculo índice de items mostrados (solo para el texto de “Mostrando X–Y de Z”)
     const indexOfFirstItem = (current_page - 1) * per_page + 1
     const indexOfLastItem = Math.min(current_page * per_page, total)
-
+    console.log(auth.user)
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Publicaciones" />
@@ -211,10 +245,18 @@ export default function PublicationsPage() {
                 <h1 className="text-2xl font-bold">Publicaciones</h1>
 
                 <div className="flex justify-end items-center">
-                    <Button variant="default" className="flex items-center cursor-pointer">
-                        <Plus className="h-4 w-4 mr-1" />
-                        Nueva publicación
-                    </Button>
+                    <PostDialog
+                        trigger={
+                            <Button variant="default" className="flex items-center">
+                                <Plus className="h-4 w-4 mr-1" />
+                                Nueva publicación
+                            </Button>
+                        }
+                        open={createOpen}
+                        onOpenChange={setCreateOpen}
+                        onSubmit={handleCreateSubmit}
+                        userRole_id={auth.user.role_id}
+                    />
                 </div>
 
                 {/* Contenedor centralizado con una columna más estrecha */}
@@ -315,8 +357,8 @@ export default function PublicationsPage() {
                                                     <div
                                                         key={idx}
                                                         className={`h-1.5 rounded-full ${getCurrentImageIndex(pub.id) === idx
-                                                                ? "w-4 bg-white"
-                                                                : "w-1.5 bg-white/60"
+                                                            ? "w-4 bg-white"
+                                                            : "w-1.5 bg-white/60"
                                                             }`}
                                                     />
                                                 ))}
@@ -431,6 +473,6 @@ export default function PublicationsPage() {
                     </div>
                 </div>
             </div>
-        </AppLayout>
+        </AppLayout >
     )
 }
