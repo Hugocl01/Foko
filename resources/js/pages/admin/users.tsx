@@ -13,6 +13,7 @@ import {
     UserPlus,
     X,
     Save,
+    UserRound,
 } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
@@ -137,6 +138,10 @@ export default function Users({ users: initialUsers, plans: initialPlans, roles:
 
     const paginate = (pageNumber: number) => {
         if (pageNumber > 0 && pageNumber <= totalPages) setCurrentPage(pageNumber)
+    }
+
+     const handleProfile = (username: string) => {
+        router.get(route("profile.publications.index", { user: username }))
     }
 
     // Diálogos
@@ -528,6 +533,23 @@ export default function Users({ users: initialUsers, plans: initialPlans, roles:
                                                                             <Button variant="secondary"
                                                                                 size="icon"
                                                                                 className="cursor-pointer"
+                                                                                onClick={() => handleProfile(user.username)}
+                                                                            >
+                                                                                <UserRound className="h-4 w-4" />
+                                                                            </Button>
+                                                                        </TooltipTrigger>
+                                                                        <TooltipContent>
+                                                                            <p>Perfil del usuario</p>
+                                                                        </TooltipContent>
+                                                                    </Tooltip>
+                                                                </TooltipProvider>
+
+                                                                <TooltipProvider>
+                                                                    <Tooltip>
+                                                                        <TooltipTrigger asChild>
+                                                                            <Button variant="secondary"
+                                                                                size="icon"
+                                                                                className="cursor-pointer"
                                                                                 onClick={() => openEditDialog(user)}
                                                                             >
                                                                                 <Edit className="h-4 w-4" />
@@ -698,6 +720,22 @@ export default function Users({ users: initialUsers, plans: initialPlans, roles:
                                                 </div>
                                             </CardContent>
                                             <CardFooter className="p-4 border-t flex justify-end gap-2">
+                                                <TooltipProvider>
+                                                    <Tooltip>
+                                                        <TooltipTrigger asChild>
+                                                            <Button variant="outline"
+                                                                size="icon"
+                                                                className="cursor-pointer"
+                                                                onClick={() => handleProfile(user.username)}
+                                                            >
+                                                                <UserRound className="h-4 w-4" />
+                                                            </Button>
+                                                        </TooltipTrigger>
+                                                        <TooltipContent>
+                                                            <p>Perfil del usuario</p>
+                                                        </TooltipContent>
+                                                    </Tooltip>
+                                                </TooltipProvider>
                                                 <Button
                                                     variant="outline"
                                                     size="sm"
