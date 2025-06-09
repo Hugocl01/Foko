@@ -236,7 +236,7 @@ export default function PublicationsPage() {
     // Cálculo índice de items mostrados (solo para el texto de “Mostrando X–Y de Z”)
     const indexOfFirstItem = (current_page - 1) * per_page + 1
     const indexOfLastItem = Math.min(current_page * per_page, total)
-    console.log(auth.user)
+
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Publicaciones" />

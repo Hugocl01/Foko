@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react"
+import React, { useState, useEffect, useMemo, useRef } from "react"
 import { X, ImageIcon, Plus } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -60,15 +60,21 @@ export function PostDialog({
     )
 
     const [uncontrolledOpen, setUncontrolledOpen] = useState(false)
-    const isControlled = controlledOpen !== undefined && setControlledOpen !== undefined
+    const isControlled =
+        controlledOpen !== undefined && setControlledOpen !== undefined
     const isDialogOpen = isControlled ? controlledOpen! : uncontrolledOpen
-    const setIsDialogOpen = isControlled ? setControlledOpen! : setUncontrolledOpen
+    const setIsDialogOpen = isControlled
+        ? setControlledOpen!
+        : setUncontrolledOpen
 
     const [formData, setFormData] = useState<PostFormData>(initialForm)
     const [hashtagInput, setHashtagInput] = useState("")
     const [dragActive, setDragActive] = useState<string | null>(null)
     const [activeTab, setActiveTab] = useState("info")
+    // Ref for hidden file input
+    const fileInputRef = useRef<HTMLInputElement>(null)
 
+    // Reset form on open/initialData change
     useEffect(() => {
         setFormData(initialForm)
         setHashtagInput("")
@@ -80,39 +86,63 @@ export function PostDialog({
         setFormData((prev) => ({ ...prev, [field]: value }))
     }
 
+    // Maximum images allowed based on role
     const maxImages = userRole_id === 1 ? 3 : 1
 
+    // Filter and limit dropped/selected files
     const handleFileSelect = (files: File[]) => {
-        // filter only images
         const imgs = files.filter((f) => f.type.startsWith("image/"))
         const remaining = maxImages - formData.images.length
         return imgs.slice(0, remaining)
     }
 
-    const handleDrop = (
-        e: React.DragEvent,
-    ) => {
-        e.preventDefault();
-        e.stopPropagation();
+    // Remove image at given index
+    const removeImage = (index: number) => {
+        setFormData((prev) => ({
+            ...prev,
+            images: prev.images.filter((_, i) => i !== index),
+        }))
+    }
+
+    // Handle drag-and-drop
+    const handleDrop = (e: React.DragEvent) => {
+        e.preventDefault()
+        e.stopPropagation()
         setDragActive(null)
         const dropped = Array.from(e.dataTransfer.files)
         if (!dropped.length) return
         const toAdd = handleFileSelect(dropped)
         if (toAdd.length) {
-            setFormData((prev) => ({ ...prev, images: [...prev.images, ...toAdd] }))
+            setFormData((prev) => ({
+                ...prev,
+                images: [...prev.images, ...toAdd],
+            }))
+        }
+    }
+
+    // Trigger file dialog on wrapper click
+    const handleWrapperClick = () => {
+        if (formData.images.length < maxImages) {
+            fileInputRef.current?.click()
         }
     }
 
     const addHashtag = () => {
         const tag = hashtagInput.trim()
         if (tag && !formData.hashtags.includes(tag)) {
-            setFormData((prev) => ({ ...prev, hashtags: [...prev.hashtags, tag] }))
+            setFormData((prev) => ({
+                ...prev,
+                hashtags: [...prev.hashtags, tag],
+            }))
             setHashtagInput("")
         }
     }
 
     const removeHashtag = (tag: string) => {
-        setFormData((prev) => ({ ...prev, hashtags: prev.hashtags.filter((h) => h !== tag) }))
+        setFormData((prev) => ({
+            ...prev,
+            hashtags: prev.hashtags.filter((h) => h !== tag),
+        }))
     }
 
     const handleKeyPress = (e: React.KeyboardEvent) => {
@@ -133,16 +163,31 @@ export function PostDialog({
         setIsDialogOpen(false)
     }
 
+    // File upload area with drag & drop and removal
     const FileUploadArea = () => (
         <div
-            className={`relative border-2 border-dashed rounded-lg p-4 transition-colors ${dragActive === "images" ? "border-primary bg-primary/5" : "border-muted-foreground/25 hover:border-muted-foreground/50"
+            className={`relative border-2 border-dashed rounded-lg p-4 transition-colors cursor-pointer ${dragActive === "images"
+                ? "border-primary bg-primary/5"
+                : "border-muted-foreground/25 hover:border-muted-foreground/50"
                 }`}
-            onDragEnter={(e) => { e.preventDefault(); setDragActive("images") }}
-            onDragLeave={(e) => { e.preventDefault(); setDragActive(null) }}
-            onDragOver={(e) => { e.preventDefault(); setDragActive("images") }}
+            onClick={handleWrapperClick}
+            onDragEnter={(e) => {
+                e.preventDefault()
+                setDragActive("images")
+            }}
+            onDragLeave={(e) => {
+                e.preventDefault()
+                setDragActive(null)
+            }}
+            onDragOver={(e) => {
+                e.preventDefault()
+                setDragActive("images")
+            }}
             onDrop={handleDrop}
         >
+            {/* Hidden file input */}
             <input
+                ref={fileInputRef}
                 type="file"
                 accept="image/*"
                 multiple
@@ -151,55 +196,59 @@ export function PostDialog({
                     const files = e.target.files ? Array.from(e.target.files) : []
                     const toAdd = handleFileSelect(files)
                     if (toAdd.length) {
-                        setFormData((prev) => ({ ...prev, images: [...prev.images, ...toAdd] }))
+                        setFormData((prev) => ({
+                            ...prev,
+                            images: [...prev.images, ...toAdd],
+                        }))
                     }
                 }}
-                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                style={{ display: "none" }}
             />
-            {formData.images.length > 0 ? (
-                <div className="flex flex-col gap-2">
-                    {formData.images.map((f, i) => (
-                        <div key={i} className="flex items-center justify-between">
-                            <div className="flex items-center gap-3">
-                                <ImageIcon className="h-6 w-6 text-primary" />
-                                <div>
-                                    <p className="font-medium text-sm">{f.name}</p>
-                                    <p className="text-xs text-muted-foreground">{(f.size / 1024 / 1024).toFixed(2)} MB</p>
+
+            <div className="relative z-10">
+                {formData.images.length > 0 ? (
+                    <div className="flex flex-col gap-2">
+                        {formData.images.map((f, i) => (
+                            <div key={i} className="flex items-center justify-between">
+                                <div className="flex items-center gap-3">
+                                    <ImageIcon className="h-6 w-6 text-primary" />
+                                    <div>
+                                        <p className="font-medium text-sm">{f.name}</p>
+                                        <p className="text-xs text-muted-foreground">
+                                            {(f.size / 1024 / 1024).toFixed(2)} MB
+                                        </p>
+                                    </div>
                                 </div>
+                                <Button
+                                    size="sm"
+                                    variant="ghost"
+                                    onClick={(e) => {
+                                        e.stopPropagation()
+                                        removeImage(i)
+                                    }}
+                                >
+                                    <X className="h-4 w-4" />
+                                </Button>
                             </div>
-                            <Button
-                                size="sm"
-                                variant="ghost"
-                                onClick={() =>
-                                    setFormData((prev) => ({
-                                        ...prev,
-                                        images: prev.images.filter((_, idx) => idx !== i),
-                                    }))
-                                }
-                            >
-                                <X className="h-4 w-4" />
-                            </Button>
-                        </div>
-                    ))}
-                    {formData.images.length < maxImages && (
-                        <p className="text-xs text-muted-foreground">
-                            Puedes subir {maxImages - formData.images.length} imagen(es) más.
-                        </p>
-                    )}
-                </div>
-            ) : (
-                <div className="text-center">
-                    <ImageIcon className="mx-auto h-8 w-8 text-muted-foreground" />
-                    <div className="mt-2">
-                        <p className="text-xs font-medium">Subir imagen(es)</p>
-                        <p className="text-xs text-muted-foreground">
-                            {userRole_id === 1
-                                ? "Hasta 3 imágenes"
-                                : "1 imagen máxima"}
-                        </p>
+                        ))}
+                        {formData.images.length < maxImages && (
+                            <p className="text-xs text-muted-foreground">
+                                Puedes subir {maxImages - formData.images.length} imagen(es) más.
+                            </p>
+                        )}
                     </div>
-                </div>
-            )}
+                ) : (
+                    <div className="text-center">
+                        <ImageIcon className="mx-auto h-8 w-8 text-muted-foreground" />
+                        <div className="mt-2">
+                            <p className="text-xs font-medium">Subir imagen(es)</p>
+                            <p className="text-xs text-muted-foreground">
+                                {userRole_id === 1 ? "Hasta 3 imágenes" : "1 imagen máxima"}
+                            </p>
+                        </div>
+                    </div>
+                )}
+            </div>
         </div>
     )
 
@@ -267,14 +316,19 @@ export function PostDialog({
                                     className="flex-1"
                                 />
                                 <Button variant="outline" size="sm" onClick={addHashtag}>
-                                    <Plus className="h-4 w-4 mr-1" />Agregar
+                                    <Plus className="h-4 w-4 mr-1" />
+                                    Agregar
                                 </Button>
                             </div>
                             <ScrollArea className="h-[150px] w-full rounded-md border p-2">
                                 {formData.hashtags.length > 0 ? (
                                     <div className="flex flex-wrap gap-2">
                                         {formData.hashtags.map((tag, i) => (
-                                            <Badge key={i} variant="secondary" className="flex items-center gap-1">
+                                            <Badge
+                                                key={i}
+                                                variant="secondary"
+                                                className="flex items-center gap-1"
+                                            >
                                                 #{tag}
                                                 <Button
                                                     variant="ghost"
