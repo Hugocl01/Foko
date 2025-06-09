@@ -1,4 +1,4 @@
-import React, { useState } from "react"
+import React, { useState, useMemo } from "react"
 import { Head, usePage, Link, router } from "@inertiajs/react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
@@ -20,123 +20,119 @@ import {
     ChevronLeft,
     ChevronRight,
     ArrowLeft,
-    ArrowRight,
 } from "lucide-react"
 import AppLayout from "@/layouts/app-layout"
 import type { BreadcrumbItem } from "@/types"
 import { PlaceholderPattern } from "@/components/ui/placeholder-pattern"
+import { toast } from "sonner"
+import { PostDialog } from "@/components/publication-dialog"
 
-interface BackendImage {
-    id: number
-    publication_id: number
-    url: string
-    created_at: string
-    updated_at: string
-}
-
-interface BackendUser {
-    id: number
-    name: string
-    username: string
-    email: string
-    profile_image: string | null
-    status: number
-    plan_id: number
-    role_id: number
-    description: string
-    email_verified_at: string | null
-    created_at: string
-    updated_at: string
-    profile_image_url: string | null
-}
-
-interface BackendPreset {
-    id: number
-    name: string
-    description: string
-    price: string
-    file: string
-    before_image: string | null
-    after_image: string | null
-    user_id: number
-    created_at: string
-    updated_at: string
-}
-
-interface BackendHashtag {
-    id: number
-    name: string
-    slug: string
-    created_at: string
-    updated_at: string
-    pivot: {
-        publication_id: number
-        hashtag_id: number
-    }
-}
-
+interface BackendImage { /* ... */ }
+interface BackendUser { /* ... */ }
+interface BackendPreset { /* ... */ }
+interface BackendHashtag { id: number; name: string; /* ... */ }
 interface BackendPublication {
     id: number
     user_id: number
     title: string
     description: string
-    preset_id: number
     created_at: string
-    updated_at: string
     user: BackendUser
     images: BackendImage[]
     preset: BackendPreset
     hashtags: BackendHashtag[]
 }
 
-interface PublicationProps {
-    publication: BackendPublication
-}
-
 export default function PublicationShow() {
-    const { props } = usePage<{ publication: BackendPublication }>()
-    const pub = props.publication
+    const {
+        props: { publication: pub, auth },
+    } = usePage<{ publication: BackendPublication; auth: { user: BackendUser } }>()
+    const loggedUser = auth.user
 
-    // Breadcrumb: Publicaciones > Título actual
+    // Solo el creador puede editar
+    const isOwner = useMemo(
+        () => Number(pub.user.id) === Number(loggedUser.id),
+        [pub.user.id, loggedUser.id]
+    )
+
+    // Control del diálogo de edición
+    const [isEditOpen, setIsEditOpen] = useState(false)
+
+    // Valores iniciales para el formulario de edición
+    const initialPostValues = useMemo(() => ({
+        id: String(pub.id),
+        title: pub.title,
+        content: pub.description,
+        featured_image: null,
+        images: [] as File[],
+        hashtags: pub.hashtags.map((h) => h.name),
+    }), [pub])
+
+    // Handler para enviar la actualización
+    const handleUpdatePublication = (data: {
+        id?: string
+        title: string
+        content: string
+        featured_image: File | null
+        images: File[]
+        hashtags: string[]
+    }) => {
+        router.post(
+            route("publications.update", pub.id),
+            {
+                _method: "patch",
+                title: data.title,
+                content: data.content,
+                hashtags: data.hashtags,
+            },
+            {
+                forceFormData: true,
+                preserveScroll: true,
+                onSuccess: () => {
+                    toast.success("Publicación actualizada con éxito")
+                    setIsEditOpen(false)
+                    router.reload()
+                },
+                onError: (errors) => {
+                    toast.error("Error al actualizar la publicación")
+                    console.error(errors)
+                },
+            }
+        )
+    }
+
+    // Breadcrumbs
     const pageBreadcrumbs: BreadcrumbItem[] = [
         { title: "Publicaciones", href: "/publications" },
         { title: pub.title, href: "" },
     ]
 
-    // Carrusel: índice de imagen
-    const [currentImageIndex, setCurrentImageIndex] = useState<number>(0)
+    // Carrusel de imágenes
+    const [currentImageIndex, setCurrentImageIndex] = useState(0)
     const totalImages = pub.images.length
+    const nextImage = () =>
+        setCurrentImageIndex((i) => (i + 1) % totalImages)
+    const prevImage = () =>
+        setCurrentImageIndex((i) => (i - 1 + totalImages) % totalImages)
 
-    const nextImage = () => {
-        setCurrentImageIndex((prev) => (prev + 1) % totalImages)
-    }
-    const prevImage = () => {
-        setCurrentImageIndex((prev) => (prev - 1 + totalImages) % totalImages)
-    }
-
-    // “Me gusta” y “Guardar”
-    const [liked, setLiked] = useState<boolean>(false)
-    const [likesCount, setLikesCount] = useState<number>(0)
-    const [saved, setSaved] = useState<boolean>(false)
-
+    // Likes y guardado
+    const [liked, setLiked] = useState(false)
+    const [likesCount, setLikesCount] = useState(0)
+    const [saved, setSaved] = useState(false)
     const toggleLike = () => {
-        const nuevoLiked = !liked
-        setLiked(nuevoLiked)
-        setLikesCount((prev) => (nuevoLiked ? prev + 1 : Math.max(prev - 1, 0)))
-        // Aquí podrías llamar al back: router.post(route("publications.like", pub.id))
+        const nl = !liked
+        setLiked(nl)
+        setLikesCount((c) => (nl ? c + 1 : Math.max(c - 1, 0)))
+        // router.post(route("publications.like", pub.id))
     }
-
-    const toggleSave = () => {
-        setSaved((prev) => !prev)
-        // Aquí podrías llamar al back para guardar la publicación
-    }
+    const toggleSave = () => setSaved((s) => !s)
 
     return (
         <AppLayout breadcrumbs={pageBreadcrumbs}>
             <Head title={pub.title} />
 
             <div className="flex flex-col gap-4 p-4 max-w-2xl mx-auto">
-                {/* Volver a listado + título */}
+                {/* Volver + Título + Editar */}
                 <div className="flex items-center gap-4">
                     <Link href="/publications">
                         <Button variant="ghost" size="icon">
@@ -144,6 +140,15 @@ export default function PublicationShow() {
                         </Button>
                     </Link>
                     <h1 className="text-2xl font-bold">{pub.title}</h1>
+                    {isOwner && (
+                        <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => setIsEditOpen(true)}
+                        >
+                            Editar
+                        </Button>
+                    )}
                 </div>
 
                 <Card className="flex flex-col h-full">
@@ -332,6 +337,17 @@ export default function PublicationShow() {
                         </Card>
                     </CardFooter>
                 </Card>
+
+                {/* Diálogo de edición */}
+                <PostDialog
+                    trigger={null}
+                    open={isEditOpen}
+                    onOpenChange={setIsEditOpen}
+                    isEditing
+                    initialData={initialPostValues}
+                    onSubmit={handleUpdatePublication}
+                    userRole_id={loggedUser.role_id}
+                />
             </div>
         </AppLayout>
     )
