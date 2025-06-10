@@ -234,8 +234,8 @@ export default function PublicationShow() {
                                     </Button>
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end">
+                                    <DropdownMenuItem>Ver perfil</DropdownMenuItem>
                                     <DropdownMenuItem>Copiar enlace</DropdownMenuItem>
-                                    <DropdownMenuItem>Seguir usuario</DropdownMenuItem>
                                     <DropdownMenuSeparator />
                                     <DropdownMenuItem className="text-destructive">
                                         Reportar

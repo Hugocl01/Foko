@@ -295,7 +295,7 @@ export default function PresetDetailPage() {
                                         </DropdownMenuTrigger>
                                         <DropdownMenuContent align="end">
                                             <DropdownMenuItem>Ver perfil</DropdownMenuItem>
-                                            <DropdownMenuItem>Seguir usuario</DropdownMenuItem>
+                                            <DropdownMenuItem>Copiar enlace</DropdownMenuItem>
                                             <DropdownMenuSeparator />
                                             <DropdownMenuItem className="text-destructive">Reportar</DropdownMenuItem>
                                         </DropdownMenuContent>
