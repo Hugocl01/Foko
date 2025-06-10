@@ -6,6 +6,7 @@ use App\Models\Preset;
 use App\Models\Hashtag;
 use App\Models\Publication;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Intervention\Image\Laravel\Facades\Image;
@@ -69,14 +70,16 @@ class PresetController extends Controller
      */
     public function store(Request $request)
     {
-        // 1) Validar todos los campos
+        // 1) Validar todos los campos, incluyendo hashtags
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string|max:255',
             'price' => 'required|numeric|min:0',
             'before_image' => 'required|image',
             'after_image' => 'required|image',
-            'file' => 'required|file|max:10240',  // máx. 10 MB
+            'file' => 'required|file|max:10240', // 10 MB
+            'hashtags' => 'nullable',                // acepta array o JSON
+            'hashtags.*' => 'string|max:255',          // si viene como array
         ]);
 
         // 2) Crear instancia de Preset y llenar campos básicos
@@ -85,53 +88,72 @@ class PresetController extends Controller
         $preset->description = $validated['description'] ?? '';
         $preset->price = $validated['price'];
         $preset->user_id = Auth::id();
-        // (no guardamos aún)
 
         // 3) Procesar “before_image” (Intervention Image → WebP 800×800)
         if ($request->hasFile('before_image')) {
             $beforeUploaded = $request->file('before_image');
-
             $imgBefore = Image::read($beforeUploaded->getRealPath())
                 ->encodeByExtension('webp', 80);
-
             $beforeName = Str::uuid() . '.webp';
-            // Guardarlo en disco 'preset_images' (configurado en filesystems)
             Storage::disk('preset_images')->put($beforeName, (string) $imgBefore);
             $preset->before_image = $beforeName;
         }
 
-        // 4) Procesar “after_image” (misma lógica)
+        // 4) Procesar “after_image”
         if ($request->hasFile('after_image')) {
             $afterUploaded = $request->file('after_image');
-
             $imgAfter = Image::read($afterUploaded->getRealPath())
                 ->encodeByExtension('webp', 80);
-
             $afterName = Str::uuid() . '.webp';
             Storage::disk('preset_images')->put($afterName, (string) $imgAfter);
             $preset->after_image = $afterName;
         }
 
-        // 5) Guardar el archivo del preset (solo el nombre en la BD)
+        // 5) Guardar el archivo del preset
         if ($request->hasFile('file')) {
             $presetFile = $request->file('file');
             $originalExt = $presetFile->getClientOriginalExtension();
             $presetName = Str::uuid() . ".{$originalExt}";
-
-            // a) Obtener contenido binario
             $content = file_get_contents($presetFile->getRealPath());
-
-            // b) Hacer put() directamente con ese contenido, usando $presetName
-            //    Esto lo guardará en: storage/app/public/presets/{presetName}
             Storage::disk('presets')->put($presetName, $content);
-
-            // c) En la BD solo guardamos el nombre (sin carpetas)
             $preset->file = $presetName;
         }
 
-        // 6) Guardar el preset con before_image, after_image y file ya asignados
+        // 6) Guardar el preset en la base de datos
         $preset->save();
 
+        // 7) Procesar y sincronizar hashtags
+        if ($request->filled('hashtags')) {
+            // Determinar si viene como array o como JSON
+            $nombres = is_array($validated['hashtags'])
+                ? $validated['hashtags']
+                : json_decode($validated['hashtags'], true);
+
+            if (is_array($nombres)) {
+                $hashtagIds = [];
+
+                foreach ($nombres as $nombre) {
+                    // Limpiar “#” y espacios
+                    $clean = ltrim(trim($nombre), '#');
+                    if (empty($clean)) {
+                        continue;
+                    }
+                    // Crear o recuperar
+                    $tag = Hashtag::firstOrCreate(
+                        ['slug' => Str::slug($clean)],
+                        ['name' => $clean]
+                    );
+                    $hashtagIds[] = $tag->id;
+                }
+                // Sincronizar pivot
+                $preset->hashtags()->sync($hashtagIds);
+            }
+        } else {
+            // Si no vienen hashtags, opcionalmente despejamos la relación
+            $preset->hashtags()->detach();
+        }
+
+        // 8) Redirigir con mensaje de éxito
         return redirect()
             ->route('presets.index')
             ->with('success', 'Preset creado correctamente.');
