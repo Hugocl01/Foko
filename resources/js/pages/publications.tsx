@@ -250,7 +250,7 @@ export default function PublicationsPage() {
                 <div className="flex justify-end items-center">
                     <PostDialog
                         trigger={
-                            <Button variant="default" className="flex items-center">
+                            <Button variant="default" className="flex items-center cursor-pointer">
                                 <Plus className="h-4 w-4 mr-1" />
                                 Nueva publicación
                             </Button>

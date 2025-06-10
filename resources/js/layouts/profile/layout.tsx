@@ -26,10 +26,10 @@ export type User = {
     id: number
     name: string
     username?: string
+    email: string
     profile_image?: string
     profile_image_url: string | null
     description?: string | null
-    // Array sin paginación:
     publications?: Publication[]
     publications_count: number
     presets?: Preset[]
@@ -206,7 +206,7 @@ export default function ProfileLayout({
                                     {user.isOwnProfile ? (
                                         <Button
                                             variant="outline"
-                                            className="flex-1 md:w-auto"
+                                            className="flex-1 md:w-auto cursor-pointer"
                                             onClick={goToEditProfile}
                                         >
                                             Editar perfil
@@ -217,13 +217,15 @@ export default function ProfileLayout({
                                                 onClick={handleFollowClick}
                                                 disabled={loadingFollow}
                                                 variant={isFollowing ? "outline" : "default"}
-                                                className="flex-1 md:w-auto"
+                                                className="flex-1 md:w-auto cursor-pointer"
                                             >
                                                 {isFollowing ? "Siguiendo" : "Seguir"}
                                             </Button>
-                                            <Button variant="outline" className="flex-1 md:w-auto">
-                                                <MessageCircle className="h-4 w-4 mr-2" />
-                                                Mensaje
+                                            <Button asChild variant="outline" className="flex-1 md:w-auto">
+                                                <a href={`mailto:${user.email}`}>
+                                                    <MessageCircle className="h-4 w-4 mr-2" />
+                                                    Mensaje
+                                                </a>
                                             </Button>
                                         </>
                                     )}
@@ -247,14 +249,14 @@ export default function ProfileLayout({
                             <TabsList className="bg-secondary/80 backdrop-blur-sm border border-border/50 p-1 h-auto rounded-md">
                                 <TabsTrigger
                                     value="publications"
-                                    className="flex items-center justify-center gap-2 px-4 py-2 data-[state=active]:bg-background data-[state=active]:shadow-sm rounded-md"
+                                    className="flex items-center justify-center gap-2 px-4 py-2 data-[state=active]:bg-background data-[state=active]:shadow-sm rounded-md cursor-pointer"
                                 >
                                     <Camera className="h-4 w-4" />
                                     <span className="font-medium">Publicaciones</span>
                                 </TabsTrigger>
                                 <TabsTrigger
                                     value="presets"
-                                    className="flex items-center justify-center gap-2 px-4 py-2 data-[state=active]:bg-background data-[state=active]:shadow-sm rounded-md"
+                                    className="flex items-center justify-center gap-2 px-4 py-2 data-[state=active]:bg-background data-[state=active]:shadow-sm rounded-md cursor-pointer"
                                 >
                                     <Aperture className="h-4 w-4" />
                                     <span className="font-medium">Presets</span>
@@ -262,7 +264,7 @@ export default function ProfileLayout({
                                 {user.isOwnProfile && (
                                     <TabsTrigger
                                         value="saveds"
-                                        className="flex items-center justify-center gap-2 px-4 py-2 data-[state=active]:bg-background data-[state=active]:shadow-sm rounded-md"
+                                        className="flex items-center justify-center gap-2 px-4 py-2 data-[state=active]:bg-background data-[state=active]:shadow-sm rounded-md cursor-pointer"
                                     >
                                         <Bookmark className="h-4 w-4" />
                                         <span className="font-medium">Guardados</span>

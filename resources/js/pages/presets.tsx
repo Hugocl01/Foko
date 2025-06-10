@@ -97,8 +97,8 @@ export default function PresetsPage() {
                 <Tabs defaultValue="grid" className="w-full">
                     <div className="flex justify-between items-center">
                         <TabsList>
-                            <TabsTrigger value="grid">Cuadrícula</TabsTrigger>
-                            <TabsTrigger value="list">Lista</TabsTrigger>
+                            <TabsTrigger value="grid" className="cursor-pointer">Cuadrícula</TabsTrigger>
+                            <TabsTrigger value="list" className="cursor-pointer">Lista</TabsTrigger>
                         </TabsList>
 
                         <PresetDialog

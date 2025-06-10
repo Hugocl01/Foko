@@ -116,7 +116,7 @@ export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     onKeyDown={handleKeyDown}
-                    placeholder="Buscar publicaciones, presets, chats..."
+                    placeholder="Buscar publicaciones o presets"
                     className="pl-10 pr-10"
                 />
                 {searchQuery && (
