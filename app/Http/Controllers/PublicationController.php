@@ -17,12 +17,22 @@ class PublicationController extends Controller
     {
         $userId = Auth::user()->id;
 
-        $publications = Publication::with(['user', 'images', 'preset', 'hashtags', 'likes'])
-            ->withCount(['likes', 'comments'])
+        $publications = Publication::with(['user', 'images', 'preset', 'hashtags']) // Quitamos 'likes' y 'saveds' de aquí
+            ->withCount(['likes', 'comments']) // Esto te da el total de likes y comments
+            ->withCount([
+                // Conteo de likes del usuario autenticado
+                'likes as liked_by_user_count' => function ($q) use ($userId) {
+                    $q->where('user_id', $userId);
+                },
+                // Conteo de saveds del usuario autenticado
+                'saveds as saved_by_user_count' => function ($q) use ($userId) {
+                    $q->where('user_id', $userId);
+                },
+            ])
             ->orderBy('created_at', 'desc')
             ->paginate(5);
 
-        // Ajustamos imagenes y añadimos likes_count, comments_count y liked
+        // Ajustamos imagenes y añadimos liked y saved
         $publications->getCollection()->transform(function ($pub) use ($userId) {
             // 1) URLs de imágenes
             $pub->images->transform(function ($img) {
@@ -30,10 +40,17 @@ class PublicationController extends Controller
                 return $img;
             });
 
-            // 2) Campos de conteo y liked
-            $pub->likes_count = count($pub->likes);
-            $pub->comments_count = count($pub->comments);
-            $pub->liked = $pub->likes->contains('user_id', $userId);
+            // 2) Campos de conteo y estado
+            // liked_count y comments_count ya vienen del withCount(['likes', 'comments'])
+            // Para 'liked' y 'saved', usamos los conteos específicos del usuario
+            $pub->liked = $pub->liked_by_user_count > 0;
+            $pub->saved = $pub->saved_by_user_count > 0;
+
+            // Aseguramos que los conteos totales de likes y comments están presentes si no los habías renombrado
+            // Si ya usabas $pub->likes_count y $pub->comments_count, no necesitas reasignar
+            // Laravel ya los añade con withCount(['likes', 'comments'])
+            // $pub->likes_count = $pub->likes_count;
+            // $pub->comments_count = $pub->comments_count;
 
             return $pub;
         });
@@ -43,11 +60,6 @@ class PublicationController extends Controller
         ]);
     }
 
-
-    /**
-     * Detalle de una publicación con conteos y estado de "like".
-     * Aplica la misma transformación que en index(), pero para un único registro.
-     */
     /**
      * Mostrar detalle de una sola publicación con conteos y estado de "like".
      */
