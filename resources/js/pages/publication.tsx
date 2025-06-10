@@ -190,13 +190,8 @@ export default function PublicationShow() {
             <Head title={pub.title} />
 
             <div className="flex flex-col gap-4 p-4 max-w-2xl mx-auto">
-                {/* Volver + Título + Editar */}
+                {/* Título + Editar */}
                 <div className="flex items-center gap-4">
-                    <Link href="/publications">
-                        <Button variant="ghost" size="icon">
-                            <ArrowLeft className="h-5 w-5" />
-                        </Button>
-                    </Link>
                     <h1 className="text-2xl font-bold">{pub.title}</h1>
                     {isOwner && (
                         <Button size="sm" variant="outline" onClick={() => setIsEditOpen(true)}>
@@ -288,8 +283,8 @@ export default function PublicationShow() {
                                             <div
                                                 key={idx}
                                                 className={`h-1.5 rounded-full ${currentImageIndex === idx
-                                                        ? "w-4 bg-white"
-                                                        : "w-1.5 bg-white/60"
+                                                    ? "w-4 bg-white"
+                                                    : "w-1.5 bg-white/60"
                                                     }`}
                                             />
                                         ))}

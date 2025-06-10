@@ -1,4 +1,5 @@
-import { usePage, Link } from "@inertiajs/react"
+import React, { useEffect } from "react"
+import { usePage, router, Link } from "@inertiajs/react"
 import { Bookmark } from "lucide-react"
 import ProfileLayout, { User, SavedPublication } from "@/Layouts/profile/layout"
 
@@ -22,7 +23,13 @@ type Props = {
 
 export default function SavedsPage() {
     const { user } = usePage<Props>().props
-console.log(user)
+
+
+    // Al montarse, recarga la lista para reflejar cambios recientes
+    useEffect(() => {
+        router.reload()
+    }, [])
+
     return (
         <ProfileLayout user={user}>
             <div className="mt-6">
