@@ -164,10 +164,10 @@ class PublicationController extends Controller
 
         if ($saveQuery->exists()) {
             $saveQuery->delete();
-            $message = 'Guardado eliminado';
+            $message = 'Publicación eliminada de guardados';
         } else {
             $publication->saveds()->create(['user_id' => $userId]);
-            $message = 'Guardado agregado';
+            $message = 'Publicación añadida a guardados';
         }
 
         return redirect()->back()->with('success', $message);
