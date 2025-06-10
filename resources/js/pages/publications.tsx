@@ -292,7 +292,7 @@ export default function PublicationsPage() {
                                     </div>
                                     <DropdownMenu>
                                         <DropdownMenuTrigger asChild>
-                                            <Button variant="ghost" size="icon" className="h-9 w-9">
+                                            <Button variant="ghost" size="icon" className="h-9 w-9 cursor-pointer">
                                                 <MoreHorizontal className="h-5 w-5" />
                                                 <span className="sr-only">Más opciones</span>
                                             </Button>
@@ -302,11 +302,11 @@ export default function PublicationsPage() {
                                                 href={route("profile.user", pub.user.username)}
                                                 onClick={(e) => e.stopPropagation()}
                                             >
-                                                <DropdownMenuItem>Ver perfil</DropdownMenuItem>
+                                                <DropdownMenuItem className="cursor-pointer">Ver perfil</DropdownMenuItem>
                                             </Link>
-                                            <DropdownMenuItem>Copiar enlace</DropdownMenuItem>
+                                            <DropdownMenuItem className="cursor-pointer">Copiar enlace</DropdownMenuItem>
                                             <DropdownMenuSeparator />
-                                            <DropdownMenuItem className="text-destructive">Reportar</DropdownMenuItem>
+                                            <DropdownMenuItem className="text-destructive cursor-pointer">Reportar</DropdownMenuItem>
                                         </DropdownMenuContent>
                                     </DropdownMenu>
                                 </div>

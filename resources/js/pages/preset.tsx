@@ -283,18 +283,18 @@ export default function PresetDetailPage() {
                                     </div>
                                     <DropdownMenu>
                                         <DropdownMenuTrigger asChild>
-                                            <Button variant="ghost" size="icon" className="h-9 w-9">
+                                            <Button variant="ghost" size="icon" className="h-9 w-9 cursor-pointer">
                                                 <MoreHorizontal className="h-5 w-5" />
                                                 <span className="sr-only">Más opciones</span>
                                             </Button>
                                         </DropdownMenuTrigger>
                                         <DropdownMenuContent align="end">
                                             <Link href={route("profile.user", { user: preset.user.username })}>
-                                                <DropdownMenuItem>Ver perfil</DropdownMenuItem>
+                                                <DropdownMenuItem className="cursor-pointer">Ver perfil</DropdownMenuItem>
                                             </Link>
-                                            <DropdownMenuItem>Copiar enlace</DropdownMenuItem>
+                                            <DropdownMenuItem className="cursor-pointer">Copiar enlace</DropdownMenuItem>
                                             <DropdownMenuSeparator />
-                                            <DropdownMenuItem className="text-destructive">Reportar</DropdownMenuItem>
+                                            <DropdownMenuItem className="text-destructive cursor-pointer">Reportar</DropdownMenuItem>
                                         </DropdownMenuContent>
                                     </DropdownMenu>
                                 </div>
