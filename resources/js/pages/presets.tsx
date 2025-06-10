@@ -352,8 +352,10 @@ export default function PresetsPage() {
                                                     </Button>
                                                 </DropdownMenuTrigger>
                                                 <DropdownMenuContent align="end">
+                                                    <Link href={route("profile.user", { user: preset.user.username })}>
+                                                        <DropdownMenuItem>Ver perfil</DropdownMenuItem>
+                                                    </Link>
                                                     <DropdownMenuItem>Copiar enlace</DropdownMenuItem>
-                                                    <DropdownMenuItem>Ver perfil</DropdownMenuItem>
                                                     <DropdownMenuSeparator />
                                                     <DropdownMenuItem className="text-destructive">
                                                         Reportar

@@ -382,10 +382,6 @@ export default function PublicationsPage() {
                                             <span className="sr-only">Me gusta</span>
                                         </Button>
                                         <Button variant="ghost" size="icon" onClick={(e) => e.stopPropagation()}>
-                                            <MessageCircle className="h-6 w-6" />
-                                            <span className="sr-only">Comentar</span>
-                                        </Button>
-                                        <Button variant="ghost" size="icon" onClick={(e) => e.stopPropagation()}>
                                             <Share2 className="h-6 w-6" />
                                             <span className="sr-only">Compartir</span>
                                         </Button>
