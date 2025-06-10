@@ -13,6 +13,7 @@ class CreateNotificationsTable extends Migration
             $table->bigIncrements('id');
             $table->unsignedBigInteger('recipient_id');
             $table->unsignedBigInteger('actor_id');
+            $table->string('message')->nullable();
             $table->enum('type', ['like','comment','follow','message','purchase','report']);
             $table->enum('entity_type', ['publication','comment','user','preset']);
             $table->unsignedBigInteger('entity_id');
