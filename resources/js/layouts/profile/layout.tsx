@@ -1,10 +1,11 @@
 import type React from "react"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
-import { Bookmark, MessageCircle, Aperture, Camera } from "lucide-react"
+import { Bookmark, MessageCircle, Aperture, Camera, Star } from "lucide-react"
 import AppLayout from "../app-layout"
 import { router, usePage } from "@inertiajs/react"
 import { toast } from "sonner"
@@ -16,7 +17,7 @@ type Preset = {
     name?: string
     description?: string
     price?: string
-    // …otros campos según necesites
+    plan_id?: number
 }
 type SavedPublication = { id: number; url: string }
 
@@ -138,6 +139,13 @@ export default function ProfileLayout({
         router.get(`${baseUrl}/${value}`)
     }
 
+
+    // Premium flag para borde y badge
+    const isPremium = useMemo(
+        () => user.plan_id !== 2,
+        [user.plan_id]
+    )
+
     return (
         <AppLayout>
             <div className="min-h-screen">
@@ -163,9 +171,15 @@ export default function ProfileLayout({
                             <div className="flex-1 space-y-5">
                                 {/* Nombre y @username */}
                                 <div className="text-center md:text-left">
-                                    <h2 className="font-semibold text-2xl">{user.name}</h2>
+                                    <div className="font-semibold text-2xl flex items-center">{user.name}
+                                        {isPremium && (
+                                            <Badge variant="outline" className="ml-2 flex items-center">
+                                                <Star className="h-4 w-4 mr-1 text-amber-500" /> Premium
+                                            </Badge>
+                                        )}
+                                    </div>
                                     {user.username && user.username !== user.name && (
-                                        <p className="text-muted-foreground">@{user.username}</p>
+                                        <div className="text-muted-foreground">@{user.username}</div>
                                     )}
                                 </div>
 
