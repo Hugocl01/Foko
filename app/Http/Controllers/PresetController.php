@@ -20,7 +20,7 @@ class PresetController extends Controller
      */
     public function index()
     {
-        $presets = Preset::with(['user:id,name,username,profile_image', 'hashtags:id,name'])
+        $presets = Preset::with(['user:id,name,username,profile_image,plan_id', 'hashtags:id,name'])
             ->latest()
             ->paginate(12)
             ->through(fn($preset) => [
@@ -35,6 +35,7 @@ class PresetController extends Controller
                     'name' => $preset->user->name,
                     'username' => $preset->user->username,
                     'profile_image' => $preset->user->getProfileImageUrlAttribute(),
+                    'plan_id' => $preset->user->plan_id,
                 ],
                 'hashtags' => $preset->hashtags->pluck('name'),
                 'created_at' => $preset->created_at->format('Y-m-d'),
@@ -202,6 +203,7 @@ class PresetController extends Controller
                     'name' => $preset->user->name,
                     'username' => $preset->user->username,
                     'profile_image' => $preset->user->getProfileImageUrlAttribute(),
+                    'plan_id' => $preset->user->plan_id,
                 ],
                 'hashtags' => $preset->hashtags,
                 'purchases' => $preset->purchases->map(fn($p) => [

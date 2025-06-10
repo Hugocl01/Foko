@@ -1,6 +1,5 @@
 import { useState, useMemo } from "react"
 import {
-    ArrowLeft,
     Download,
     Share2,
     Eye,
@@ -8,6 +7,7 @@ import {
     MoreHorizontal,
     Calendar,
     Trash2,
+    Star,
 } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
@@ -102,6 +102,12 @@ export default function PresetDetailPage() {
         () => Number(preset.user.id) === Number(loggedUser.id),
         [preset.user.id, loggedUser.id]
     );
+
+    // Premium flag para borde y badge
+    const isPremium = useMemo(
+        () => preset.user.plan_id !== 2,
+        [preset.user.plan_id]
+    )
 
     // 2) Saber si el usuario autenticado ya compró este preset (sin incluir al creador)
     const hasPurchased = useMemo(
@@ -258,7 +264,8 @@ export default function PresetDetailPage() {
                 {/* CUERPO PRINCIPAL */}
                 <div className="grid grid-cols-1 xl:grid-cols-4 gap-4">
                     <div className="xl:col-span-3">
-                        <Card className="flex flex-col h-full">
+                        <Card className={`flex flex-col h-full ${isPremium ? "border-emerald-500" : ""
+                            }`}>
                             <CardHeader className="px-4">
                                 <div className="flex items-center justify-between">
                                     <div className="flex items-center gap-3">
@@ -275,7 +282,14 @@ export default function PresetDetailPage() {
                                             </Avatar>
                                         </Link>
                                         <div className="flex flex-col">
-                                            <div className="font-medium text-base">{preset.user.name}</div>
+                                            <div className="font-medium text-base flex items-center">
+                                                {preset.user.name}
+                                                {isPremium && (
+                                                    <Badge variant="outline" className="ml-2 flex items-center">
+                                                        <Star className="h-4 w-4 mr-1 text-amber-500" /> Premium
+                                                    </Badge>
+                                                )}
+                                            </div>
                                             <div className="text-sm text-muted-foreground">
                                                 @{preset.user.username || "usuario"}
                                             </div>
@@ -425,7 +439,7 @@ export default function PresetDetailPage() {
 
                     {/* PANEL LATERAL */}
                     <div className="xl:col-span-1 space-y-4">
-                        <Card>
+                        <Card className={`${isPremium ? "border-emerald-500" : ""}`}>
                             <CardContent className="px-4">
                                 <div className="text-center space-y-4">
                                     {loggedUser.id === preset.user.id || hasPurchased ? (
@@ -458,7 +472,7 @@ export default function PresetDetailPage() {
                             </CardContent>
                         </Card>
 
-                        <Card>
+                        <Card className={`${isPremium ? "border-emerald-500" : ""}`}>
                             <CardHeader className="px-4 pb-2">
                                 <h3 className="font-semibold">Información del preset</h3>
                             </CardHeader>
@@ -544,6 +558,6 @@ export default function PresetDetailPage() {
                     onSubmit={handleUpdatePreset}
                 />
             </div>
-        </AppLayout>
+        </AppLayout >
     )
 }
