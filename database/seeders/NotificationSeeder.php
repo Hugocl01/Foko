@@ -7,6 +7,7 @@ use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Faker\Factory as Faker;
 use Carbon\Carbon;
+use Illuminate\Support\Testing\Fakes\Fake;
 
 class NotificationSeeder extends Seeder
 {
@@ -86,6 +87,7 @@ class NotificationSeeder extends Seeder
             DB::table('notifications')->insert([
                 'recipient_id' => $recipientId,
                 'actor_id' => $actorId,
+                'message' => $faker->sentence(),
                 'type' => $type,
                 'entity_type' => $entityType,
                 'entity_id' => $entityId,
