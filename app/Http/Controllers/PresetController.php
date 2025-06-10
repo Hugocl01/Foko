@@ -78,79 +78,98 @@ class PresetController extends Controller
             'before_image' => 'required|image',
             'after_image' => 'required|image',
             'file' => 'required|file|max:10240', // 10 MB
-            'hashtags' => 'nullable',                // acepta array o JSON
-            'hashtags.*' => 'string|max:255',          // si viene como array
+            'hashtags' => 'nullable',            // acepta array o JSON
+            'hashtags.*' => 'string|max:255',
         ]);
 
-        // 2) Crear instancia de Preset y llenar campos básicos
-        $preset = new Preset();
-        $preset->name = $validated['name'];
-        $preset->description = $validated['description'] ?? '';
-        $preset->price = $validated['price'];
-        $preset->user_id = Auth::id();
+        // Para limpiar en caso de rollback
+        $createdImages = [];
+        $createdPresetFile = null;
 
-        // 3) Procesar “before_image” (Intervention Image → WebP 800×800)
-        if ($request->hasFile('before_image')) {
-            $beforeUploaded = $request->file('before_image');
-            $imgBefore = Image::read($beforeUploaded->getRealPath())
-                ->encodeByExtension('webp', 80);
-            $beforeName = Str::uuid() . '.webp';
-            Storage::disk('preset_images')->put($beforeName, (string) $imgBefore);
-            $preset->before_image = $beforeName;
-        }
+        DB::beginTransaction();
+        try {
+            // 2) Instanciar Preset
+            $preset = new Preset();
+            $preset->name = $validated['name'];
+            $preset->description = $validated['description'] ?? '';
+            $preset->price = $validated['price'];
+            $preset->user_id = Auth::id();
 
-        // 4) Procesar “after_image”
-        if ($request->hasFile('after_image')) {
-            $afterUploaded = $request->file('after_image');
-            $imgAfter = Image::read($afterUploaded->getRealPath())
-                ->encodeByExtension('webp', 80);
-            $afterName = Str::uuid() . '.webp';
-            Storage::disk('preset_images')->put($afterName, (string) $imgAfter);
-            $preset->after_image = $afterName;
-        }
-
-        // 5) Guardar el archivo del preset
-        if ($request->hasFile('file')) {
-            $presetFile = $request->file('file');
-            $originalExt = $presetFile->getClientOriginalExtension();
-            $presetName = Str::uuid() . ".{$originalExt}";
-            $content = file_get_contents($presetFile->getRealPath());
-            Storage::disk('presets')->put($presetName, $content);
-            $preset->file = $presetName;
-        }
-
-        // 6) Guardar el preset en la base de datos
-        $preset->save();
-
-        // 7) Procesar y sincronizar hashtags
-        if ($request->filled('hashtags')) {
-            // Determinar si viene como array o como JSON
-            $nombres = is_array($validated['hashtags'])
-                ? $validated['hashtags']
-                : json_decode($validated['hashtags'], true);
-
-            if (is_array($nombres)) {
-                $hashtagIds = [];
-
-                foreach ($nombres as $nombre) {
-                    // Limpiar “#” y espacios
-                    $clean = ltrim(trim($nombre), '#');
-                    if (empty($clean)) {
-                        continue;
-                    }
-                    // Crear o recuperar
-                    $tag = Hashtag::firstOrCreate(
-                        ['slug' => Str::slug($clean)],
-                        ['name' => $clean]
-                    );
-                    $hashtagIds[] = $tag->id;
-                }
-                // Sincronizar pivot
-                $preset->hashtags()->sync($hashtagIds);
+            // 3) Procesar “before_image”
+            if ($request->hasFile('before_image')) {
+                $beforeUploaded = $request->file('before_image');
+                $imgBefore = Image::read($beforeUploaded->getRealPath())
+                    ->encodeByExtension('webp', 80);
+                $beforeName = Str::uuid() . '.webp';
+                Storage::disk('preset_images')->put($beforeName, (string) $imgBefore);
+                $preset->before_image = $beforeName;
+                $createdImages[] = $beforeName;
             }
-        } else {
-            // Si no vienen hashtags, opcionalmente despejamos la relación
-            $preset->hashtags()->detach();
+
+            // 4) Procesar “after_image”
+            if ($request->hasFile('after_image')) {
+                $afterUploaded = $request->file('after_image');
+                $imgAfter = Image::read($afterUploaded->getRealPath())
+                    ->encodeByExtension('webp', 80);
+                $afterName = Str::uuid() . '.webp';
+                Storage::disk('preset_images')->put($afterName, (string) $imgAfter);
+                $preset->after_image = $afterName;
+                $createdImages[] = $afterName;
+            }
+
+            // 5) Guardar el archivo del preset
+            if ($request->hasFile('file')) {
+                $presetFile = $request->file('file');
+                $originalExt = $presetFile->getClientOriginalExtension();
+                $presetName = Str::uuid() . ".{$originalExt}";
+                $content = file_get_contents($presetFile->getRealPath());
+                Storage::disk('presets')->put($presetName, $content);
+                $preset->file = $presetName;
+                $createdPresetFile = $presetName;
+            }
+
+            // 6) Guardar el preset en la BD
+            $preset->save();
+
+            // 7) Sincronizar hashtags
+            if ($request->filled('hashtags')) {
+                $nombres = is_array($validated['hashtags'])
+                    ? $validated['hashtags']
+                    : json_decode($validated['hashtags'], true);
+
+                if (is_array($nombres)) {
+                    $hashtagIds = [];
+                    foreach ($nombres as $nombre) {
+                        $clean = ltrim(trim($nombre), '#');
+                        if (empty($clean)) {
+                            continue;
+                        }
+                        $tag = Hashtag::firstOrCreate(
+                            ['slug' => Str::slug($clean)],
+                            ['name' => $clean]
+                        );
+                        $hashtagIds[] = $tag->id;
+                    }
+                    $preset->hashtags()->sync($hashtagIds);
+                }
+            } else {
+                $preset->hashtags()->detach();
+            }
+
+            DB::commit();
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            // Limpiar archivos grabados en disco
+            foreach ($createdImages as $img) {
+                Storage::disk('preset_images')->delete($img);
+            }
+            if ($createdPresetFile) {
+                Storage::disk('presets')->delete($createdPresetFile);
+            }
+            return back()
+                ->withInput()
+                ->withErrors(['error' => 'Error al crear el preset: ' . $e->getMessage()]);
         }
 
         // 8) Redirigir con mensaje de éxito
