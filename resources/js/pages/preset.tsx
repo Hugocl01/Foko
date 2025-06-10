@@ -232,11 +232,6 @@ export default function PresetDetailPage() {
             <div className="flex flex-col gap-4 p-4">
                 {/* ENCABEZADO */}
                 <div className="flex items-center gap-4">
-                    <Link href="/presets">
-                        <Button variant="ghost" size="icon">
-                            <ArrowLeft className="h-5 w-5" />
-                        </Button>
-                    </Link>
                     <h1 className="text-2xl font-bold">{preset.name}</h1>
 
                     {/* Editar (solo creador) */}
@@ -294,7 +289,9 @@ export default function PresetDetailPage() {
                                             </Button>
                                         </DropdownMenuTrigger>
                                         <DropdownMenuContent align="end">
-                                            <DropdownMenuItem>Ver perfil</DropdownMenuItem>
+                                            <Link href={route("profile.user", { user: preset.user.username })}>
+                                                <DropdownMenuItem>Ver perfil</DropdownMenuItem>
+                                            </Link>
                                             <DropdownMenuItem>Copiar enlace</DropdownMenuItem>
                                             <DropdownMenuSeparator />
                                             <DropdownMenuItem className="text-destructive">Reportar</DropdownMenuItem>

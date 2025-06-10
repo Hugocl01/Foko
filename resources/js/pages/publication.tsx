@@ -234,7 +234,12 @@ export default function PublicationShow() {
                                     </Button>
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end">
-                                    <DropdownMenuItem>Ver perfil</DropdownMenuItem>
+                                    <Link
+                                        href={route("profile.user", pub.user.username)}
+                                        onClick={(e) => e.stopPropagation()}
+                                    >
+                                        <DropdownMenuItem>Ver perfil</DropdownMenuItem>
+                                    </Link>
                                     <DropdownMenuItem>Copiar enlace</DropdownMenuItem>
                                     <DropdownMenuSeparator />
                                     <DropdownMenuItem className="text-destructive">
