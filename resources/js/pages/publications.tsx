@@ -229,8 +229,6 @@ export default function PublicationsPage() {
     const indexOfFirstItem = (current_page - 1) * per_page + 1;
     const indexOfLastItem = Math.min(current_page * per_page, total);
 
-    console.log(localPublications);
-
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Publicaciones" />
