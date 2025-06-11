@@ -20,29 +20,45 @@ class PresetController extends Controller
      */
     public function index()
     {
-        $presets = Preset::with(['user:id,name,username,profile_image,plan_id', 'hashtags:id,name'])
+        // 1) Obtenemos los 12 presets más recientes, con relaciones
+        $paginator = Preset::with([
+            'user:id,name,username,profile_image,plan_id',
+            'hashtags:id,name'
+        ])
             ->latest()
-            ->paginate(12)
-            ->through(fn($preset) => [
-                'id' => $preset->id,
-                'name' => $preset->name,
-                'description' => $preset->description,
-                'price' => $preset->price,
-                'before_image' => $preset->getBeforeImageUrlAttribute(),
-                'after_image' => $preset->getAfterImageUrlAttribute(),
-                'user' => [
-                    'id' => $preset->user->id,
-                    'name' => $preset->user->name,
-                    'username' => $preset->user->username,
-                    'profile_image' => $preset->user->getProfileImageUrlAttribute(),
-                    'plan_id' => $preset->user->plan_id,
-                ],
-                'hashtags' => $preset->hashtags->pluck('name'),
-                'created_at' => $preset->created_at->format('Y-m-d'),
-            ]);
+            ->paginate(12);
 
+        // 2) Reordenamos SOLO los 12 items de esta página:
+        //    plan_id != 2 → premium → prioridad 0
+        //    plan_id == 2 → normal  → prioridad 1
+        $reordered = $paginator->getCollection()
+            ->sortBy(fn($preset) => $preset->user->plan_id == 2 ? 1 : 0)
+            ->values();
+
+        // 3) Transformamos a la forma que usa Inertia y volvemos a inyectar la colección
+        $mapped = $reordered->map(fn($preset) => [
+            'id' => $preset->id,
+            'name' => $preset->name,
+            'description' => $preset->description,
+            'price' => $preset->price,
+            'before_image' => $preset->getBeforeImageUrlAttribute(),
+            'after_image' => $preset->getAfterImageUrlAttribute(),
+            'user' => [
+                'id' => $preset->user->id,
+                'name' => $preset->user->name,
+                'username' => $preset->user->username,
+                'profile_image' => $preset->user->getProfileImageUrlAttribute(),
+                'plan_id' => $preset->user->plan_id,
+            ],
+            'hashtags' => $preset->hashtags->pluck('name'),
+            'created_at' => $preset->created_at->format('Y-m-d'),
+        ]);
+
+        $paginator->setCollection($mapped);
+
+        // 4) Enviamos el paginator ya con items reordenados
         return Inertia::render('presets', [
-            'presets' => $presets,
+            'presets' => $paginator,
         ]);
     }
 
