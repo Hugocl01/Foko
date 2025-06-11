@@ -86,7 +86,7 @@ interface Publication {
     user: {
         name: string;
         username: string;
-        avatar_url: string | null;
+        profile_image: string | null;
         role: Role;
         plan_id: number;
     };
@@ -133,7 +133,7 @@ export default function PublicationsPage() {
                 user: {
                     name: pub.user.name,
                     username: pub.user.username,
-                    avatar_url: pub.user.profile_image_url,
+                    profile_image: pub.user.profile_image,
                     role: auth.user.role_id as Role,
                     plan_id: pub.user.plan_id,
                 },
@@ -229,6 +229,8 @@ export default function PublicationsPage() {
     const indexOfFirstItem = (current_page - 1) * per_page + 1;
     const indexOfLastItem = Math.min(current_page * per_page, total);
 
+    console.log(localPublications);
+
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Publicaciones" />
@@ -270,7 +272,7 @@ export default function PublicationsPage() {
                                             >
                                                 <Avatar className="h-10 w-10">
                                                     <AvatarImage
-                                                        src={pub.user.avatar_url || "/placeholder.svg"}
+                                                        src={pub.user.profile_image || "/placeholder.svg"}
                                                         alt={pub.user.name}
                                                     />
                                                     <AvatarFallback className="text-sm">
@@ -361,8 +363,8 @@ export default function PublicationsPage() {
                                                         <div
                                                             key={idx}
                                                             className={`h-1.5 rounded-full ${getCurrentImageIndex(pub.id) === idx
-                                                                    ? "w-4 bg-white"
-                                                                    : "w-1.5 bg-white/60"
+                                                                ? "w-4 bg-white"
+                                                                : "w-1.5 bg-white/60"
                                                                 }`}
                                                         />
                                                     ))}

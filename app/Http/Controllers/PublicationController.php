@@ -52,7 +52,7 @@ class PublicationController extends Controller
                     'id' => $pub->user->id,
                     'name' => $pub->user->name,
                     'username' => $pub->user->username,
-                    'avatar' => $pub->user->getProfileImageUrlAttribute(),
+                    'profile_image' => $pub->user->getProfileImageUrlAttribute(),
                     'plan_id' => $pub->user->plan_id,
                 ],
                 'images' => $pub->images->map(fn($img) => [
