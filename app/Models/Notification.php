@@ -4,15 +4,18 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Notification extends Model
 {
     use HasFactory;
 
     protected $fillable = [
-        'user_id',
+        'recipient_id',
+        'actor_id',
         'message',
-        'is_read',
+        'type',
+        'entity_type',
         'created_at'
     ];
 
@@ -34,5 +37,21 @@ class Notification extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    /**
+     * El usuario que origina la notificación.
+     */
+    public function actor(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'actor_id');
+    }
+
+    /**
+     * El usuario que recibe la notificación.
+     */
+    public function recipient(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'recipient_id');
     }
 }

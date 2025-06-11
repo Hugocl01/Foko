@@ -21,9 +21,19 @@ class NotificationController extends Controller
      */
     public function index(Request $request): Response
     {
-        $notifications = Notification::where('user_id', Auth::id())
+        // Traemos solo las notificaciones donde recipient_id = usuario actual
+        $notifications = Notification::with('actor') // carga relación actor
+            ->where('recipient_id', Auth::id())
             ->orderByDesc('created_at')
-            ->get(['id', 'message', 'is_read', 'created_at']);
+            ->get([
+                'id',
+                'message',
+                'type',
+                'entity_type',
+                'entity_id',
+                'actor_id',
+                'created_at',
+            ]);
 
         return Inertia::render('notifications', [
             'notifications' => $notifications,
@@ -43,7 +53,7 @@ class NotificationController extends Controller
     public function destroy(Notification $notification)
     {
         // Asegúrate de que el usuario solo pueda borrar sus propias notificaciones
-        if ($notification->user_id !== Auth::id()) {
+        if ($notification->recipient_id !== Auth::user()->id) {
             abort(403); // No autorizado
         }
 

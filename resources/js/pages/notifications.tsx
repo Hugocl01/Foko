@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Head, useForm } from '@inertiajs/react';
+import { Head, router } from '@inertiajs/react';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Button } from '@/components/ui/button';
@@ -27,13 +27,12 @@ const breadcrumbs: BreadcrumbItem[] = [
 
 export default function Notifications({ notifications: initialNotifications }: { notifications: Notification[] }) {
     const [notifications, setNotifications] = useState(initialNotifications);
-    const form = useForm();
 
     const handleDelete = (id: number) => {
-        form.delete(route('notifications.destroy', id), {
+        router.delete(route('notifications.destroy', id), {
             preserveScroll: true,
             onSuccess: () => {
-                setNotifications((prev) => prev.filter((notif) => notif.id !== id));
+                setNotifications(prev => prev.filter(n => n.id !== id));
             },
         });
     };
@@ -44,7 +43,7 @@ export default function Notifications({ notifications: initialNotifications }: {
             <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-4">
                 <h1 className="text-2xl font-bold">Notificaciones</h1>
                 <div className="space-y-4">
-                    {notifications.map((notif) => (
+                    {notifications.map(notif => (
                         <div
                             key={notif.id}
                             className="bg-card border border-border rounded-lg p-4 shadow-md flex justify-between items-center gap-4"
