@@ -17,14 +17,13 @@ class PublicationController extends Controller
     {
         $userId = Auth::user()->id;
 
-        $publications = Publication::with(['user', 'images', 'preset', 'hashtags']) // Quitamos 'likes' y 'saveds' de aquí
-            ->withCount(['likes', 'comments']) // Esto te da el total de likes y comments
+        // 1) Obtenemos el paginador estándar (5 publicaciones más recientes)
+        $paginator = Publication::with(['user', 'images', 'preset', 'hashtags'])
+            ->withCount(['likes', 'comments'])
             ->withCount([
-                // Conteo de likes del usuario autenticado
                 'likes as liked_by_user_count' => function ($q) use ($userId) {
                     $q->where('user_id', $userId);
                 },
-                // Conteo de saveds del usuario autenticado
                 'saveds as saved_by_user_count' => function ($q) use ($userId) {
                     $q->where('user_id', $userId);
                 },
@@ -32,31 +31,57 @@ class PublicationController extends Controller
             ->orderBy('created_at', 'desc')
             ->paginate(5);
 
-        // Ajustamos imagenes y añadimos liked y saved
-        $publications->getCollection()->transform(function ($pub) use ($userId) {
-            // 1) URLs de imágenes
+        // 2) Reordenamos sólo esta página (5 items):
+        //    asignamos prioridad 0 a los plan_id != 2 (premium)
+        //    y 1 a los plan_id == 2 (no premium)
+        $reordered = $paginator->getCollection()
+            ->sortBy(fn($pub) => $pub->user->plan_id == 2 ? 1 : 0)
+            ->values();
+
+        // 3) Aplicamos la transformación original sobre la colección reordenada
+        $mapped = $reordered->map(function ($pub) use ($userId) {
+            // URLs de imágenes
             $pub->images->transform(function ($img) {
                 $img->url = $img->getImageUrlAttribute();
                 return $img;
             });
 
-            // 2) Campos de conteo y estado
-            // liked_count y comments_count ya vienen del withCount(['likes', 'comments'])
-            // Para 'liked' y 'saved', usamos los conteos específicos del usuario
-            $pub->liked = $pub->liked_by_user_count > 0;
-            $pub->saved = $pub->saved_by_user_count > 0;
-
-            // Aseguramos que los conteos totales de likes y comments están presentes si no los habías renombrado
-            // Si ya usabas $pub->likes_count y $pub->comments_count, no necesitas reasignar
-            // Laravel ya los añade con withCount(['likes', 'comments'])
-            // $pub->likes_count = $pub->likes_count;
-            // $pub->comments_count = $pub->comments_count;
-
-            return $pub;
+            return [
+                'id' => $pub->id,
+                'user' => [
+                    'id' => $pub->user->id,
+                    'name' => $pub->user->name,
+                    'username' => $pub->user->username,
+                    'avatar' => $pub->user->getProfileImageUrlAttribute(),
+                    'plan_id' => $pub->user->plan_id,
+                ],
+                'images' => $pub->images->map(fn($img) => [
+                    'id' => $img->id,
+                    'url' => $img->url,
+                ])->all(),
+                'preset' => $pub->preset
+                    ? ['id' => $pub->preset->id, 'name' => $pub->preset->name]
+                    : null,
+                'hashtags' => $pub->hashtags->map(fn($tag) => [
+                    'id' => $tag->id,
+                    'name' => $tag->name,
+                ])->all(),
+                'likes_count' => $pub->likes_count,
+                'comments_count' => $pub->comments_count,
+                'liked' => $pub->liked_by_user_count > 0,
+                'saved' => $pub->saved_by_user_count > 0,
+                'title' => $pub->title,
+                'description' => $pub->description,
+                'created_at' => $pub->created_at->toDateTimeString(),
+            ];
         });
 
+        // 4) Sustituimos la colección del paginator por la reordenada + mapeada
+        $paginator->setCollection($mapped);
+
+        // 5) Enviamos a Inertia
         return Inertia::render('publications', [
-            'publications' => $publications,
+            'publications' => $paginator,
         ]);
     }
 
