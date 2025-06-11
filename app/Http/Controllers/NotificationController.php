@@ -19,12 +19,13 @@ class NotificationController extends Controller
      * @route GET /notifications
      * @middleware auth, verified
      */
-    public function index(Request $request): Response
+    public function notifications(Request $request): Response
     {
         // Traemos solo las notificaciones donde recipient_id = usuario actual
-        $notifications = Notification::with('actor') // carga relación actor
+        // y cuyo type sea distinto de 'report'
+        $notifications = Notification::with('actor')
             ->where('recipient_id', Auth::id())
-            ->orderByDesc('created_at')
+            ->where('type', '<>', 'report')
             ->get([
                 'id',
                 'message',
@@ -40,6 +41,25 @@ class NotificationController extends Controller
         ]);
     }
 
+    public function reports(Request $request): Response
+    {
+        $reports = Notification::with('actor')
+            ->where('type', 'report')
+            ->orderByDesc('created_at')
+            ->get([
+                'id',
+                'message',
+                'entity_type',
+                'entity_id',
+                'actor_id',
+                'created_at',
+            ]);
+
+        return Inertia::render('admin/reports', [
+            'reports' => $reports,
+        ]);
+    }
+
     /**
      * Elimina una notificación específica si pertenece al usuario autenticado.
      *
@@ -50,7 +70,7 @@ class NotificationController extends Controller
      * @route DELETE /notifications/{notification}
      * @middleware auth, verified
      */
-    public function destroy(Notification $notification)
+    public function destroyNotification(Notification $notification)
     {
         // Asegúrate de que el usuario solo pueda borrar sus propias notificaciones
         if ($notification->recipient_id !== Auth::user()->id) {
@@ -60,5 +80,19 @@ class NotificationController extends Controller
         $notification->delete();
 
         return back()->with('success', 'Notificación eliminada.');
+    }
+
+    /**
+     * Elimina un reporte (notificación de tipo "report") si pertenece al usuario autenticado.
+     *
+     * @param  \App\Models\Notification  $report
+     * @return \Illuminate\Http\RedirectResponse|\Inertia\Response
+     */
+    public function destroyReport(Notification $report)
+    {
+        $report->delete();
+
+        // Si vienes de Inertia, redirigimos de vuelta a la lista de reportes
+        return back()->with('success', 'Reporte eliminado correctamente.');
     }
 }

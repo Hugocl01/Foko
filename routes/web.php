@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\FeedController;
 use App\Http\Controllers\PublicationController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
@@ -16,9 +17,8 @@ Route::middleware('guest')->get('/', function () {
 })->name('welcome');
 
 // Si el usuario está autenticado, lo mandamos a 'home'
-Route::middleware(['auth', 'verified'])->get('/home', function () {
-    return Inertia::render('home');
-})->name('home');
+Route::middleware(['auth', 'verified'])->get('/home', [FeedController::class, 'index'])
+    ->name('home');
 
 // Rutas protegidas por autenticación
 Route::middleware(['auth', 'verified'])->group(function () {
@@ -34,6 +34,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::post('publications/{publication}/save', [PublicationController::class, 'toggleSave'])
         ->name('publications.toggleSave');
+
+    Route::get('/user-presets', [PresetController::class, 'userPresets'])
+        ->name('user.presets');
 
     // Presets
     Route::get('/presets', [PresetController::class, 'index'])
@@ -71,10 +74,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     })->name('chats.show');
 
     // Notificaciones
-    Route::get('/notifications', [NotificationController::class, 'index'])
+    Route::get('/notifications', [NotificationController::class, 'notifications'])
         ->name('notifications.index');
 
-    Route::delete('/notifications/{notification}', [NotificationController::class, 'destroy'])
+    Route::delete('/notifications/{notification}', [NotificationController::class, 'destroyNotification'])
         ->name('notifications.destroy');
 });
 

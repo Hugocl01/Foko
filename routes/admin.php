@@ -1,10 +1,11 @@
 <?php
 
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\NotificationController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
-Route::middleware(['auth', 'verified', 'is_admin' ])->group(function () {
+Route::middleware(['auth', 'verified'])->group(function () {
     Route::redirect('admin', 'admin/users');
 
     // Usuarios
@@ -14,7 +15,9 @@ Route::middleware(['auth', 'verified', 'is_admin' ])->group(function () {
     Route::delete('admin/users/{user}', [UserController::class, 'destroy'])->name('users.destroy');
 
     // Reportes
-    Route::get('admin/reports', function () {
-        return Inertia::render('admin/reports');
-    })->name('reports.index');
+    Route::get('admin/reports', [NotificationController::class, 'reports'])
+        ->name('reports.index');
+
+    Route::delete('/reports/{report}', [NotificationController::class, 'destroyReport'])
+        ->name('reports.destroy');
 });
