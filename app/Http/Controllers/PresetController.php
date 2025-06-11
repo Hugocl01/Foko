@@ -62,16 +62,16 @@ class PresetController extends Controller
         ]);
     }
 
-    public function presetsByUser($userId)
+    public function userPrests()
     {
+        $userId = Auth::user()->id;
+
         $presets = Preset::with(['hashtags', 'user'])
             ->where('user_id', $userId)
             ->latest()
             ->get();
 
-        return Inertia::render('Presets/UserPresets', [
-            'presets' => $presets,
-        ]);
+        return response()->json(['presets' => $presets]);
     }
 
     /**

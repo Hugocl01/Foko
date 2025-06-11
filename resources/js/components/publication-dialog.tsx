@@ -9,6 +9,13 @@ import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import {
+    Select,
+    SelectTrigger,
+    SelectContent,
+    SelectItem,
+    SelectValue,
+} from "@/components/ui/select"
+import {
     Dialog,
     DialogContent,
     DialogDescription,
@@ -19,8 +26,14 @@ import {
 } from "@/components/ui/dialog"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 
+interface Preset {
+    id: string
+    name: string
+}
+
 interface PostFormData {
     id?: string
+    preset_id?: string
     title: string
     content: string
     featured_image: File | null
@@ -30,6 +43,7 @@ interface PostFormData {
 
 interface PostDialogProps {
     initialData?: Partial<PostFormData>
+    presets?: Preset[]
     onSubmit: (data: PostFormData) => void
     trigger?: React.ReactNode
     isEditing?: boolean
@@ -40,6 +54,7 @@ interface PostDialogProps {
 
 export function PostDialog({
     initialData,
+    presets = [],
     onSubmit,
     trigger,
     isEditing = false,
@@ -50,6 +65,7 @@ export function PostDialog({
     const initialForm = useMemo<PostFormData>(
         () => ({
             id: initialData?.id,
+            preset_id: initialData?.preset_id,
             title: initialData?.title || "",
             content: initialData?.content || "",
             featured_image: initialData?.featured_image || null,
@@ -71,10 +87,8 @@ export function PostDialog({
     const [hashtagInput, setHashtagInput] = useState("")
     const [dragActive, setDragActive] = useState<string | null>(null)
     const [activeTab, setActiveTab] = useState("info")
-    // Ref for hidden file input
     const fileInputRef = useRef<HTMLInputElement>(null)
 
-    // Reset form on open/initialData change
     useEffect(() => {
         setFormData(initialForm)
         setHashtagInput("")
@@ -82,7 +96,7 @@ export function PostDialog({
         setActiveTab("info")
     }, [initialForm, isDialogOpen])
 
-    const handleInputChange = (field: keyof PostFormData, value: string) => {
+    const handleInputChange = (field: keyof PostFormData, value: any) => {
         setFormData((prev) => ({ ...prev, [field]: value }))
     }
 
@@ -127,6 +141,7 @@ export function PostDialog({
         }
     }
 
+    // Add/remove hashtags
     const addHashtag = () => {
         const tag = hashtagInput.trim()
         if (tag && !formData.hashtags.includes(tag)) {
@@ -137,14 +152,12 @@ export function PostDialog({
             setHashtagInput("")
         }
     }
-
     const removeHashtag = (tag: string) => {
         setFormData((prev) => ({
             ...prev,
             hashtags: prev.hashtags.filter((h) => h !== tag),
         }))
     }
-
     const handleKeyPress = (e: React.KeyboardEvent) => {
         if (e.key === "Enter") {
             e.preventDefault()
@@ -152,18 +165,13 @@ export function PostDialog({
         }
     }
 
-    const isTitleValid = formData.title.trim().length > 0
-    const isContentValid = formData.content.trim().length > 0
-    const isFormValid = isTitleValid && isContentValid
-
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault()
-        if (!isFormValid) return
+        if (formData.images.length === 0) return
         onSubmit(formData)
         setIsDialogOpen(false)
     }
 
-    // File upload area with drag & drop and removal
     const FileUploadArea = () => (
         <div
             className={`relative border-2 border-dashed rounded-lg p-4 transition-colors cursor-pointer ${dragActive === "images"
@@ -185,7 +193,6 @@ export function PostDialog({
             }}
             onDrop={handleDrop}
         >
-            {/* Hidden file input */}
             <input
                 ref={fileInputRef}
                 type="file"
@@ -204,7 +211,6 @@ export function PostDialog({
                 }}
                 style={{ display: "none" }}
             />
-
             <div className="relative z-10">
                 {formData.images.length > 0 ? (
                     <div className="flex flex-col gap-2">
@@ -257,7 +263,9 @@ export function PostDialog({
             {trigger && <DialogTrigger asChild>{trigger}</DialogTrigger>}
             <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
-                    <DialogTitle>{isEditing ? "Editar Publicación" : "Crear Nueva Publicación"}</DialogTitle>
+                    <DialogTitle>
+                        {isEditing ? "Editar Publicación" : "Crear Nueva Publicación"}
+                    </DialogTitle>
                     <DialogDescription>
                         {isEditing
                             ? "Modifica tu publicación existente."
@@ -266,30 +274,59 @@ export function PostDialog({
                 </DialogHeader>
 
                 <form onSubmit={handleSubmit} className="space-y-6">
-                    <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+                    <Tabs
+                        value={activeTab}
+                        onValueChange={setActiveTab}
+                        className="w-full"
+                    >
                         <TabsList className="grid w-full grid-cols-3">
                             <TabsTrigger value="info">Información</TabsTrigger>
                             <TabsTrigger value="media">Imágenes</TabsTrigger>
                             <TabsTrigger value="tags">Hashtags</TabsTrigger>
                         </TabsList>
 
+                        {/* Información */}
                         <TabsContent value="info" className="space-y-4 pt-4">
                             <div className="space-y-2">
                                 <Label htmlFor="title">Título</Label>
                                 <Input
                                     id="title"
                                     value={formData.title}
-                                    onChange={(e) => handleInputChange("title", e.target.value)}
+                                    onChange={(e) =>
+                                        handleInputChange("title", e.target.value)
+                                    }
                                     placeholder="Título de la publicación"
                                     required
                                 />
+                            </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="preset">Preset</Label>
+                                <Select
+                                    value={formData.preset_id || ""}
+                                    onValueChange={(val) =>
+                                        handleInputChange("preset_id", val)
+                                    }
+                                >
+                                    <SelectTrigger id="preset" className="w-full">
+                                        <SelectValue placeholder="Selecciona un preset" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {presets.map((p) => (
+                                            <SelectItem key={p.id} value={p.id}>
+                                                {p.name}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
                             </div>
                             <div className="space-y-2">
                                 <Label htmlFor="content">Contenido</Label>
                                 <Textarea
                                     id="content"
                                     value={formData.content}
-                                    onChange={(e) => handleInputChange("content", e.target.value)}
+                                    onChange={(e) =>
+                                        handleInputChange("content", e.target.value)
+                                    }
                                     placeholder="Escribe tu contenido aquí..."
                                     rows={5}
                                     required
@@ -297,6 +334,7 @@ export function PostDialog({
                             </div>
                         </TabsContent>
 
+                        {/* Imágenes */}
                         <TabsContent value="media" className="space-y-4 pt-4">
                             <Alert>
                                 <AlertDescription>
@@ -306,6 +344,7 @@ export function PostDialog({
                             <FileUploadArea />
                         </TabsContent>
 
+                        {/* Hashtags */}
                         <TabsContent value="tags" className="space-y-4 pt-4">
                             <div className="flex gap-2">
                                 <Input
@@ -353,7 +392,10 @@ export function PostDialog({
                         <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
                             Cancelar
                         </Button>
-                        <Button type="submit" disabled={!isFormValid}>
+                        <Button
+                            type="submit"
+                            disabled={formData.images.length === 0}
+                        >
                             {isEditing ? "Actualizar" : "Publicar"}
                         </Button>
                     </DialogFooter>
