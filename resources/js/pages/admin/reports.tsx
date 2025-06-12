@@ -11,6 +11,7 @@ import {
     TooltipTrigger,
 } from "@/components/ui/tooltip"
 import { Trash2 } from "lucide-react"
+import { toast } from "sonner"
 
 type Report = {
     id: number
@@ -36,10 +37,15 @@ const breadcrumbs: BreadcrumbItem[] = [
 export default function Reports({ reports: initialReports }: { reports: Report[] }) {
     const [reports, setReports] = useState<Report[]>(initialReports)
 
-    const handleDelete = (id: number) => {
+    /**
+     * Elimina un reporte por ID, muestra un toast con el mensaje de sesión y actualiza el estado.
+     */
+    const destroyReport = (id: number) => {
         router.delete(route("reports.destroy", id), {
             preserveScroll: true,
-            onSuccess: () => {
+            onSuccess: (page) => {
+                const msg = page.props.flash.success as string | undefined
+                if (msg) toast.success(msg)
                 setReports((prev) => prev.filter((r) => r.id !== id))
             },
         })
@@ -80,7 +86,7 @@ export default function Reports({ reports: initialReports }: { reports: Report[]
                                             <Button
                                                 variant="destructive"
                                                 size="icon"
-                                                onClick={() => handleDelete(report.id)}
+                                                onClick={() => destroyReport(report.id)}
                                             >
                                                 <Trash2 className="w-5 h-5" />
                                             </Button>
