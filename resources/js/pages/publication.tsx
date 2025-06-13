@@ -35,6 +35,7 @@ import type { BreadcrumbItem } from "@/types"
 import { PlaceholderPattern } from "@/components/ui/placeholder-pattern"
 import { toast } from "sonner"
 import { PostDialog } from "@/components/publication-dialog"
+import { Textarea } from "@/components/ui/textarea"
 
 interface BackendImage {
     id: number
@@ -82,6 +83,16 @@ interface BackendPublication {
     saved: boolean
 }
 
+interface PostFormData {
+    id?: string
+    preset_id?: number
+    title: string
+    description: string
+    featured_image: File | null
+    images: File[]
+    hashtags: string[]
+}
+
 export default function Publication() {
     const { props } = usePage<{
         publication: BackendPublication
@@ -106,13 +117,13 @@ export default function Publication() {
 
     // Control edición
     const [isEditOpen, setIsEditOpen] = useState(false)
-    const initialPostValues = useMemo(
+    const initialPostValues = useMemo<PostFormData>(
         () => ({
             id: String(pub.id),
             title: pub.title,
             description: pub.description,
-            featured_image: null as File | null,
-            images: [] as File[],
+            featured_image: null,
+            images: [],
             hashtags: pub.hashtags.map((h) => h.name),
             preset_id: pub.preset?.id,
         }),
@@ -165,12 +176,9 @@ export default function Publication() {
             preset_id: data.preset_id,
         }
 
-        // Si el usuario seleccionó un featured_image, lo añadimos
         if (data.featured_image) {
             payload.featured_image = data.featured_image
         }
-
-        // Si subió imágenes adicionales, las añadimos
         if (data.images.length > 0) {
             payload.images = data.images
         }
@@ -179,7 +187,7 @@ export default function Publication() {
             route("publications.update", pub.id),
             payload,
             {
-                forceFormData: true,    // convierte payload en FormData y adjunta los File
+                forceFormData: true,
                 preserveScroll: true,
                 onSuccess: () => {
                     toast.success("Publicación actualizada con éxito")
@@ -193,9 +201,10 @@ export default function Publication() {
         )
     }
 
-    // Estado y handler para el diálogo de borrado
+    // Handler de borrado
     const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
     function handleDelete() {
+        setIsDeleteDialogOpen(false)
         router.delete(
             route("publications.destroy", pub.id),
             {},
@@ -203,9 +212,33 @@ export default function Publication() {
                 preserveScroll: true,
                 onSuccess: () => {
                     toast.success("Publicación eliminada correctamente")
+                    router.visit(route("publications.index"))
                 },
                 onError: () => {
                     toast.error("Error al eliminar la publicación")
+                },
+            }
+        )
+    }
+
+    // Nuevo comentario
+    const [newComment, setNewComment] = useState("")
+    function handleCommentSubmit(e: React.FormEvent) {
+        e.preventDefault()
+        if (!newComment.trim()) return
+
+        router.post(
+            route("publications.comments.store", pub.id),
+            { body: newComment },
+            {
+                preserveScroll: true,
+                onSuccess: () => {
+                    toast.success("Comentario añadido")
+                    setNewComment("")
+                    router.reload()
+                },
+                onError: () => {
+                    toast.error("Error al enviar el comentario")
                 },
             }
         )
@@ -225,7 +258,6 @@ export default function Publication() {
     const prevImage = () =>
         setCurrentImageIndex((i) => (i - 1 + totalImages) % totalImages)
 
-    console.log(pub)
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title={pub.title} />
@@ -239,7 +271,8 @@ export default function Publication() {
                             <Button
                                 size="sm"
                                 variant="default"
-                                onClick={() => setIsEditOpen(true)}              >
+                                onClick={() => setIsEditOpen(true)}
+                            >
                                 Editar
                             </Button>
                             <Button
@@ -344,8 +377,8 @@ export default function Publication() {
                                             <div
                                                 key={idx}
                                                 className={`h-1.5 rounded-full ${currentImageIndex === idx
-                                                    ? "w-4 bg-white"
-                                                    : "w-1.5 bg-white/60"
+                                                        ? "w-4 bg-white"
+                                                        : "w-1.5 bg-white/60"
                                                     }`}
                                             />
                                         ))}
@@ -457,10 +490,27 @@ export default function Publication() {
                 </Card>
 
                 {/* COMENTARIOS */}
-                <div className="mt-8">
-                    <h2 className="text-xl font-semibold mb-4">
+                <div className="mt-8 space-y-4">
+                    <h2 className="text-xl font-semibold">
                         Comentarios ({comments.length})
                     </h2>
+
+                    {/* Formulario de nuevo comentario */}
+                    {loggedUser && (
+                        <form onSubmit={handleCommentSubmit} className="space-y-2">
+                            <Textarea
+                                value={newComment}
+                                onChange={(e) => setNewComment(e.target.value)}
+                                placeholder="Escribe un comentario..."
+                                rows={3}
+                                required
+                            />
+                            <Button type="submit" disabled={!newComment.trim()}>
+                                Publicar comentario
+                            </Button>
+                        </form>
+                    )}
+
                     <div className="space-y-4">
                         {comments.map((c) => (
                             <div key={c.id} className="flex gap-3">
@@ -548,7 +598,7 @@ export default function Publication() {
                     userRole_id={loggedUser.role_id}
                     presets={presets}
                 />
-            </div >
-        </AppLayout >
+            </div>
+        </AppLayout>
     )
 }
