@@ -1,5 +1,6 @@
-import { Head, Link } from "@inertiajs/react"
-import { Camera, ImageIcon, Share2, ArrowRight, Check } from "lucide-react"
+import React, { useEffect } from "react"
+import { Head, Link, usePage } from "@inertiajs/react"
+import { Camera, ImageIcon, Share2, ArrowRight, Check, Star } from "lucide-react"
 import AppLayout from "@/layouts/app-layout"
 
 const testimonials = [
@@ -26,41 +27,8 @@ const testimonials = [
     },
 ]
 
-// Planes de precios
-const pricingPlans = [
-    {
-        name: "Básico",
-        price: "Gratis",
-        description: "Perfecto para comenzar tu viaje creativo",
-        features: [
-            "Subir publicaciones con 1 imágen",
-            "Interacción social básica",
-            "Publicaciones semanales limitadas",
-        ],
-        buttonText: "Comenzar gratis",
-        buttonVariant: "outline",
-        popular: false,
-    },
-    {
-        name: "Premium",
-        price: "9,99€",
-        period: "/mes",
-        description: "Para creadores que buscan llevar su estilo al siguiente nivel",
-        features: [
-            "Subir publicaciones con hasta 3 imágenes",
-            "Subidas y publicaciones ilimitadas",
-            "Venta de presets",
-            "Cuenta verificada",
-            "Soporte prioritario",
-        ],
-        buttonText: "Obtener Premium",
-        buttonVariant: "default",
-        popular: true,
-    },
-]
-
+// Helper for named routes
 const route = (name: string) => {
-    // Replace this with your actual route generation logic.
     const routes: Record<string, string> = {
         login: "/login",
         register: "/register",
@@ -69,21 +37,37 @@ const route = (name: string) => {
         pricing: "/pricing",
         premium: "/premium",
     }
-    return routes[name] || "#" // Default fallback route
+    return routes[name] || "#"
 }
 
 export default function Welcome() {
+    // Receive from the server via Inertia::render:
+    // props: { plans: [{ id, name, price, period?, description, features: [{ id, name }] }] }
+    const { plans } = usePage<{
+        plans: Array<{
+            id: number
+            name: string
+            price: string | number
+            period?: string
+            description?: string
+            features: { id: number; name: string }[]
+            popular?: boolean
+            buttonText?: string
+            buttonVariant?: "default" | "outline"
+        }>
+    }>().props
+
     return (
         <AppLayout>
             <Head title="Foko — Plataforma de edición fotográfica">
                 <link rel="preconnect" href="https://fonts.bunny.net" />
-                <link href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600" rel="stylesheet" />
-                <style>{`
-    html {
-      scroll-behavior: smooth;
-    }
-  `}</style>
+                <link
+                    href="https://fonts.bunny.net/css?family=instrument-sans:400,500,600"
+                    rel="stylesheet"
+                />
+                <style>{`html { scroll-behavior: smooth; }`}</style>
             </Head>
+
             <div className="flex min-h-screen flex-col items-center bg-background text-foreground">
                 <main className="flex w-full flex-1 flex-col">
                     {/* Hero */}
@@ -93,14 +77,14 @@ export default function Welcome() {
                                 Tu creatividad, tu estilo, tu Foko
                             </h1>
                             <p className="text-lg text-muted-foreground md:text-xl">
-                                Foko es la plataforma de presets y edición pensada para fotógrafos y creadores visuales. Crea,
-                                personaliza y comparte tu estilo con el mundo.
+                                Foko es la plataforma de presets y edición pensada para fotógrafos
+                                y creadores visuales. Crea, personaliza y comparte tu estilo con
+                                el mundo.
                             </p>
                             <div className="flex flex-col gap-4 sm:flex-row">
                                 <Link
                                     href={route("presets")}
                                     className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow hover:bg-primary/90 h-11 select-none"
-                                    draggable={false}
                                 >
                                     Ver presets <ArrowRight className="ml-2 h-4 w-4" />
                                 </Link>
@@ -128,7 +112,9 @@ export default function Welcome() {
                     {/* Features */}
                     <section className="w-full bg-muted/30 py-16 md:py-24 rounded-2xl">
                         <div className="container mx-auto px-4">
-                            <h2 className="mb-12 text-center text-3xl font-bold md:text-4xl">¿Por qué usar Foko?</h2>
+                            <h2 className="mb-12 text-center text-3xl font-bold md:text-4xl">
+                                ¿Por qué usar Foko?
+                            </h2>
                             <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
                                 {[
                                     {
@@ -162,21 +148,23 @@ export default function Welcome() {
                         </div>
                     </section>
 
-                    {/* Pricing Section */}
+                    {/* Pricing Section (dynamic) */}
                     <section id="pricing" className="w-full py-16 md:py-24">
                         <div className="container mx-auto px-4">
                             <div className="text-center mb-12">
-                                <h2 className="text-3xl font-bold md:text-4xl mb-4">Planes que se adaptan a ti</h2>
+                                <h2 className="text-3xl font-bold md:text-4xl mb-4">
+                                    Planes que se adaptan a ti
+                                </h2>
                                 <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-                                    Elige el plan que mejor se adapte a tus necesidades creativas y lleva tu fotografía al siguiente
-                                    nivel.
+                                    Elige el plan que mejor se adapte a tus necesidades creativas y
+                                    lleva tu fotografía al siguiente nivel.
                                 </p>
                             </div>
 
                             <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-                                {pricingPlans.map((plan, index) => (
+                                {plans.map((plan, idx) => (
                                     <div
-                                        key={index}
+                                        key={plan.id}
                                         className={`rounded-xl border bg-card p-6 shadow-sm transition-all hover:shadow-md flex flex-col justify-between ${plan.popular ? "border-primary relative" : ""
                                             }`}
                                     >
@@ -190,18 +178,26 @@ export default function Welcome() {
                                             <div>
                                                 <div className="mb-5">
                                                     <h3 className="text-xl font-bold">{plan.name}</h3>
-                                                    <div className="mt-2 flex items-baseline">
+                                                    <div className="mt-2 flex items-baseline gap-1">
                                                         <span className="text-3xl font-bold">{plan.price}</span>
-                                                        {plan.period && <span className="text-muted-foreground ml-1">{plan.period}</span>}
+                                                        {plan.period && (
+                                                            <span className="text-muted-foreground ml-1">
+                                                                {plan.period}
+                                                            </span>
+                                                        )}
                                                     </div>
-                                                    <p className="mt-2 text-sm text-muted-foreground">{plan.description}</p>
+                                                    {plan.description && (
+                                                        <p className="mt-2 text-sm text-muted-foreground">
+                                                            {plan.description}
+                                                        </p>
+                                                    )}
                                                 </div>
 
                                                 <ul className="mb-6 space-y-3">
                                                     {plan.features.map((feature, i) => (
                                                         <li key={i} className="flex items-start">
                                                             <Check className="mr-2 h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
-                                                            <span className="text-sm">{feature}</span>
+                                                            <span className="text-sm">{feature.name}</span>
                                                         </li>
                                                     ))}
                                                 </ul>
@@ -211,8 +207,8 @@ export default function Welcome() {
                                                 <Link
                                                     href={route("register")}
                                                     className={`inline-flex items-center justify-center w-full rounded-md select-none ${plan.buttonVariant === "default"
-                                                        ? "bg-primary text-primary-foreground shadow hover:bg-primary/90"
-                                                        : "border border-input bg-background hover:bg-accent hover:text-accent-foreground"
+                                                            ? "bg-primary text-primary-foreground shadow hover:bg-primary/90"
+                                                            : "border border-input bg-background hover:bg-accent hover:text-accent-foreground"
                                                         } px-4 py-2 text-sm font-medium h-11`}
                                                     draggable={false}
                                                 >
@@ -229,7 +225,9 @@ export default function Welcome() {
                     {/* Testimonials */}
                     <section className="w-full bg-muted/20 py-16 md:py-24 rounded-2xl">
                         <div className="container mx-auto px-4">
-                            <h2 className="mb-12 text-center text-3xl font-bold md:text-4xl">Historias de nuestra comunidad</h2>
+                            <h2 className="mb-12 text-center text-3xl font-bold md:text-4xl">
+                                Historias de nuestra comunidad
+                            </h2>
                             <div className="grid gap-6 md:grid-cols-3">
                                 {testimonials.map((t, i) => (
                                     <div key={i} className="rounded-lg bg-card p-6 shadow-sm">
@@ -254,26 +252,28 @@ export default function Welcome() {
                     {/* CTA */}
                     <section className="w-full py-16 text-center text-secondary-foreground md:py-24">
                         <div className="container mx-auto px-4">
-                            <h2 className="mb-4 text-3xl font-bold md:text-4xl">Empieza tu viaje visual con Foko</h2>
+                            <h2 className="mb-4 text-3xl font-bold md:text-4xl">
+                                Empieza tu viaje visual con Foko
+                            </h2>
                             <p className="mx-auto mb-8 max-w-2xl text-lg">
-                                Súmate a la comunidad Foko y empieza a crear, editar y compartir con estilo. ¡Prueba gratis y actualiza
-                                cuando estés listo!
+                                Súmate a la comunidad Foko y empieza a crear, editar y compartir
+                                con estilo. ¡Prueba gratis y actualiza cuando estés listo!
                             </p>
                             <div className="flex flex-col sm:flex-row gap-4 justify-center">
                                 <Link
                                     href={route("register")}
                                     className="inline-flex items-center justify-center rounded-md bg-primary px-6 py-4 text-lg font-medium text-primary-foreground shadow hover:bg-primary/90 select-none"
-                                    draggable={false}
                                 >
                                     Regístrate gratis
                                 </Link>
                                 <Link
                                     href="#pricing"
                                     className="inline-flex items-center justify-center rounded-md border border-input bg-secondary-foreground/10 px-6 py-4 text-lg font-medium shadow-sm hover:bg-accent hover:text-accent-foreground select-none"
-                                    draggable={false}
-                                    onClick={(e) => {
+                                    onClick={e => {
                                         e.preventDefault()
-                                        document.getElementById("pricing")?.scrollIntoView({ behavior: "smooth" })
+                                        document
+                                            .getElementById("pricing")
+                                            ?.scrollIntoView({ behavior: "smooth" })
                                     }}
                                 >
                                     Ver planes Premium
@@ -285,7 +285,8 @@ export default function Welcome() {
 
                 <footer className="w-full border-t border-border/40 py-8">
                     <div className="container mx-auto px-4 text-sm text-muted-foreground text-center">
-                        © {new Date().getFullYear()} Foko. Proyecto desarrollado por Hugo Cayón Laso.
+                        © {new Date().getFullYear()} Foko. Proyecto desarrollado por Hugo Cayón
+                        Laso.
                     </div>
                 </footer>
             </div>

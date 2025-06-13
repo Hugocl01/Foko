@@ -10,6 +10,31 @@ use App\Models\Plan;
 class PlanController extends Controller
 {
     /**
+     * Mostrar la página de bienvenida con todos los planes y sus features.
+     */
+    public function index()
+    {
+        $rawPlans = Plan::with('features')->get();
+
+        // Añade aquí buttonText y buttonVariant según lógica de negocio
+        $plans = $rawPlans->map(fn($plan) => [
+            'id' => $plan->id,
+            'name' => $plan->name,
+            'price' => $plan->price === 0 ? 'Gratis' : "{$plan->price} €",
+            'period' => $plan->price === 0 ? null : '/mes',
+            'description' => $plan->description,
+            'features' => $plan->features->map(fn($f) => ['id' => $f->id, 'name' => $f->name]),
+            'popular' => $plan->popular ?? false,
+            'buttonText' => $plan->price === 0 ? 'Comenzar gratis' : 'Obtener Premium',
+            'buttonVariant' => $plan->price === 0 ? 'outline' : 'default',
+        ]);
+
+        return Inertia::render('welcome', [
+            'plans' => $plans,
+        ]);
+    }
+
+    /**
      * Mostrar formulario de selección de plan junto con sus features.
      */
     public function edit(Request $request)

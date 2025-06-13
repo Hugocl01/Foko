@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\FeedController;
 use App\Http\Controllers\PublicationController;
+use App\Http\Controllers\Settings\PlanController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -12,9 +13,8 @@ use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 
 // Ruta raíz: protegida con 'guest' para que sólo la vean usuarios NO autenticados
-Route::middleware('guest')->get('/', function () {
-    return Inertia::render('welcome');
-})->name('welcome');
+Route::middleware('guest')->get('/', [PlanController::class, 'index'])
+    ->name('welcome');
 
 // Si el usuario está autenticado, lo mandamos a 'home'
 Route::middleware(['auth', 'verified'])->get('/home', [FeedController::class, 'index'])
