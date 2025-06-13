@@ -23,7 +23,6 @@ import {
     Star,
     Eye,
     EyeOff,
-    Plus,
 } from "lucide-react";
 import type { BreadcrumbItem } from "@/types";
 
@@ -70,7 +69,7 @@ const breadcrumbs: BreadcrumbItem[] = [{ title: "Inicio", href: "/home" }];
 export default function Home() {
     const { topPublications, premiumPresets } = usePage<PageProps>().props;
 
-    // Carousel state para publicaciones
+    // Carousel state for publications
     const [imgIndex, setImgIndex] = useState<Record<number, number>>({});
     const nextImage = (id: number, total: number) =>
         setImgIndex((p) => ({ ...p, [id]: ((p[id] || 0) + 1) % total }));
@@ -78,7 +77,7 @@ export default function Home() {
         setImgIndex((p) => ({ ...p, [id]: ((p[id] || 0) - 1 + total) % total }));
     const getCurrentImageIndex = (id: number) => imgIndex[id] || 0;
 
-    // Presets before/after toggle
+    // Toggle before/after for presets
     const [viewMode, setViewMode] = useState<Record<number, "before" | "after">>({});
     const togglePresetView = (id: number) =>
         setViewMode((p) => ({ ...p, [id]: p[id] === "before" ? "after" : "before" }));
@@ -86,10 +85,16 @@ export default function Home() {
 
     // Like / save handlers
     const toggleLike = (id: number) => {
-        router.post(route("publications.toggleLike", id), {}, { preserveState: true, preserveScroll: true });
+        router.post(route("publications.toggleLike", id), {}, {
+            preserveState: true,
+            preserveScroll: true,
+        });
     };
     const toggleSave = (id: number) => {
-        router.post(route("publications.toggleSave", id), {}, { preserveState: true, preserveScroll: true });
+        router.post(route("publications.toggleSave", id), {}, {
+            preserveState: true,
+            preserveScroll: true,
+        });
     };
 
     return (
@@ -97,7 +102,7 @@ export default function Home() {
             <Head title="Inicio" />
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-4">
 
-                {/* ⇨ Columna izquierda: Publicaciones Destacadas */}
+                {/* Left column: Publications */}
                 <section className="space-y-4">
                     <h2 className="text-2xl font-bold">Publicaciones Destacadas</h2>
                     <div className="space-y-4">
@@ -230,7 +235,11 @@ export default function Home() {
                                                     <Heart className={`h-6 w-6 ${pub.liked ? "fill-destructive" : ""}`} />
                                                     <span className="sr-only">Me gusta</span>
                                                 </Button>
-                                                <Button variant="ghost" size="icon" onClick={(e) => e.stopPropagation()}>
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    onClick={(e) => e.stopPropagation()}
+                                                >
                                                     <Share2 className="h-6 w-6" />
                                                     <span className="sr-only">Compartir</span>
                                                 </Button>
@@ -242,10 +251,12 @@ export default function Home() {
                                                     e.stopPropagation();
                                                     toggleSave(pub.id);
                                                 }}
-                                                className={pub.saved ? "text-primary" : ""}
                                             >
                                                 <Bookmark
-                                                    className="h-6 w-6 fill-current"
+                                                    className={`h-6 w-6 ${pub.saved
+                                                        ? "fill-primary"
+                                                        : "fill-none stroke-current text-muted-foreground"
+                                                        }`}
                                                 />
                                                 <span className="sr-only">Guardar</span>
                                             </Button>
@@ -261,7 +272,9 @@ export default function Home() {
                                                         href={`/publications?hashtag=${encodeURIComponent(tag.slug)}`}
                                                         onClick={(e) => {
                                                             e.stopPropagation();
-                                                            router.get(`/publications?hashtag=${encodeURIComponent(tag.slug)}`);
+                                                            router.get(
+                                                                `/publications?hashtag=${encodeURIComponent(tag.slug)}`
+                                                            );
                                                         }}
                                                     >
                                                         <Badge variant="default">#{tag.name}</Badge>
@@ -285,10 +298,149 @@ export default function Home() {
                     </div>
                 </section>
 
-                {/* ⇨ Columna derecha: Presets Premium (sin cambios por ahora) */}
+                {/* Right column: Presets Premium (idénticos estilo después) */}
                 <section className="space-y-4">
                     <h2 className="text-2xl font-bold">Presets Premium</h2>
-                    {/* … aquí va tu grid de presets, igual que antes … */}
+                    <div className="grid grid-cols-1 gap-4">
+                        {premiumPresets.map((preset) => {
+                            const isPremium = preset.user.plan_id !== 2;
+                            const mode = getPresetView(preset.id);
+                            const imgUrl =
+                                mode === "before"
+                                    ? preset.before_image ?? "/placeholder.svg"
+                                    : preset.after_image ?? "/placeholder.svg";
+
+                            return (
+                                <Card
+                                    key={preset.id}
+                                    onClick={() => router.get(route("presets.show", preset.id))}
+                                    className={`flex flex-col h-full cursor-pointer hover:shadow-lg transition-shadow duration-200 ${isPremium ? "border-emerald-500" : ""
+                                        }`}
+                                >
+                                    <CardHeader className="px-4">
+                                        <div className="flex items-center justify-between">
+                                            <div className="flex items-center gap-3">
+                                                <Link
+                                                    href={route("profile.user", preset.user.username!)}
+                                                    onClick={(e) => e.stopPropagation()}
+                                                >
+                                                    <Avatar className="h-10 w-10">
+                                                        <AvatarImage
+                                                            src={preset.user.profile_image || "/placeholder.svg"}
+                                                            alt={preset.user.name}
+                                                        />
+                                                        <AvatarFallback>
+                                                            {preset.user.name.charAt(0)}
+                                                        </AvatarFallback>
+                                                    </Avatar>
+                                                </Link>
+                                                <div className="flex flex-col">
+                                                    <div className="font-medium text-base flex items-center">
+                                                        {preset.user.name}
+                                                        {isPremium && (
+                                                            <Badge
+                                                                variant="outline"
+                                                                className="ml-2 flex items-center"
+                                                            >
+                                                                <Star className="h-4 w-4 mr-1 text-amber-500" />
+                                                                Premium
+                                                            </Badge>
+                                                        )}
+                                                    </div>
+                                                    <div className="text-sm text-muted-foreground">
+                                                        @{preset.user.username}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <DropdownMenu>
+                                                <DropdownMenuTrigger asChild>
+                                                    <Button variant="ghost" size="icon">
+                                                        <MoreHorizontal />
+                                                    </Button>
+                                                </DropdownMenuTrigger>
+                                                <DropdownMenuContent align="end">
+                                                    <Link
+                                                        href={route("profile.user", preset.user.username!)}
+                                                        onClick={(e) => e.stopPropagation()}
+                                                    >
+                                                        <DropdownMenuItem>Ver perfil</DropdownMenuItem>
+                                                    </Link>
+                                                    <DropdownMenuItem>Copiar enlace</DropdownMenuItem>
+                                                    <DropdownMenuSeparator />
+                                                    <DropdownMenuItem className="text-destructive">
+                                                        Reportar
+                                                    </DropdownMenuItem>
+                                                </DropdownMenuContent>
+                                            </DropdownMenu>
+                                        </div>
+                                    </CardHeader>
+
+                                    <CardContent className="relative flex-grow p-0">
+                                        <div className="relative aspect-square overflow-hidden bg-gray-100">
+                                            <img
+                                                src={imgUrl}
+                                                alt={preset.name}
+                                                className="w-full h-full object-cover"
+                                            />
+                                            <div className="absolute top-2 left-2">
+                                                <Button
+                                                    variant="ghost"
+                                                    size="icon"
+                                                    className="bg-black/50 text-white"
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        togglePresetView(preset.id);
+                                                    }}
+                                                >
+                                                    {mode === "before" ? <EyeOff /> : <Eye />}
+                                                </Button>
+                                            </div>
+                                            <Badge
+                                                variant="default"
+                                                className="absolute top-2 right-2"
+                                            >
+                                                {Number(preset.price).toFixed(2)} €
+                                            </Badge>
+                                        </div>
+                                    </CardContent>
+
+                                    <CardFooter className="flex flex-col gap-3 p-4">
+                                        <div className="font-semibold">{preset.name}</div>
+                                        <div className="text-sm text-muted-foreground line-clamp-2">
+                                            {preset.description}
+                                        </div>
+                                        <div className="flex flex-wrap gap-1">
+                                            {preset.hashtags.map((tag) => (
+                                                <Link
+                                                    key={tag.id}
+                                                    href={`/presets?hashtag=${encodeURIComponent(tag.slug)}`}
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        router.get(
+                                                            `/presets?hashtag=${encodeURIComponent(tag.slug)}`
+                                                        );
+                                                    }}
+                                                >
+                                                    <Badge variant="default">#{tag.name}</Badge>
+                                                </Link>
+                                            ))}
+                                        </div>
+                                        <Button
+                                            size="sm"
+                                            variant="default"
+                                            className="w-full"
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                router.get(route("presets.show", preset.id));
+                                            }}
+                                        >
+                                            Ver
+                                        </Button>
+                                    </CardFooter>
+                                </Card>
+                            );
+                        })}
+                    </div>
                 </section>
             </div>
         </AppLayout>
