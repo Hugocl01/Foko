@@ -444,6 +444,31 @@ export default function PublicationsPage() {
                                         <div className="font-medium">{pub.likes_count} me gusta</div>
                                         <div className="font-medium">{pub.title}</div>
                                         <div>{pub.description}</div>
+                                        <div className="flex flex-wrap gap-1 mb-3">
+                                            {pub.hashtags.map((tag) => (
+                                                <a
+                                                    key={tag}
+                                                    href={`/publications?hashtag=${encodeURIComponent(
+                                                        tag
+                                                    )}`}
+                                                    onClick={(e) => {
+                                                        e.stopPropagation()
+                                                        router.get(
+                                                            `/publications?hashtag=${encodeURIComponent(
+                                                                tag
+                                                            )}`
+                                                        )
+                                                    }}
+                                                >
+                                                    <Badge
+                                                        variant="default"
+                                                        className="cursor-pointer"
+                                                    >
+                                                        #{tag}
+                                                    </Badge>
+                                                </a>
+                                            ))}
+                                        </div>
                                         <div className="text-xs text-muted-foreground mt-2">
                                             {new Date(pub.created_at).toLocaleString("es-ES", {
                                                 day: "2-digit",
