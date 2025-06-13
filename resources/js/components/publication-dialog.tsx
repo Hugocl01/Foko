@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo, useRef } from "react"
 import { X, ImageIcon, Plus } from "lucide-react"
+import { router } from "@inertiajs/react"
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -43,25 +44,27 @@ interface PostFormData {
 
 interface PostDialogProps {
     initialData?: Partial<PostFormData>
-    presets?: Preset[]
     onSubmit: (data: PostFormData) => void
     trigger?: React.ReactNode
     isEditing?: boolean
     open?: boolean
     onOpenChange?: (open: boolean) => void
     userRole_id: number
+    presets: Preset[]  // Recibimos presets como prop
 }
 
 export function PostDialog({
     initialData,
-    presets = [],
     onSubmit,
     trigger,
     isEditing = false,
     open: controlledOpen,
     onOpenChange: setControlledOpen,
     userRole_id,
+    presets, // Desestructuramos presets
 }: PostDialogProps) {
+    // Ya no necesitamos estado ni useEffect para cargar presets
+
     const initialForm = useMemo<PostFormData>(
         () => ({
             id: initialData?.id,
@@ -100,17 +103,14 @@ export function PostDialog({
         setFormData((prev) => ({ ...prev, [field]: value }))
     }
 
-    // Maximum images allowed based on role
     const maxImages = userRole_id === 1 ? 3 : 1
 
-    // Filter and limit dropped/selected files
     const handleFileSelect = (files: File[]) => {
         const imgs = files.filter((f) => f.type.startsWith("image/"))
         const remaining = maxImages - formData.images.length
         return imgs.slice(0, remaining)
     }
 
-    // Remove image at given index
     const removeImage = (index: number) => {
         setFormData((prev) => ({
             ...prev,
@@ -118,13 +118,11 @@ export function PostDialog({
         }))
     }
 
-    // Handle drag-and-drop
     const handleDrop = (e: React.DragEvent) => {
         e.preventDefault()
         e.stopPropagation()
         setDragActive(null)
         const dropped = Array.from(e.dataTransfer.files)
-        if (!dropped.length) return
         const toAdd = handleFileSelect(dropped)
         if (toAdd.length) {
             setFormData((prev) => ({
@@ -134,14 +132,12 @@ export function PostDialog({
         }
     }
 
-    // Trigger file dialog on wrapper click
     const handleWrapperClick = () => {
         if (formData.images.length < maxImages) {
             fileInputRef.current?.click()
         }
     }
 
-    // Add/remove hashtags
     const addHashtag = () => {
         const tag = hashtagInput.trim()
         if (tag && !formData.hashtags.includes(tag)) {
@@ -152,12 +148,14 @@ export function PostDialog({
             setHashtagInput("")
         }
     }
+
     const removeHashtag = (tag: string) => {
         setFormData((prev) => ({
             ...prev,
             hashtags: prev.hashtags.filter((h) => h !== tag),
         }))
     }
+
     const handleKeyPress = (e: React.KeyboardEvent) => {
         if (e.key === "Enter") {
             e.preventDefault()
@@ -274,27 +272,20 @@ export function PostDialog({
                 </DialogHeader>
 
                 <form onSubmit={handleSubmit} className="space-y-6">
-                    <Tabs
-                        value={activeTab}
-                        onValueChange={setActiveTab}
-                        className="w-full"
-                    >
+                    <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
                         <TabsList className="grid w-full grid-cols-3">
                             <TabsTrigger value="info">Información</TabsTrigger>
                             <TabsTrigger value="media">Imágenes</TabsTrigger>
                             <TabsTrigger value="tags">Hashtags</TabsTrigger>
                         </TabsList>
 
-                        {/* Información */}
                         <TabsContent value="info" className="space-y-4 pt-4">
                             <div className="space-y-2">
                                 <Label htmlFor="title">Título</Label>
                                 <Input
                                     id="title"
                                     value={formData.title}
-                                    onChange={(e) =>
-                                        handleInputChange("title", e.target.value)
-                                    }
+                                    onChange={(e) => handleInputChange("title", e.target.value)}
                                     placeholder="Título de la publicación"
                                     required
                                 />
@@ -303,9 +294,7 @@ export function PostDialog({
                                 <Label htmlFor="preset">Preset</Label>
                                 <Select
                                     value={formData.preset_id || ""}
-                                    onValueChange={(val) =>
-                                        handleInputChange("preset_id", val)
-                                    }
+                                    onValueChange={(val) => handleInputChange("preset_id", val)}
                                 >
                                     <SelectTrigger id="preset" className="w-full">
                                         <SelectValue placeholder="Selecciona un preset" />
@@ -324,9 +313,7 @@ export function PostDialog({
                                 <Textarea
                                     id="content"
                                     value={formData.content}
-                                    onChange={(e) =>
-                                        handleInputChange("content", e.target.value)
-                                    }
+                                    onChange={(e) => handleInputChange("content", e.target.value)}
                                     placeholder="Escribe tu contenido aquí..."
                                     rows={5}
                                     required
@@ -334,7 +321,6 @@ export function PostDialog({
                             </div>
                         </TabsContent>
 
-                        {/* Imágenes */}
                         <TabsContent value="media" className="space-y-4 pt-4">
                             <Alert>
                                 <AlertDescription>
@@ -344,7 +330,6 @@ export function PostDialog({
                             <FileUploadArea />
                         </TabsContent>
 
-                        {/* Hashtags */}
                         <TabsContent value="tags" className="space-y-4 pt-4">
                             <div className="flex gap-2">
                                 <Input
@@ -361,6 +346,8 @@ export function PostDialog({
                             </div>
                             <ScrollArea className="h-[150px] w-full rounded-md border p-2">
                                 {formData.hashtags.length > 0 ? (
+
+
                                     <div className="flex flex-wrap gap-2">
                                         {formData.hashtags.map((tag, i) => (
                                             <Badge
@@ -392,10 +379,7 @@ export function PostDialog({
                         <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
                             Cancelar
                         </Button>
-                        <Button
-                            type="submit"
-                            disabled={formData.images.length === 0}
-                        >
+                        <Button type="submit" disabled={formData.images.length === 0}>
                             {isEditing ? "Actualizar" : "Publicar"}
                         </Button>
                     </DialogFooter>

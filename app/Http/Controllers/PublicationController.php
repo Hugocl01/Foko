@@ -15,9 +15,26 @@ class PublicationController extends Controller
      */
     public function index()
     {
-        $userId = Auth::user()->id;
+        $user = Auth::user();
+        $userId = $user->id;
 
-        // 1) Obtenemos el paginador estándar (5 publicaciones más recientes)
+        // 1) Obtenemos todos los presets del usuario autenticado
+        $allPresets = $user->presets()
+            ->orderBy('created_at', 'desc')
+            ->get()
+            ->map(function ($preset) {
+                return [
+                    'id' => $preset->id,
+                    'name' => $preset->name,
+                    'description' => $preset->description,
+                    'price' => $preset->price,
+                    'before_image_url' => $preset->before_image_url,
+                    'after_image_url' => $preset->after_image_url,
+                    // …otros campos que necesites…
+                ];
+            })->toArray();
+
+        // 2) Obtenemos el paginador estándar (5 publicaciones más recientes)
         $paginator = Publication::with(['user', 'images', 'preset', 'hashtags'])
             ->withCount(['likes', 'comments'])
             ->withCount([
@@ -31,14 +48,14 @@ class PublicationController extends Controller
             ->orderBy('created_at', 'desc')
             ->paginate(5);
 
-        // 2) Reordenamos sólo esta página (5 items):
+        // 3) Reordenamos sólo esta página (5 items):
         //    asignamos prioridad 0 a los plan_id != 2 (premium)
         //    y 1 a los plan_id == 2 (no premium)
         $reordered = $paginator->getCollection()
             ->sortBy(fn($pub) => $pub->user->plan_id == 2 ? 1 : 0)
             ->values();
 
-        // 3) Aplicamos la transformación original sobre la colección reordenada
+        // 4) Aplicamos la transformación original sobre la colección reordenada
         $mapped = $reordered->map(function ($pub) use ($userId) {
             // URLs de imágenes
             $pub->images->transform(function ($img) {
@@ -76,12 +93,13 @@ class PublicationController extends Controller
             ];
         });
 
-        // 4) Sustituimos la colección del paginator por la reordenada + mapeada
+        // 5) Sustituimos la colección del paginator por la reordenada + mapeada
         $paginator->setCollection($mapped);
 
-        // 5) Enviamos a Inertia
+        // 6) Enviamos a Inertia incluyendo también los presets
         return Inertia::render('publications', [
             'publications' => $paginator,
+            'presets' => $allPresets,
         ]);
     }
 

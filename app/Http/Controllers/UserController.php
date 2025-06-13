@@ -225,33 +225,6 @@ class UserController extends Controller
         ]);
     }
 
-    public function userPresets(User $user)
-    {
-        $data = $this->getCommonUserData($user);
-
-        $allPresets = $user->presets()
-            ->orderBy('created_at', 'desc')
-            ->get()
-            ->map(function ($preset) {
-                return [
-                    'id' => $preset->id,
-                    'name' => $preset->name,
-                    'description' => $preset->description,
-                    'price' => $preset->price,
-                    // Aquí exponemos la URL completa:
-                    'before_image_url' => $preset->before_image_url,
-                    'after_image_url' => $preset->after_image_url,
-                    // …otros campos que necesites…
-                ];
-            })->toArray();
-
-        $data['presets'] = $allPresets;
-
-        return Inertia::render('profile/presets', [
-            'user' => $data,
-        ]);
-    }
-
     public function userSaved(User $user)
     {
         // 1) Datos comunes

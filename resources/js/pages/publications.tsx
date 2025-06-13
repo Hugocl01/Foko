@@ -114,11 +114,11 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 export default function PublicationsPage() {
-    const { props } = usePage<{ publications: Paginated<BackendPublication> }>();
+    const { props } = usePage<{ publications: Paginated<BackendPublication>; presets: Preset[] }>();
     const page = usePage<SharedData>();
     const { auth, flash } = page.props;
-    const { data: backendPubs, current_page, last_page, per_page, total } =
-        props.publications;
+    const { data: backendPubs, current_page, last_page, per_page, total } = props.publications;
+    const presets = props.presets;
 
     const [localPublications, setLocalPublications] = useState<Publication[]>([]);
     const [createOpen, setCreateOpen] = useState(false);
@@ -247,6 +247,7 @@ export default function PublicationsPage() {
                         onOpenChange={setCreateOpen}
                         onSubmit={() => { }}
                         userRole_id={auth.user.role_id}
+                        presets={presets}
                     />
                 </div>
 
