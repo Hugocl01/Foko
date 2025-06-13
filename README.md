@@ -40,7 +40,7 @@ composer install
 npm install
 ```
 
-4. Copia el archivo `.env.example` a `.env` y configura tus credenciales de base de datos y el mail como Mailtrap:
+4. Copia el archivo `.env.example` a `.env` y configura tus credenciales de base de datos y el mail con Mailtrap para el envío de correos electrónicos:
 
 ```bash
 cp .env.example .env
