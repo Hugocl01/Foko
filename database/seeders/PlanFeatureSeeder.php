@@ -22,7 +22,6 @@ class PlanFeatureSeeder extends Seeder
                 'Subir publicaciones con hasta 3 imágenes',
                 'Subidas y publicaciones ilimitadas',
                 'Venta de presets',
-                'Cuenta verificada',
                 'Soporte prioritario',
             ],
         ];

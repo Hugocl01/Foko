@@ -1,16 +1,34 @@
+import React from "react"
 import { router, usePage } from "@inertiajs/react"
 import { Check, Star } from "lucide-react"
 
-export default function PlanTabs() {
-    const { currentPlan, plans } = usePage().props
+interface Feature {
+    id: number
+    name: string
+}
 
-    const handleChange = (planId) => {
-        router.post("/settings/plan", {
-            _method: "patch",
-            forceFormData: true,
-            preserveScroll: true,
-            plan_id: planId,
-        })
+interface Plan {
+    id: number
+    name: string
+    price: number | string
+    description?: string
+    features: Feature[]
+}
+
+interface Props {
+    currentPlan: Plan
+    plans: Plan[]
+}
+
+export default function PlanTabs() {
+    const { currentPlan, plans } = usePage<Props>().props
+
+    const handleChange = (planId: number) => {
+        router.post(
+            "/settings/plan",
+            { _method: "patch", plan_id: planId },
+            { forceFormData: true, preserveScroll: true }
+        )
     }
 
     return (
@@ -63,29 +81,24 @@ export default function PlanTabs() {
                                     <span className="text-sm font-medium text-muted-foreground">€/mes</span>
                                 </div>
                             </div>
-                            {plan.description && <p className="text-sm text-muted-foreground leading-relaxed">{plan.description}</p>}
+                            {plan.description && (
+                                <p className="text-sm text-muted-foreground leading-relaxed">
+                                    {plan.description}
+                                </p>
+                            )}
                         </div>
 
+                        {/* Features list */}
                         <div className="flex-1 px-8">
                             <div className="flex flex-wrap gap-4">
-                                <div className="flex items-center gap-2 text-sm">
-                                    <div className="w-4 h-4 rounded-full bg-primary/10 flex items-center justify-center">
-                                        <Check className="w-2.5 h-2.5 text-primary" />
+                                {plan.features.map(feature => (
+                                    <div key={feature.id} className="flex items-center gap-2 text-sm">
+                                        <div className="w-4 h-4 rounded-full bg-primary/10 flex items-center justify-center">
+                                            <Check className="w-2.5 h-2.5 text-primary" />
+                                        </div>
+                                        <span className="text-foreground">{feature.name}</span>
                                     </div>
-                                    <span className="text-foreground">Todas las funciones</span>
-                                </div>
-                                <div className="flex items-center gap-2 text-sm">
-                                    <div className="w-4 h-4 rounded-full bg-primary/10 flex items-center justify-center">
-                                        <Check className="w-2.5 h-2.5 text-primary" />
-                                    </div>
-                                    <span className="text-foreground">Soporte prioritario</span>
-                                </div>
-                                <div className="flex items-center gap-2 text-sm">
-                                    <div className="w-4 h-4 rounded-full bg-primary/10 flex items-center justify-center">
-                                        <Check className="w-2.5 h-2.5 text-primary" />
-                                    </div>
-                                    <span className="text-foreground">Actualizaciones automáticas</span>
-                                </div>
+                                ))}
                             </div>
                         </div>
 
@@ -108,8 +121,7 @@ export default function PlanTabs() {
                             >
                                 {isActive ? (
                                     <span className="flex items-center justify-center gap-2">
-                                        <Check className="w-4 h-4" />
-                                        Seleccionado
+                                        <Check className="w-4 h-4" /> Seleccionado
                                     </span>
                                 ) : (
                                     "Seleccionar Plan"

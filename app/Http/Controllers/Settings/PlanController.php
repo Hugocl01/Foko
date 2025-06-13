@@ -5,21 +5,29 @@ namespace App\Http\Controllers\Settings;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
-use Inertia\Response;
 use App\Models\Plan;
 
 class PlanController extends Controller
 {
+    /**
+     * Mostrar formulario de selección de plan junto con sus features.
+     */
     public function edit(Request $request)
     {
-        $currentPlan = $request->user()->plan;
+        // 1) Cargar el plan actual del usuario con sus features
+        $currentPlan = $request->user()
+            ->plan()
+            ->with('features')
+            ->first();
 
-        // Solo traemosque no son el Ilimitado
-        $plans = Plan::where('id', '!=', 1)->get();
+        // 2) Cargar todos los planes con sus features
+        $plans = Plan::with('features')
+            ->get();
 
+        // 3) Renderizar la vista pasando currentPlan y la lista de planes con features
         return Inertia::render('settings/plan', [
             'currentPlan' => $currentPlan,
-            'plans' => Plan::all(),
+            'plans' => $plans,
         ]);
     }
 

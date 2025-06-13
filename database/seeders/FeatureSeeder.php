@@ -20,7 +20,6 @@ class FeatureSeeder extends Seeder
             ['name' => 'Publicaciones semanales limitadas', 'description' => 'Restricción de publicaciones por semana.'],
             ['name' => 'Subidas y publicaciones ilimitadas', 'description' => 'Sin límite en cantidad de publicaciones.'],
             ['name' => 'Venta de presets', 'description' => 'Permite crear y vender presets personalizados.'],
-            ['name' => 'Cuenta verificada', 'description' => 'Verificación oficial del perfil.'],
             ['name' => 'Soporte prioritario', 'description' => 'Atención preferente al cliente.'],
         ];
 
