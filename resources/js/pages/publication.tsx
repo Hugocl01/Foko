@@ -195,6 +195,7 @@ export default function Publication() {
     const prevImage = () =>
         setCurrentImageIndex((i) => (i - 1 + totalImages) % totalImages)
 
+    console.log(pub)
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title={pub.title} />
@@ -354,6 +355,19 @@ export default function Publication() {
                             <div className="font-medium">{likesCount} me gusta</div>
                             <div className="font-medium">{pub.title}</div>
                             <div>{pub.description}</div>
+                            <div className="flex flex-wrap gap-1 mb-3">
+                                {pub.hashtags.map((hashtag) => (
+                                    <Link
+                                        key={hashtag.id}
+                                        href={`/publications?hashtag=${encodeURIComponent(hashtag.name)}`}
+                                        className="inline-block"
+                                    >
+                                        <Badge variant="default" className="text-xs cursor-pointer">
+                                            #{hashtag.name}
+                                        </Badge>
+                                    </Link>
+                                ))}
+                            </div>
                             <div className="text-xs text-muted-foreground mt-2">
                                 {new Date(pub.created_at).toLocaleString("es-ES", {
                                     day: "2-digit",
