@@ -16,7 +16,8 @@ use Inertia\Inertia;
 class PresetController extends Controller
 {
     /**
-     * Muestra todos los presets.
+     * Muestra todos los presets, los primeros con los presets de cada página
+     * son de usuarios con los planes distintos del básico.
      */
     public function index()
     {
@@ -62,7 +63,7 @@ class PresetController extends Controller
         ]);
     }
 
-    public function userPrests()
+    public function userPrests(Request $request)
     {
         $userId = Auth::user()->id;
 
@@ -83,7 +84,7 @@ class PresetController extends Controller
     }
 
     /**
-     * Guarda el nuevo preset en la base de datos.
+     * Guarda el nuevo preset con sus hashtags asociados en la base de datos.
      */
     public function store(Request $request)
     {
