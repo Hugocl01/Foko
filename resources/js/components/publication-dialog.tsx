@@ -66,7 +66,6 @@ export function PostDialog({
 }: PostDialogProps) {
     const initialForm = useMemo<PostFormData>(() => ({
         id: initialData?.id,
-        // Aceptamos preset_id numérico
         preset_id: initialData?.preset_id,
         title: initialData?.title || "",
         description: initialData?.description || "",
@@ -225,12 +224,12 @@ export function PostDialog({
                         <TabsContent value="tags" className="space-y-4 pt-4">
                             <div className="flex gap-2">
                                 <Input value={hashtagInput} onChange={e => setHashtagInput(e.target.value)} onKeyPress={handleKeyPress} placeholder="Agregar hashtag..." className="flex-1" />
-                                <Button variant="outline" size="sm" onClick={addHashtag}><Plus className="h-4 w-4 mr-1" />Agregar</Button>
+                                <Button type="button" variant="outline" size="sm" onClick={addHashtag}><Plus className="h-4 w-4 mr-1" />Agregar</Button>
                             </div>
                             <ScrollArea className="h-[150px] w-full rounded-md border p-2">
                                 {formData.hashtags.length > 0 ? (
                                     <div className="flex flex-wrap gap-2">
-                                        {formData.hashtags.map((tag, i) => (<Badge key={i} variant="secondary" className="flex items-center gap-1">#{tag}<Button variant="ghost" size="sm" onClick={() => removeHashtag(tag)}><X className="h-3 w-3" /></Button></Badge>))}
+                                        {formData.hashtags.map((tag, i) => (<Badge key={i} variant="secondary" className="flex items-center gap-1">#{tag}<Button type="button" variant="ghost" size="sm" onClick={() => removeHashtag(tag)}><X className="h-3 w-3" /></Button></Badge>))}
                                     </div>
                                 ) : (
                                     <div className="flex items-center justify-center h-full text-muted-foreground text-sm">Sin hashtags</div>
@@ -239,7 +238,7 @@ export function PostDialog({
                         </TabsContent>
                     </Tabs>
                     <DialogFooter>
-                        <Button variant="outline" onClick={() => setIsDialogOpen(false)}>Cancelar</Button>
+                        <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>Cancelar</Button>
                         <Button type="submit" disabled={formData.images.length === 0}>{isEditing ? "Actualizar" : "Publicar"}</Button>
                     </DialogFooter>
                 </form>
