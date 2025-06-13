@@ -106,49 +106,64 @@ class PublicationController extends Controller
     /**
      * Mostrar detalle de una sola publicación con conteos, estado de “like” y lista de presets del usuario.
      */
+    /**
+     * Mostrar detalle de una sola publicación con conteos, estado de “like”,
+     * lista de presets del usuario y comentarios.
+     */
+    /**
+     * Mostrar detalle de una sola publicación, estado de “like”, presets y comentarios con su autor.
+     */
     public function show(Publication $publication)
     {
         $userId = Auth::id();
 
-        // 1) Carga eager de relaciones y conteos (likes, comments, saves)
+        // 1) Eager load de relaciones y conteos
         $publication->load([
             'user:id,name,username,profile_image',
             'images',
             'preset:id,name,description,price',
             'hashtags:id,name',
+            'comments' => function ($q) {
+                $q->with('user:id,name,username,profile_image')
+                    ->orderBy('created_at', 'asc');
+            },
         ])
             ->loadCount(['likes', 'comments'])
             ->loadCount([
-                'likes as liked_by_user_count' => function ($q) use ($userId) {
-                    $q->where('user_id', $userId);
-                },
-                'saveds as saved_by_user_count' => function ($q) use ($userId) {
-                    $q->where('user_id', $userId);
-                },
+                'likes as liked_by_user_count' => fn($q) => $q->where('user_id', $userId),
+                'saveds as saved_by_user_count' => fn($q) => $q->where('user_id', $userId),
             ]);
 
-        // 2) Agregar URL completa a cada imagen
-        $publication->images->transform(function ($img) {
-            $img->url = $img->getImageUrlAttribute();
-            return $img;
-        });
+        // 2) Formatear imágenes
+        $publication->images->transform(fn($img) => tap($img, fn($i) => $i->url = $i->getImageUrlAttribute()));
 
-        // 3) Obtener todos los presets del usuario autenticado
+        // 3) Formatear comentarios
+        $comments = $publication->comments->map(fn($c) => [
+            'id' => $c->id,
+            'body' => $c->content,
+            'created_at' => optional($c->created_at)->toDateTimeString(),
+            'user' => [
+                'id' => $c->user->id,
+                'name' => $c->user->name,
+                'username' => $c->user->username,
+                'profile_image_url' => $c->user->getProfileImageUrlAttribute(),
+            ],
+        ])->all();
+
+        // 4) Formatear presets del usuario
         $userPresets = Auth::user()->presets()
             ->orderBy('created_at', 'desc')
             ->get()
-            ->map(function ($p) {
-                return [
-                    'id' => $p->id,
-                    'name' => $p->name,
-                    'description' => $p->description,
-                    'price' => $p->price,
-                    'before_image_url' => $p->before_image_url,
-                    'after_image_url' => $p->after_image_url,
-                ];
-            })->toArray();
+            ->map(fn($p) => [
+                'id' => $p->id,
+                'name' => $p->name,
+                'description' => $p->description,
+                'price' => $p->price,
+                'before_image_url' => $p->before_image_url,
+                'after_image_url' => $p->after_image_url,
+            ])->toArray();
 
-        // 4) Preparar payload de la publicación
+        // 5) Payload de la publicación
         $item = [
             'id' => $publication->id,
             'user' => [
@@ -179,12 +194,12 @@ class PublicationController extends Controller
             'saved' => $publication->saved_by_user_count > 0,
             'title' => $publication->title,
             'description' => $publication->description,
-            'created_at' => $publication->created_at->toDateTimeString(),
+            'created_at' => optional($publication->created_at)->toDateTimeString(),
         ];
 
-        // 5) Enviar a Inertia incluyendo los presets
         return Inertia::render('publication', [
             'publication' => $item,
+            'comments' => $comments,
             'presets' => $userPresets,
         ]);
     }

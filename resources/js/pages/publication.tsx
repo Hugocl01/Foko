@@ -364,6 +364,43 @@ export default function Publication() {
                                 })}
                             </div>
                         </div>
+
+                        {/* PRESET APLICADO */}
+                        {pub.preset && (
+                            <Card className="mt-8 w-full group hover:shadow-lg transition-all duration-300 hover:-translate-y-1 border-border/50 hover:border-border">
+                                <Link
+                                    href={route("presets.show", pub.preset.id)}
+                                    className="block"
+                                >
+                                    <CardHeader className="pb-3">
+                                        <Badge
+                                            variant="secondary"
+                                            className="text-xs font-medium"
+                                        >
+                                            Preset aplicado
+                                        </Badge>
+                                    </CardHeader>
+                                    <CardContent className="pb-4">
+                                        <h3 className="text-lg font-semibold mb-2 group-hover:text-primary">
+                                            {pub.preset.name}
+                                        </h3>
+                                        <p className="text-sm text-muted-foreground line-clamp-2">
+                                            {pub.preset.description}
+                                        </p>
+                                    </CardContent>
+                                    <CardFooter className="pt-4 border-t">
+                                        <div className="flex items-center justify-between w-full">
+                                            <span className="text-sm text-muted-foreground">
+                                                Precio
+                                            </span>
+                                            <div className="text-lg font-semibold">
+                                                <Badge>{pub.preset.price} €</Badge>
+                                            </div>
+                                        </div>
+                                    </CardFooter>
+                                </Link>
+                            </Card>
+                        )}
                     </CardFooter>
                 </Card>
 
@@ -416,43 +453,6 @@ export default function Publication() {
                         ))}
                     </div>
                 </div>
-
-                {/* PRESET APLICADO */}
-                {pub.preset && (
-                    <Card className="mt-8 w-full group hover:shadow-lg transition-all duration-300 hover:-translate-y-1 border-border/50 hover:border-border">
-                        <Link
-                            href={route("presets.show", pub.preset.id)}
-                            className="block"
-                        >
-                            <CardHeader className="pb-3">
-                                <Badge
-                                    variant="secondary"
-                                    className="text-xs font-medium"
-                                >
-                                    Preset aplicado
-                                </Badge>
-                            </CardHeader>
-                            <CardContent className="pb-4">
-                                <h3 className="text-lg font-semibold mb-2 group-hover:text-primary">
-                                    {pub.preset.name}
-                                </h3>
-                                <p className="text-sm text-muted-foreground line-clamp-2">
-                                    {pub.preset.description}
-                                </p>
-                            </CardContent>
-                            <CardFooter className="pt-4 border-t">
-                                <div className="flex items-center justify-between w-full">
-                                    <span className="text-sm text-muted-foreground">
-                                        Precio
-                                    </span>
-                                    <div className="text-lg font-semibold">
-                                        <Badge>{pub.preset.price} €</Badge>
-                                    </div>
-                                </div>
-                            </CardFooter>
-                        </Link>
-                    </Card>
-                )}
 
                 {/* DIALOGO EDICIÓN */}
                 <PostDialog
