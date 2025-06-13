@@ -38,6 +38,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::patch('/publications/{publication}', [PublicationController::class, 'update'])
         ->name('publications.update');
 
+    Route::delete('/publications/{publication}', [PublicationController::class, 'destroy'])
+        ->name('publications.destroy');
+
     Route::post('publications/{publication}/save', [PublicationController::class, 'toggleSave'])
         ->name('publications.toggleSave');
 

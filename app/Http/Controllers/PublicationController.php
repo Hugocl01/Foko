@@ -334,4 +334,179 @@ class PublicationController extends Controller
             'publication' => $pub->load(['images', 'hashtags', 'user']),
         ]);
     }
+
+    public function update(Request $request, Publication $post)
+    {
+        // 1) Validar todos los campos (archivos son nullable aquí)
+        $validated = $request->validate([
+            'preset_id' => 'nullable|integer|exists:presets,id',
+            'title' => 'required|string|max:255',
+            'description' => 'required|string',
+            'featured_image' => 'nullable|image',
+            'images' => 'nullable|array|max:3',
+            'images.*' => 'image',
+            'hashtags' => 'nullable',      // acepta array o JSON
+            'hashtags.*' => 'string|max:255',
+        ]);
+
+        // Para limpiar en caso de rollback
+        $createdImages = [];
+        $createdFeatured = null;
+
+        DB::beginTransaction();
+        try {
+            // 2) Actualizar campos básicos
+            $post->preset_id = $validated['preset_id'] ?? null;
+            $post->title = $validated['title'];
+            $post->description = $validated['description'];
+
+            // 3) Procesar “featured_image” si se envía uno nuevo
+            if ($request->hasFile('featured_image')) {
+                $uploaded = $request->file('featured_image');
+                $img = Image::make($uploaded->getRealPath())
+                    ->encode('webp', 80);
+                $name = Str::uuid()->toString() . '.webp';
+                Storage::disk('post_images')->put($name, (string) $img);
+                $createdFeatured = $name;
+
+                // borrar anterior
+                if (
+                    $post->featured_image
+                    && Storage::disk('post_images')->exists($post->featured_image)
+                ) {
+                    Storage::disk('post_images')->delete($post->featured_image);
+                }
+
+                $post->featured_image = $name;
+            }
+
+            // 4) Procesar “images” adicionales si vienen nuevas
+            if ($request->hasFile('images')) {
+                // borrar todas las antiguas
+                if (is_array($post->images)) {
+                    foreach ($post->images as $old) {
+                        if (Storage::disk('post_images')->exists($old)) {
+                            Storage::disk('post_images')->delete($old);
+                        }
+                    }
+                }
+
+                $newNames = [];
+                foreach ($request->file('images') as $file) {
+                    $img = Image::make($file->getRealPath())
+                        ->encode('webp', 80);
+                    $imgName = Str::uuid()->toString() . '.webp';
+                    Storage::disk('post_images')->put($imgName, (string) $img);
+                    $createdImages[] = $imgName;
+                    $newNames[] = $imgName;
+                }
+                // Guardamos el array de nombres en la columna `images`
+                $post->images = $newNames;
+            }
+
+            // 5) Guardar cambios en la tabla posts
+            $post->save();
+
+            // 6) Sincronizar hashtags
+            if (!empty($validated['hashtags'])) {
+                $nombres = is_array($validated['hashtags'])
+                    ? $validated['hashtags']
+                    : json_decode($validated['hashtags'], true);
+
+                if (is_array($nombres)) {
+                    $tagIds = [];
+                    foreach ($nombres as $nombre) {
+                        $clean = ltrim(trim($nombre), '#');
+                        if ($clean === '') {
+                            continue;
+                        }
+                        $tag = Hashtag::firstOrCreate(
+                            ['slug' => Str::slug($clean)],
+                            ['name' => $clean]
+                        );
+                        $tagIds[] = $tag->id;
+                    }
+                    $post->hashtags()->sync($tagIds);
+                }
+            } else {
+                $post->hashtags()->detach();
+            }
+
+            DB::commit();
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            // Limpiar los archivos nuevos en disco
+            if ($createdFeatured) {
+                Storage::disk('post_images')->delete($createdFeatured);
+            }
+            foreach ($createdImages as $img) {
+                Storage::disk('post_images')->delete($img);
+            }
+
+            return back()
+                ->withInput()
+                ->withErrors(['error' => 'Error al actualizar la publicación: ' . $e->getMessage()]);
+        }
+
+        // 7) Responder según corresponda
+        if ($request->wantsJson()) {
+            return response()->json([
+                'message' => 'Publicación actualizada correctamente',
+                'post' => $post->load('hashtags'),
+            ]);
+        }
+
+        return redirect()
+            ->route('posts.show', ['post' => $post->id])
+            ->with('success', 'Publicación actualizada con éxito.');
+    }
+
+    // app/Http/Controllers/PublicationController.php
+
+    public function destroy(Request $request, Publication $publication)
+    {
+        // 1) Verificar que el usuario es el creador
+        if (Auth::id() !== $publication->user_id) {
+            abort(403, 'No tienes permiso para eliminar esta publicación.');
+        }
+
+        DB::beginTransaction();
+        try {
+            // Borrar featured_image
+            if ($publication->featured_image && Storage::disk('images')->exists($publication->featured_image)) {
+                Storage::disk('images')->delete($publication->featured_image);
+            }
+
+            // Borrar galería
+            if (is_array($publication->images)) {
+                foreach ($publication->images as $img) {
+                    if (Storage::disk('images')->exists($img)) {
+                        Storage::disk('images')->delete($img);
+                    }
+                }
+            }
+
+            // Desvincular hashtags
+            $publication->hashtags()->detach();
+
+            // Eliminar la publicación
+            $publication->delete();
+
+            DB::commit();
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->withErrors([
+                'error' => 'Error al eliminar la publicación: ' . $e->getMessage()
+            ]);
+        }
+
+        if ($request->wantsJson()) {
+            return response()->json(['message' => 'Publicación eliminada correctamente']);
+        }
+
+        return redirect()
+            ->route('publications.index')
+            ->with('success', 'Publicación eliminada con éxito.');
+    }
 }

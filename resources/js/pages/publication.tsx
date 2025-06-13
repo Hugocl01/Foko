@@ -11,6 +11,14 @@ import {
     DropdownMenuItem,
     DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu"
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/ui/dialog"
 import { Badge } from "@/components/ui/badge"
 import {
     Heart,
@@ -20,7 +28,7 @@ import {
     MoreHorizontal,
     ChevronLeft,
     ChevronRight,
-    ArrowLeft,
+    Trash2,
 } from "lucide-react"
 import AppLayout from "@/layouts/app-layout"
 import type { BreadcrumbItem } from "@/types"
@@ -181,6 +189,24 @@ export default function Publication() {
         )
     }
 
+    // Estado y handler para el diálogo de borrado
+    const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
+    function handleDelete() {
+        router.delete(
+            route("publications.destroy", pub.id),
+            {},
+            {
+                preserveScroll: true,
+                onSuccess: () => {
+                    toast.success("Publicación eliminada correctamente")
+                },
+                onError: () => {
+                    toast.error("Error al eliminar la publicación")
+                },
+            }
+        )
+    }
+
     // Breadcrumbs
     const breadcrumbs: BreadcrumbItem[] = [
         { title: "Publicaciones", href: "/publications" },
@@ -205,13 +231,21 @@ export default function Publication() {
                 <div className="flex items-center gap-4">
                     <h1 className="text-2xl font-bold">{pub.title}</h1>
                     {isOwner && (
-                        <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => setIsEditOpen(true)}
-                        >
-                            Editar
-                        </Button>
+                        <>
+                            <Button
+                                size="sm"
+                                variant="default"
+                                onClick={() => setIsEditOpen(true)}              >
+                                Editar
+                            </Button>
+                            <Button
+                                size="sm"
+                                variant="destructive"
+                                onClick={() => setIsDeleteDialogOpen(true)}
+                            >
+                                Eliminar
+                            </Button>
+                        </>
                     )}
                 </div>
 
@@ -468,6 +502,37 @@ export default function Publication() {
                     </div>
                 </div>
 
+                {/* Diálogo Confirmación Borrado */}
+                <Dialog
+                    open={isDeleteDialogOpen}
+                    onOpenChange={setIsDeleteDialogOpen}
+                >
+                    <DialogContent className="sm:max-w-[425px]">
+                        <DialogHeader>
+                            <DialogTitle>Confirmar eliminación</DialogTitle>
+                            <DialogDescription>
+                                ¿Estás seguro de que deseas eliminar la publicación{" "}
+                                <strong>{pub.title}</strong>? Esta acción no se puede deshacer.
+                            </DialogDescription>
+                        </DialogHeader>
+                        <DialogFooter className="flex flex-wrap gap-2">
+                            <Button
+                                variant="outline"
+                                onClick={() => setIsDeleteDialogOpen(false)}
+                            >
+                                Cancelar
+                            </Button>
+                            <Button
+                                variant="destructive"
+                                onClick={handleDelete}
+                            >
+                                <Trash2 className="h-4 w-4 mr-1" />
+                                Eliminar publicación
+                            </Button>
+                        </DialogFooter>
+                    </DialogContent>
+                </Dialog>
+
                 {/* DIALOGO EDICIÓN */}
                 <PostDialog
                     trigger={null}
@@ -479,7 +544,7 @@ export default function Publication() {
                     userRole_id={loggedUser.role_id}
                     presets={presets}
                 />
-            </div>
-        </AppLayout>
+            </div >
+        </AppLayout >
     )
 }
