@@ -1,3 +1,4 @@
+// resources/js/Pages/publication.tsx
 import React, { useState, useMemo, useEffect } from "react"
 import { Head, usePage, Link, router } from "@inertiajs/react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -5,10 +6,10 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
 import {
     DropdownMenu,
+    DropdownMenuTrigger,
     DropdownMenuContent,
     DropdownMenuItem,
     DropdownMenuSeparator,
-    DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Badge } from "@/components/ui/badge"
 import {
@@ -19,6 +20,7 @@ import {
     MoreHorizontal,
     ChevronLeft,
     ChevronRight,
+    ArrowLeft,
 } from "lucide-react"
 import AppLayout from "@/layouts/app-layout"
 import type { BreadcrumbItem } from "@/types"
@@ -26,10 +28,37 @@ import { PlaceholderPattern } from "@/components/ui/placeholder-pattern"
 import { toast } from "sonner"
 import { PostDialog } from "@/components/publication-dialog"
 
-interface BackendImage { id: number; url: string }
-interface BackendUser { id: number; name: string; username: string; profile_image_url?: string }
-interface BackendPreset { id: number; name: string; price: number; description: string }
-interface BackendHashtag { id: number; name: string }
+interface BackendImage {
+    id: number
+    url: string
+}
+
+interface BackendUser {
+    id: number
+    name: string
+    username: string
+    profile_image_url?: string
+}
+
+interface BackendPreset {
+    id: number
+    name: string
+    description: string
+    price: number
+}
+
+interface BackendHashtag {
+    id: number
+    name: string
+}
+
+interface BackendComment {
+    id: number
+    body: string
+    created_at: string
+    user: BackendUser
+}
+
 interface BackendPublication {
     id: number
     title: string
@@ -37,38 +66,38 @@ interface BackendPublication {
     created_at: string
     user: BackendUser
     images: BackendImage[]
-    preset: BackendPreset
+    preset: BackendPreset | null
     hashtags: BackendHashtag[]
     likes_count: number
+    comments_count: number
     liked: boolean
     saved: boolean
 }
 
-export default function PublicationShow() {
-    const {
-        props: { publication: pub, auth, flash, presets },
-    } = usePage<{
+export default function Publication() {
+    const { props } = usePage<{
         publication: BackendPublication
-        auth: { user: BackendUser }
-        flash: { success?: string }
+        comments: BackendComment[]
         presets: BackendPreset[]
+        auth: { user: { id: number; role_id: number } }
+        flash: { success?: string }
     }>()
-
+    const { publication: pub, comments, presets, auth, flash } = props
     const loggedUser = auth.user
 
-    // Mostrar toast de éxito si viene flash
+    // Toast al cargar
     useEffect(() => {
         if (flash.success) toast.success(flash.success)
     }, [flash.success])
 
-    // Determinar si el usuario actual es el creador
+    // ¿Es dueño?
     const isOwner = useMemo(
         () => pub.user.id === loggedUser.id,
         [pub.user.id, loggedUser.id]
     )
 
+    // Control edición
     const [isEditOpen, setIsEditOpen] = useState(false)
-
     const initialPostValues = useMemo(
         () => ({
             id: String(pub.id),
@@ -76,25 +105,25 @@ export default function PublicationShow() {
             content: pub.description,
             featured_image: null as File | null,
             images: [] as File[],
-            hashtags: pub.hashtags.map(h => h.name),
+            hashtags: pub.hashtags.map((h) => h.name),
             preset_id: pub.preset?.id,
         }),
         [pub]
     )
 
-    // Handlers de like y save
+    // Like / save
     const [liked, setLiked] = useState(pub.liked)
     const [likesCount, setLikesCount] = useState(pub.likes_count)
-    const [saved, setSaved] = useState(pub.saved)  // <-- inicializado desde prop
+    const [saved, setSaved] = useState(pub.saved)
 
-    const toggleLike = () => {
+    function toggleLike() {
         router.post(
             route("publications.toggleLike", pub.id),
             {},
             {
                 preserveState: true,
                 preserveScroll: true,
-                onSuccess: page => {
+                onSuccess: (page) => {
                     const updated: BackendPublication = page.props.publication
                     setLiked(updated.liked)
                     setLikesCount(updated.likes_count)
@@ -103,14 +132,14 @@ export default function PublicationShow() {
         )
     }
 
-    const toggleSave = () => {
+    function toggleSave() {
         router.post(
             route("publications.toggleSave", pub.id),
             {},
             {
                 preserveState: true,
                 preserveScroll: true,
-                onSuccess: page => {
+                onSuccess: (page) => {
                     const updated: BackendPublication = page.props.publication
                     setSaved(updated.saved)
                 },
@@ -118,7 +147,8 @@ export default function PublicationShow() {
         )
     }
 
-    const handleUpdatePublication = (data: {
+    // Actualizar publicación
+    function handleUpdatePublication(data: {
         id?: string
         title: string
         content: string
@@ -126,74 +156,87 @@ export default function PublicationShow() {
         images: File[]
         hashtags: string[]
         preset_id?: number
-    }) => {
-        const form = new FormData()
-        form.append("_method", "patch")
-        form.append("title", data.title)
-        form.append("content", data.content)
-        if (data.preset_id) form.append("preset_id", data.preset_id.toString())
-        form.append("hashtags", JSON.stringify(data.hashtags))
-
-        router.post(route("publications.update", pub.id), form, {
-            forceFormData: true,
-            preserveScroll: true,
-            onSuccess: () => {
-                toast.success("Publicación actualizada con éxito")
-                setIsEditOpen(false)
-                router.reload()
+    }) {
+        router.post(
+            route("publications.update", pub.id),
+            {
+                _method: "patch",
+                title: data.title,
+                content: data.content,
+                hashtags: data.hashtags,
+                preset_id: data.preset_id,
             },
-            onError: () => toast.error("Error al actualizar la publicación"),
-        })
+            {
+                forceFormData: true,
+                preserveScroll: true,
+                onSuccess: () => {
+                    toast.success("Publicación actualizada con éxito")
+                    setIsEditOpen(false)
+                    router.reload()
+                },
+                onError: () => {
+                    toast.error("Error al actualizar la publicación")
+                },
+            }
+        )
     }
 
     // Breadcrumbs
-    const pageBreadcrumbs: BreadcrumbItem[] = [
+    const breadcrumbs: BreadcrumbItem[] = [
         { title: "Publicaciones", href: "/publications" },
         { title: pub.title, href: "" },
     ]
 
-    // Carrusel de imágenes
+    // Carrusel
     const [currentImageIndex, setCurrentImageIndex] = useState(0)
     const totalImages = pub.images.length
-    const nextImage = () => setCurrentImageIndex(i => (i + 1) % totalImages)
-    const prevImage = () => setCurrentImageIndex(i => (i - 1 + totalImages) % totalImages)
+    const nextImage = () =>
+        setCurrentImageIndex((i) => (i + 1) % totalImages)
+    const prevImage = () =>
+        setCurrentImageIndex((i) => (i - 1 + totalImages) % totalImages)
 
     return (
-        <AppLayout breadcrumbs={pageBreadcrumbs}>
+        <AppLayout breadcrumbs={breadcrumbs}>
             <Head title={pub.title} />
 
             <div className="flex flex-col gap-4 p-4 max-w-2xl mx-auto">
-                {/* Título + Editar */}
+                {/* Título + editar */}
                 <div className="flex items-center gap-4">
                     <h1 className="text-2xl font-bold">{pub.title}</h1>
                     {isOwner && (
-                        <Button size="sm" variant="outline" onClick={() => setIsEditOpen(true)}>
+                        <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => setIsEditOpen(true)}
+                        >
                             Editar
                         </Button>
                     )}
                 </div>
 
+                {/* Card principal */}
                 <Card className="flex flex-col h-full">
-                    {/* Header */}
                     <CardHeader className="px-4">
                         <div className="flex items-center justify-between">
                             <div className="flex items-center gap-3">
                                 <Link
                                     href={route("profile.user", pub.user.username)}
-                                    onClick={e => e.stopPropagation()}
+                                    onClick={(e) => e.stopPropagation()}
                                 >
                                     <Avatar className="h-10 w-10">
                                         <AvatarImage
                                             src={pub.user.profile_image_url || "/placeholder.svg"}
                                             alt={pub.user.name}
                                         />
-                                        <AvatarFallback className="text-sm">
+                                        <AvatarFallback>
                                             {pub.user.name.charAt(0)}
                                         </AvatarFallback>
                                     </Avatar>
                                 </Link>
                                 <div className="flex flex-col">
-                                    <div className="font-medium text-base">{pub.user.name}</div>
+                                    <div className="font-medium text-base">
+                                        {pub.user.name}
+                                    </div>
                                     <div className="text-sm text-muted-foreground">
                                         @{pub.user.username}
                                     </div>
@@ -201,7 +244,11 @@ export default function PublicationShow() {
                             </div>
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
-                                    <Button variant="ghost" size="icon" className="h-8 w-8 cursor-pointer">
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        className="h-8 w-8 cursor-pointer"
+                                    >
                                         <MoreHorizontal className="h-5 w-5" />
                                         <span className="sr-only">Más opciones</span>
                                     </Button>
@@ -209,13 +256,13 @@ export default function PublicationShow() {
                                 <DropdownMenuContent align="end">
                                     <Link
                                         href={route("profile.user", pub.user.username)}
-                                        onClick={e => e.stopPropagation()}
+                                        onClick={(e) => e.stopPropagation()}
                                     >
-                                        <DropdownMenuItem className="cursor-pointer">Ver perfil</DropdownMenuItem>
+                                        <DropdownMenuItem>Ver perfil</DropdownMenuItem>
                                     </Link>
-                                    <DropdownMenuItem className="cursor-pointer">Copiar enlace</DropdownMenuItem>
+                                    <DropdownMenuItem>Copiar enlace</DropdownMenuItem>
                                     <DropdownMenuSeparator />
-                                    <DropdownMenuItem className="text-destructive cursor-pointer">
+                                    <DropdownMenuItem className="text-destructive">
                                         Reportar
                                     </DropdownMenuItem>
                                 </DropdownMenuContent>
@@ -223,13 +270,12 @@ export default function PublicationShow() {
                         </div>
                     </CardHeader>
 
-                    {/* Carrusel */}
                     <CardContent className="relative flex-grow p-0">
                         <div className="relative aspect-square overflow-hidden bg-gray-100">
                             {totalImages > 0 ? (
                                 <img
                                     src={pub.images[currentImageIndex].url}
-                                    alt={`Imagen ${currentImageIndex + 1} de ${totalImages}`}
+                                    alt={`Imagen ${currentImageIndex + 1}`}
                                     className="w-full h-full object-cover transition-all duration-300"
                                 />
                             ) : (
@@ -245,7 +291,6 @@ export default function PublicationShow() {
                                         onClick={prevImage}
                                     >
                                         <ChevronLeft className="h-5 w-5" />
-                                        <span className="sr-only">Anterior</span>
                                     </Button>
                                     <Button
                                         variant="ghost"
@@ -254,7 +299,6 @@ export default function PublicationShow() {
                                         onClick={nextImage}
                                     >
                                         <ChevronRight className="h-5 w-5" />
-                                        <span className="sr-only">Siguiente</span>
                                     </Button>
                                     <div className="absolute bottom-3 left-0 right-0 flex justify-center gap-1">
                                         {pub.images.map((_, idx) => (
@@ -272,8 +316,7 @@ export default function PublicationShow() {
                         </div>
                     </CardContent>
 
-                    {/* Footer */}
-                    <CardFooter className="flex flex-col items-start gap-4 p-4">
+                    <CardFooter className="flex flex-col gap-4 p-4">
                         <div className="flex items-center justify-between w-full">
                             <div className="flex items-center gap-4">
                                 <Button
@@ -282,16 +325,16 @@ export default function PublicationShow() {
                                     onClick={toggleLike}
                                     className={liked ? "text-destructive" : ""}
                                 >
-                                    <Heart className={`h-6 w-6 ${liked ? "fill-destructive" : ""}`} />
-                                    <span className="sr-only">Me gusta</span>
+                                    <Heart
+                                        className={`h-6 w-6 ${liked ? "fill-destructive" : ""
+                                            }`}
+                                    />
                                 </Button>
                                 <Button variant="ghost" size="icon">
                                     <MessageCircle className="h-6 w-6" />
-                                    <span className="sr-only">Comentar</span>
                                 </Button>
                                 <Button variant="ghost" size="icon">
                                     <Share2 className="h-6 w-6" />
-                                    <span className="sr-only">Compartir</span>
                                 </Button>
                             </div>
                             <Button
@@ -300,12 +343,14 @@ export default function PublicationShow() {
                                 onClick={toggleSave}
                                 className={saved ? "text-primary" : ""}
                             >
-                                <Bookmark className={`h-6 w-6 ${saved ? "fill-primary" : ""}`} />
-                                <span className="sr-only">Guardar</span>
+                                <Bookmark
+                                    className={`h-6 w-6 ${saved ? "fill-primary" : ""
+                                        }`}
+                                />
                             </Button>
                         </div>
 
-                        <div className="w-full flex flex-col gap-2">
+                        <div className="flex flex-col gap-2 w-full">
                             <div className="font-medium">{likesCount} me gusta</div>
                             <div className="font-medium">{pub.title}</div>
                             <div>{pub.description}</div>
@@ -319,45 +364,97 @@ export default function PublicationShow() {
                                 })}
                             </div>
                         </div>
-
-                        {pub.hashtags.length > 0 && (
-                            <div className="flex flex-wrap gap-2">
-                                {pub.hashtags.map(h => (
-                                    <Badge key={h.id} variant="default">
-                                        #{h.name}
-                                    </Badge>
-                                ))}
-                            </div>
-                        )}
-
-                        <Card className="w-full group hover:shadow-lg transition-all duration-300 hover:-translate-y-1 border-border/50 hover:border-border">
-                            <Link href={route("presets.show", pub.preset.id)} className="block">
-                                <CardHeader className="pb-3">
-                                    <Badge variant="secondary" className="text-xs font-medium">
-                                        Preset aplicado
-                                    </Badge>
-                                </CardHeader>
-                                <CardContent className="pb-4">
-                                    <h3 className="text-lg font-semibold text-foreground mb-2 group-hover:text-primary transition-colors duration-200">
-                                        {pub.preset.name}
-                                    </h3>
-                                    <p className="text-sm text-muted-foreground leading-relaxed line-clamp-2">
-                                        {pub.preset.description}
-                                    </p>
-                                </CardContent>
-                                <CardFooter className="pt-4 border-t">
-                                    <div className="flex items-center justify-between w-full">
-                                        <span className="text-sm text-muted-foreground">Precio</span>
-                                        <div className="flex items-center gap-1 text-lg font-semibold text-foreground">
-                                        <Badge>{pub.preset.price} €</Badge>
-                                        </div>
-                                    </div>
-                                </CardFooter>
-                            </Link>
-                        </Card>
                     </CardFooter>
                 </Card>
 
+                {/* COMENTARIOS */}
+                <div className="mt-8">
+                    <h2 className="text-xl font-semibold mb-4">
+                        Comentarios ({comments.length})
+                    </h2>
+                    <div className="space-y-4">
+                        {comments.map((c) => (
+                            <div key={c.id} className="flex gap-3">
+                                <Link
+                                    href={route("profile.user", c.user.username)}
+                                    onClick={(e) => e.stopPropagation()}
+                                >
+                                    <Avatar className="h-8 w-8">
+                                        <AvatarImage
+                                            src={
+                                                c.user.profile_image_url ||
+                                                "/placeholder.svg"
+                                            }
+                                            alt={c.user.name}
+                                        />
+                                        <AvatarFallback>
+                                            {c.user.name.charAt(0)}
+                                        </AvatarFallback>
+                                    </Avatar>
+                                </Link>
+                                <div>
+                                    <div className="flex items-center gap-2">
+                                        <span className="font-medium">
+                                            {c.user.name}
+                                        </span>
+                                        <span className="text-xs text-muted-foreground">
+                                            {new Date(c.created_at).toLocaleString(
+                                                "es-ES",
+                                                {
+                                                    day: "2-digit",
+                                                    month: "2-digit",
+                                                    year: "numeric",
+                                                    hour: "2-digit",
+                                                    minute: "2-digit",
+                                                }
+                                            )}
+                                        </span>
+                                    </div>
+                                    <p className="mt-1">{c.body}</p>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+
+                {/* PRESET APLICADO */}
+                {pub.preset && (
+                    <Card className="mt-8 w-full group hover:shadow-lg transition-all duration-300 hover:-translate-y-1 border-border/50 hover:border-border">
+                        <Link
+                            href={route("presets.show", pub.preset.id)}
+                            className="block"
+                        >
+                            <CardHeader className="pb-3">
+                                <Badge
+                                    variant="secondary"
+                                    className="text-xs font-medium"
+                                >
+                                    Preset aplicado
+                                </Badge>
+                            </CardHeader>
+                            <CardContent className="pb-4">
+                                <h3 className="text-lg font-semibold mb-2 group-hover:text-primary">
+                                    {pub.preset.name}
+                                </h3>
+                                <p className="text-sm text-muted-foreground line-clamp-2">
+                                    {pub.preset.description}
+                                </p>
+                            </CardContent>
+                            <CardFooter className="pt-4 border-t">
+                                <div className="flex items-center justify-between w-full">
+                                    <span className="text-sm text-muted-foreground">
+                                        Precio
+                                    </span>
+                                    <div className="text-lg font-semibold">
+                                        <Badge>{pub.preset.price} €</Badge>
+                                    </div>
+                                </div>
+                            </CardFooter>
+                        </Link>
+                    </Card>
+                )}
+
+                {/* DIALOGO EDICIÓN */}
                 <PostDialog
                     trigger={null}
                     open={isEditOpen}
