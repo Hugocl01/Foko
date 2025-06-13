@@ -236,14 +236,14 @@ export default function PublicationsPage() {
     // → NUEVO MÉTODO store
     const handleCreatePublication = (data: {
         title: string;
-        content: string;
+        description: string;
         preset_id?: number;
         images: File[];
         hashtags: string[];
     }) => {
         const formData = new FormData();
         formData.append("title", data.title);
-        formData.append("content", data.content);
+        formData.append("description", data.description);
         if (data.preset_id) formData.append("preset_id", data.preset_id.toString());
         data.images.forEach((file) => formData.append("images[]", file));
         formData.append("hashtags", JSON.stringify(data.hashtags));

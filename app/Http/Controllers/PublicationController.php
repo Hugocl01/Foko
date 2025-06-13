@@ -257,7 +257,7 @@ class PublicationController extends Controller
         // 1) Validar todos los campos
         $validated = $request->validate([
             'title' => 'required|string|max:255',
-            'content' => 'required|string',
+            'description' => 'required|string',
             'preset_id' => 'nullable|exists:presets,id',
             'images' => 'required|array|min:1',
             'images.*' => 'image|max:5120',    // cada imagen hasta 5 MB
