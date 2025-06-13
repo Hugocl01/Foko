@@ -335,9 +335,9 @@ class PublicationController extends Controller
         ]);
     }
 
-    public function update(Request $request, Publication $post)
+    public function update(Request $request, Publication $publication)
     {
-        // 1) Validar todos los campos (archivos son nullable aquí)
+        // 1) Validar todos los campos
         $validated = $request->validate([
             'preset_id' => 'nullable|integer|exists:presets,id',
             'title' => 'required|string|max:255',
@@ -345,124 +345,117 @@ class PublicationController extends Controller
             'featured_image' => 'nullable|image',
             'images' => 'nullable|array|max:3',
             'images.*' => 'image',
-            'hashtags' => 'nullable',      // acepta array o JSON
+            'hashtags' => 'nullable|array',
             'hashtags.*' => 'string|max:255',
         ]);
 
-        // Para limpiar en caso de rollback
         $createdImages = [];
         $createdFeatured = null;
 
         DB::beginTransaction();
+
         try {
             // 2) Actualizar campos básicos
-            $post->preset_id = $validated['preset_id'] ?? null;
-            $post->title = $validated['title'];
-            $post->description = $validated['description'];
+            $publication->preset_id = $validated['preset_id'] ?? null;
+            $publication->title = $validated['title'];
+            $publication->description = $validated['description'];
 
-            // 3) Procesar “featured_image” si se envía uno nuevo
+            // 3) Procesar featured_image (disco "images")
             if ($request->hasFile('featured_image')) {
                 $uploaded = $request->file('featured_image');
-                $img = Image::make($uploaded->getRealPath())
-                    ->encode('webp', 80);
-                $name = Str::uuid()->toString() . '.webp';
-                Storage::disk('post_images')->put($name, (string) $img);
+                $img = Image::make($uploaded->getRealPath())->encode('webp', 80);
+                $name = Str::uuid() . '.webp';
+
+                Storage::disk('images')->put($name, (string) $img);
                 $createdFeatured = $name;
 
-                // borrar anterior
+                // Borrar la anterior si existía
                 if (
-                    $post->featured_image
-                    && Storage::disk('post_images')->exists($post->featured_image)
+                    $publication->featured_image
+                    && Storage::disk('images')->exists($publication->featured_image)
                 ) {
-                    Storage::disk('post_images')->delete($post->featured_image);
+                    Storage::disk('images')->delete($publication->featured_image);
                 }
 
-                $post->featured_image = $name;
+                $publication->featured_image = $name;
             }
 
-            // 4) Procesar “images” adicionales si vienen nuevas
+            // 4) Procesar imágenes adicionales (disco "images")
             if ($request->hasFile('images')) {
-                // borrar todas las antiguas
-                if (is_array($post->images)) {
-                    foreach ($post->images as $old) {
-                        if (Storage::disk('post_images')->exists($old)) {
-                            Storage::disk('post_images')->delete($old);
+                // Borrar todas las antiguas
+                if (is_array($publication->images)) {
+                    foreach ($publication->images as $old) {
+                        if (Storage::disk('images')->exists($old)) {
+                            Storage::disk('images')->delete($old);
                         }
                     }
                 }
 
                 $newNames = [];
                 foreach ($request->file('images') as $file) {
-                    $img = Image::make($file->getRealPath())
-                        ->encode('webp', 80);
-                    $imgName = Str::uuid()->toString() . '.webp';
-                    Storage::disk('post_images')->put($imgName, (string) $img);
+                    $imgName = Str::uuid() . '.webp';
+                    $img = Image::make($file->getRealPath())->encode('webp', 80);
+
+                    Storage::disk('images')->put($imgName, (string) $img);
                     $createdImages[] = $imgName;
                     $newNames[] = $imgName;
                 }
-                // Guardamos el array de nombres en la columna `images`
-                $post->images = $newNames;
+                $publication->images = $newNames;
             }
 
-            // 5) Guardar cambios en la tabla posts
-            $post->save();
+            // 5) Guardar cambios en la tabla
+            $publication->save();
 
             // 6) Sincronizar hashtags
             if (!empty($validated['hashtags'])) {
-                $nombres = is_array($validated['hashtags'])
-                    ? $validated['hashtags']
-                    : json_decode($validated['hashtags'], true);
-
-                if (is_array($nombres)) {
-                    $tagIds = [];
-                    foreach ($nombres as $nombre) {
-                        $clean = ltrim(trim($nombre), '#');
-                        if ($clean === '') {
-                            continue;
-                        }
-                        $tag = Hashtag::firstOrCreate(
-                            ['slug' => Str::slug($clean)],
-                            ['name' => $clean]
-                        );
-                        $tagIds[] = $tag->id;
+                $tagIds = [];
+                foreach ($validated['hashtags'] as $nombre) {
+                    $clean = trim($nombre, "# \t\n\r\0\x0B");
+                    if ($clean === "") {
+                        continue;
                     }
-                    $post->hashtags()->sync($tagIds);
+                    $tag = Hashtag::firstOrCreate(
+                        ['slug' => Str::slug($clean)],
+                        ['name' => $clean]
+                    );
+                    $tagIds[] = $tag->id;
                 }
+                $publication->hashtags()->sync($tagIds);
             } else {
-                $post->hashtags()->detach();
+                $publication->hashtags()->detach();
             }
 
             DB::commit();
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             DB::rollBack();
 
-            // Limpiar los archivos nuevos en disco
+            // 7) Limpiar archivos subidos si algo falló
             if ($createdFeatured) {
-                Storage::disk('post_images')->delete($createdFeatured);
+                Storage::disk('images')->delete($createdFeatured);
             }
             foreach ($createdImages as $img) {
-                Storage::disk('post_images')->delete($img);
+                Storage::disk('images')->delete($img);
             }
 
             return back()
                 ->withInput()
-                ->withErrors(['error' => 'Error al actualizar la publicación: ' . $e->getMessage()]);
+                ->withErrors([
+                    'error' => 'Error al actualizar la publicación: ' . $e->getMessage()
+                ]);
         }
 
-        // 7) Responder según corresponda
+        // 8) Responder según el tipo de petición
         if ($request->wantsJson()) {
             return response()->json([
                 'message' => 'Publicación actualizada correctamente',
-                'post' => $post->load('hashtags'),
+                'post' => $publication->load('hashtags'),
             ]);
         }
 
         return redirect()
-            ->route('posts.show', ['post' => $post->id])
+            ->route('publications.show', $publication->id)
             ->with('success', 'Publicación actualizada con éxito.');
     }
-
-    // app/Http/Controllers/PublicationController.php
 
     public function destroy(Request $request, Publication $publication)
     {

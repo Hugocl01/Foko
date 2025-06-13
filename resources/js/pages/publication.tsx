@@ -110,7 +110,7 @@ export default function Publication() {
         () => ({
             id: String(pub.id),
             title: pub.title,
-            content: pub.description,
+            description: pub.description,
             featured_image: null as File | null,
             images: [] as File[],
             hashtags: pub.hashtags.map((h) => h.name),
@@ -156,26 +156,30 @@ export default function Publication() {
     }
 
     // Actualizar publicación
-    function handleUpdatePublication(data: {
-        id?: string
-        title: string
-        content: string
-        featured_image: File | null
-        images: File[]
-        hashtags: string[]
-        preset_id?: number
-    }) {
+    function handleUpdatePublication(data: PostFormData) {
+        const payload: Record<string, any> = {
+            _method: "patch",
+            title: data.title,
+            description: data.description,
+            hashtags: data.hashtags,
+            preset_id: data.preset_id,
+        }
+
+        // Si el usuario seleccionó un featured_image, lo añadimos
+        if (data.featured_image) {
+            payload.featured_image = data.featured_image
+        }
+
+        // Si subió imágenes adicionales, las añadimos
+        if (data.images.length > 0) {
+            payload.images = data.images
+        }
+
         router.post(
             route("publications.update", pub.id),
+            payload,
             {
-                _method: "patch",
-                title: data.title,
-                content: data.content,
-                hashtags: data.hashtags,
-                preset_id: data.preset_id,
-            },
-            {
-                forceFormData: true,
+                forceFormData: true,    // convierte payload en FormData y adjunta los File
                 preserveScroll: true,
                 onSuccess: () => {
                     toast.success("Publicación actualizada con éxito")
