@@ -158,6 +158,7 @@ export default function PublicationShow() {
     const nextImage = () => setCurrentImageIndex(i => (i + 1) % totalImages)
     const prevImage = () => setCurrentImageIndex(i => (i - 1 + totalImages) % totalImages)
 
+    console.log(pub)
     return (
         <AppLayout breadcrumbs={pageBreadcrumbs}>
             <Head title={pub.title} />
@@ -345,7 +346,7 @@ export default function PublicationShow() {
                                         {pub.preset.description}
                                     </p>
                                 </CardContent>
-                                <CardFooter className="pt-4 border-t bg-muted/30">
+                                <CardFooter className="pt-4 border-t">
                                     <div className="flex items-center justify-between w-full">
                                         <span className="text-sm text-muted-foreground">Precio</span>
                                         <div className="flex items-center gap-1 text-lg font-semibold text-foreground">

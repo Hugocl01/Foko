@@ -114,7 +114,7 @@ class PublicationController extends Controller
         $publication->load([
             'user:id,name,username,profile_image',
             'images',
-            'preset:id,name',
+            'preset:id,name,description,price',
             'hashtags:id,name',
         ])
             ->loadCount(['likes', 'comments'])
@@ -165,6 +165,8 @@ class PublicationController extends Controller
                 ? [
                     'id' => $publication->preset->id,
                     'name' => $publication->preset->name,
+                    'description' => $publication->preset->description,
+                    'price' => $publication->preset->price,
                 ]
                 : null,
             'hashtags' => $publication->hashtags->map(fn($tag) => [
