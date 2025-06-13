@@ -51,6 +51,8 @@ class PresetSeeder extends Seeder
                 'user_id' => Arr::random($userIds),
                 'price' => 1.62,
                 'file' => 'Tonos_Tierra.xmp',
+                'before_image' => 'imagen1.webp',
+                'after_image' => 'imagen2.webp',
             ],
             [
                 'name' => 'Vintage Gold',
@@ -58,6 +60,8 @@ class PresetSeeder extends Seeder
                 'user_id' => Arr::random($userIds),
                 'price' => 1.69,
                 'file' => 'Vintage_Gold.xmp',
+                'before_image' => 'imagen1.webp',
+                'after_image' => 'imagen2.webp',
             ],
             [
                 'name' => 'Sunrise Warmth',
@@ -65,6 +69,8 @@ class PresetSeeder extends Seeder
                 'user_id' => Arr::random($userIds),
                 'price' => 1.87,
                 'file' => 'Sunrise_Warmth.xmp',
+                'before_image' => 'imagen1.webp',
+                'after_image' => 'imagen2.webp',
             ],
             [
                 'name' => 'Golden Hour Glow',
@@ -72,6 +78,8 @@ class PresetSeeder extends Seeder
                 'user_id' => Arr::random($userIds),
                 'price' => 3.08,
                 'file' => 'Golden_Hour_Glow.xmp',
+                'before_image' => 'imagen1.webp',
+                'after_image' => 'imagen2.webp',
             ],
             [
                 'name' => 'Moody Contrast',
@@ -79,6 +87,8 @@ class PresetSeeder extends Seeder
                 'user_id' => Arr::random($userIds),
                 'price' => 1.07,
                 'file' => 'Moody_Contrast.xmp',
+                'before_image' => 'imagen1.webp',
+                'after_image' => 'imagen2.webp',
             ],
             [
                 'name' => 'Urban Cool',
@@ -86,6 +96,8 @@ class PresetSeeder extends Seeder
                 'user_id' => Arr::random($userIds),
                 'price' => 1.94,
                 'file' => 'Urban_Cool.xmp',
+                'before_image' => 'imagen1.webp',
+                'after_image' => 'imagen2.webp',
             ],
             [
                 'name' => 'Matte Finish',
@@ -93,6 +105,8 @@ class PresetSeeder extends Seeder
                 'user_id' => Arr::random($userIds),
                 'price' => 3.99,
                 'file' => 'Matte_Finish.xmp',
+                'before_image' => 'imagen1.webp',
+                'after_image' => 'imagen2.webp',
             ],
             [
                 'name' => 'Vintage Film',
@@ -100,6 +114,8 @@ class PresetSeeder extends Seeder
                 'user_id' => Arr::random($userIds),
                 'price' => 3.79,
                 'file' => 'Vintage_Film.xmp',
+                'before_image' => 'imagen1.webp',
+                'after_image' => 'imagen2.webp',
             ],
             [
                 'name' => 'High Key Bright',
@@ -107,6 +123,8 @@ class PresetSeeder extends Seeder
                 'user_id' => Arr::random($userIds),
                 'price' => 2.98,
                 'file' => 'High_Key_Bright.xmp',
+                'before_image' => 'imagen1.webp',
+                'after_image' => 'imagen2.webp',
             ],
             [
                 'name' => 'Low Key Drama',
@@ -114,6 +132,8 @@ class PresetSeeder extends Seeder
                 'user_id' => Arr::random($userIds),
                 'price' => 3.83,
                 'file' => 'Low_Key_Drama.xmp',
+                'before_image' => 'imagen1.webp',
+                'after_image' => 'imagen2.webp',
             ],
             [
                 'name' => 'Pastel Dream',
@@ -121,6 +141,8 @@ class PresetSeeder extends Seeder
                 'user_id' => Arr::random($userIds),
                 'price' => 2.61,
                 'file' => 'Pastel_Dream.xmp',
+                'before_image' => 'imagen1.webp',
+                'after_image' => 'imagen2.webp',
             ],
             [
                 'name' => 'Cinematic Teal',
@@ -128,6 +150,8 @@ class PresetSeeder extends Seeder
                 'user_id' => Arr::random($userIds),
                 'price' => 1.29,
                 'file' => 'Cinematic_Teal.xmp',
+                'before_image' => 'imagen1.webp',
+                'after_image' => 'imagen2.webp',
             ],
             [
                 'name' => 'Cinematic Orange',
@@ -135,6 +159,8 @@ class PresetSeeder extends Seeder
                 'user_id' => Arr::random($userIds),
                 'price' => 0.21,
                 'file' => 'Cinematic_Orange.xmp',
+                'before_image' => 'imagen1.webp',
+                'after_image' => 'imagen2.webp',
             ],
             [
                 'name' => 'HDR Pop',
@@ -142,6 +168,8 @@ class PresetSeeder extends Seeder
                 'user_id' => Arr::random($userIds),
                 'price' => 2.79,
                 'file' => 'HDR_Pop.xmp',
+                'before_image' => 'imagen1.webp',
+                'after_image' => 'imagen2.webp',
             ],
             [
                 'name' => 'Subtle Fade',
@@ -149,6 +177,8 @@ class PresetSeeder extends Seeder
                 'user_id' => Arr::random($userIds),
                 'price' => 3.05,
                 'file' => 'Subtle_Fade.xmp',
+                'before_image' => 'imagen1.webp',
+                'after_image' => 'imagen2.webp',
             ],
             [
                 'name' => 'Retro Vibe',
@@ -156,6 +186,8 @@ class PresetSeeder extends Seeder
                 'user_id' => Arr::random($userIds),
                 'price' => 2.47,
                 'file' => 'Retro_Vibe.xmp',
+                'before_image' => 'imagen1.webp',
+                'after_image' => 'imagen2.webp',
             ],
             [
                 'name' => 'Lush Greens',
@@ -163,6 +195,8 @@ class PresetSeeder extends Seeder
                 'user_id' => Arr::random($userIds),
                 'price' => 4.02,
                 'file' => 'Lush_Greens.xmp',
+                'before_image' => 'imagen1.webp',
+                'after_image' => 'imagen2.webp',
             ],
             [
                 'name' => 'Desert Haze',
@@ -170,6 +204,8 @@ class PresetSeeder extends Seeder
                 'user_id' => Arr::random($userIds),
                 'price' => 3.43,
                 'file' => 'Desert_Haze.xmp',
+                'before_image' => 'imagen1.webp',
+                'after_image' => 'imagen2.webp',
             ],
             [
                 'name' => 'Rainy Day Mood',
@@ -177,6 +213,8 @@ class PresetSeeder extends Seeder
                 'user_id' => Arr::random($userIds),
                 'price' => 0.94,
                 'file' => 'Rainy_Day_Mood.xmp',
+                'before_image' => 'imagen1.webp',
+                'after_image' => 'imagen2.webp',
             ],
             [
                 'name' => 'Foggy Morning',
@@ -184,6 +222,8 @@ class PresetSeeder extends Seeder
                 'user_id' => Arr::random($userIds),
                 'price' => 1.58,
                 'file' => 'Foggy_Morning.xmp',
+                'before_image' => 'imagen1.webp',
+                'after_image' => 'imagen2.webp',
             ],
             [
                 'name' => 'Sunset Fiesta',
@@ -191,6 +231,8 @@ class PresetSeeder extends Seeder
                 'user_id' => Arr::random($userIds),
                 'price' => 4.12,
                 'file' => 'Sunset_Fiesta.xmp',
+                'before_image' => 'imagen1.webp',
+                'after_image' => 'imagen2.webp',
             ],
             [
                 'name' => 'Sunrise Bliss',
@@ -198,6 +240,8 @@ class PresetSeeder extends Seeder
                 'user_id' => Arr::random($userIds),
                 'price' => 1.26,
                 'file' => 'Sunrise_Bliss.xmp',
+                'before_image' => 'imagen1.webp',
+                'after_image' => 'imagen2.webp',
             ],
             [
                 'name' => 'Twilight Blues',
@@ -205,6 +249,8 @@ class PresetSeeder extends Seeder
                 'user_id' => Arr::random($userIds),
                 'price' => 2.93,
                 'file' => 'Twilight_Blues.xmp',
+                'before_image' => 'imagen1.webp',
+                'after_image' => 'imagen2.webp',
             ],
             [
                 'name' => 'Dusk Shadows',
@@ -212,6 +258,8 @@ class PresetSeeder extends Seeder
                 'user_id' => Arr::random($userIds),
                 'price' => 3.79,
                 'file' => 'Dusk_Shadows.xmp',
+                'before_image' => 'imagen1.webp',
+                'after_image' => 'imagen2.webp',
             ],
             [
                 'name' => 'Dawn Softness',
@@ -219,6 +267,8 @@ class PresetSeeder extends Seeder
                 'user_id' => Arr::random($userIds),
                 'price' => 1.45,
                 'file' => 'Dawn_Softness.xmp',
+                'before_image' => 'imagen1.webp',
+                'after_image' => 'imagen2.webp',
             ],
             [
                 'name' => 'Earth Tone Rich',
@@ -226,6 +276,8 @@ class PresetSeeder extends Seeder
                 'user_id' => Arr::random($userIds),
                 'price' => 4.23,
                 'file' => 'Earth_Tone_Rich.xmp',
+                'before_image' => 'imagen1.webp',
+                'after_image' => 'imagen2.webp',
             ],
             [
                 'name' => 'Tropical Punch',
@@ -233,6 +285,8 @@ class PresetSeeder extends Seeder
                 'user_id' => Arr::random($userIds),
                 'price' => 2.38,
                 'file' => 'Tropical_Punch.xmp',
+                'before_image' => 'imagen1.webp',
+                'after_image' => 'imagen2.webp',
             ],
             [
                 'name' => 'Winter Chill',
@@ -240,6 +294,8 @@ class PresetSeeder extends Seeder
                 'user_id' => Arr::random($userIds),
                 'price' => 3.11,
                 'file' => 'Winter_Chill.xmp',
+                'before_image' => 'imagen1.webp',
+                'after_image' => 'imagen2.webp',
             ],
             [
                 'name' => 'Summer Pop',
@@ -247,6 +303,8 @@ class PresetSeeder extends Seeder
                 'user_id' => Arr::random($userIds),
                 'price' => 0.57,
                 'file' => 'Summer_Pop.xmp',
+                'before_image' => 'imagen1.webp',
+                'after_image' => 'imagen2.webp',
             ],
             [
                 'name' => 'Autumn Leaves',
@@ -254,6 +312,8 @@ class PresetSeeder extends Seeder
                 'user_id' => Arr::random($userIds),
                 'price' => 4.48,
                 'file' => 'Autumn_Leaves.xmp',
+                'before_image' => 'imagen1.webp',
+                'after_image' => 'imagen2.webp',
             ],
             [
                 'name' => 'Spring Bloom',
@@ -261,6 +321,8 @@ class PresetSeeder extends Seeder
                 'user_id' => Arr::random($userIds),
                 'price' => 0.33,
                 'file' => 'Spring_Bloom.xmp',
+                'before_image' => 'imagen1.webp',
+                'after_image' => 'imagen2.webp',
             ],
             [
                 'name' => 'Night Noir',
@@ -268,6 +330,8 @@ class PresetSeeder extends Seeder
                 'user_id' => Arr::random($userIds),
                 'price' => 3.21,
                 'file' => 'Night_Noir.xmp',
+                'before_image' => 'imagen1.webp',
+                'after_image' => 'imagen2.webp',
             ],
             [
                 'name' => 'Street Grit',
@@ -275,6 +339,8 @@ class PresetSeeder extends Seeder
                 'user_id' => Arr::random($userIds),
                 'price' => 0.76,
                 'file' => 'Street_Grit.xmp',
+                'before_image' => 'imagen1.webp',
+                'after_image' => 'imagen2.webp',
             ],
             [
                 'name' => 'Portrait Soft',
@@ -282,6 +348,8 @@ class PresetSeeder extends Seeder
                 'user_id' => Arr::random($userIds),
                 'price' => 2.85,
                 'file' => 'Portrait_Soft.xmp',
+                'before_image' => 'imagen1.webp',
+                'after_image' => 'imagen2.webp',
             ],
             [
                 'name' => 'Landscape Sharp',
@@ -289,6 +357,8 @@ class PresetSeeder extends Seeder
                 'user_id' => Arr::random($userIds),
                 'price' => 1.14,
                 'file' => 'Landscape_Sharp.xmp',
+                'before_image' => 'imagen1.webp',
+                'after_image' => 'imagen2.webp',
             ],
             [
                 'name' => 'Beach Breeze',
@@ -296,6 +366,8 @@ class PresetSeeder extends Seeder
                 'user_id' => Arr::random($userIds),
                 'price' => 0.89,
                 'file' => 'Beach_Breeze.xmp',
+                'before_image' => 'imagen1.webp',
+                'after_image' => 'imagen2.webp',
             ],
             [
                 'name' => 'Film Grain',
@@ -303,6 +375,8 @@ class PresetSeeder extends Seeder
                 'user_id' => Arr::random($userIds),
                 'price' => 3.60,
                 'file' => 'Film_Grain.xmp',
+                'before_image' => 'imagen1.webp',
+                'after_image' => 'imagen2.webp',
             ],
             [
                 'name' => 'Cross Process',
@@ -310,6 +384,8 @@ class PresetSeeder extends Seeder
                 'user_id' => Arr::random($userIds),
                 'price' => 2.14,
                 'file' => 'Cross_Process.xmp',
+                'before_image' => 'imagen1.webp',
+                'after_image' => 'imagen2.webp',
             ],
             [
                 'name' => 'Infrared Warm',
@@ -317,6 +393,8 @@ class PresetSeeder extends Seeder
                 'user_id' => Arr::random($userIds),
                 'price' => 1.98,
                 'file' => 'Infrared_Warm.xmp',
+                'before_image' => 'imagen1.webp',
+                'after_image' => 'imagen2.webp',
             ],
             [
                 'name' => 'Bokeh Lights',
@@ -324,6 +402,8 @@ class PresetSeeder extends Seeder
                 'user_id' => Arr::random($userIds),
                 'price' => 4.45,
                 'file' => 'Bokeh_Lights.xmp',
+                'before_image' => 'imagen1.webp',
+                'after_image' => 'imagen2.webp',
             ],
             [
                 'name' => 'Monochrome Classic',
@@ -331,6 +411,8 @@ class PresetSeeder extends Seeder
                 'user_id' => Arr::random($userIds),
                 'price' => 2.03,
                 'file' => 'Monochrome_Classic.xmp',
+                'before_image' => 'imagen1.webp',
+                'after_image' => 'imagen2.webp',
             ],
             [
                 'name' => 'Cyberpunk Neon',
@@ -338,6 +420,8 @@ class PresetSeeder extends Seeder
                 'user_id' => Arr::random($userIds),
                 'price' => 3.65,
                 'file' => 'Cyberpunk_Neon.xmp',
+                'before_image' => 'imagen1.webp',
+                'after_image' => 'imagen2.webp',
             ],
             [
                 'name' => 'Pastel Haze',
@@ -345,6 +429,8 @@ class PresetSeeder extends Seeder
                 'user_id' => Arr::random($userIds),
                 'price' => 1.77,
                 'file' => 'Pastel_Haze.xmp',
+                'before_image' => 'imagen1.webp',
+                'after_image' => 'imagen2.webp',
             ],
             [
                 'name' => 'Orange Teal',
@@ -352,6 +438,8 @@ class PresetSeeder extends Seeder
                 'user_id' => Arr::random($userIds),
                 'price' => 0.44,
                 'file' => 'Orange_Teal.xmp',
+                'before_image' => 'imagen1.webp',
+                'after_image' => 'imagen2.webp',
             ],
             [
                 'name' => 'Cinematic Wide',
@@ -359,6 +447,8 @@ class PresetSeeder extends Seeder
                 'user_id' => Arr::random($userIds),
                 'price' => 2.96,
                 'file' => 'Cinematic_Wide.xmp',
+                'before_image' => 'imagen1.webp',
+                'after_image' => 'imagen2.webp',
             ],
             [
                 'name' => 'Soft Pastels',
@@ -366,6 +456,8 @@ class PresetSeeder extends Seeder
                 'user_id' => Arr::random($userIds),
                 'price' => 1.25,
                 'file' => 'Soft_Pastels.xmp',
+                'before_image' => 'imagen1.webp',
+                'after_image' => 'imagen2.webp',
             ],
             [
                 'name' => 'Crisp Clarity',
@@ -373,6 +465,8 @@ class PresetSeeder extends Seeder
                 'user_id' => Arr::random($userIds),
                 'price' => 2.57,
                 'file' => 'Crisp_Clarity.xmp',
+                'before_image' => 'imagen1.webp',
+                'after_image' => 'imagen2.webp',
             ],
         ];
 

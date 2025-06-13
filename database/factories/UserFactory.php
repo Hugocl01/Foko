@@ -32,7 +32,7 @@ class UserFactory extends Factory
             'email' => $this->faker->unique()->safeEmail,
             'password' => Hash::make('password'),
             'role_id' => 2,
-            'plan_id' => 2,
+            'plan_id' => random_int(1, 2),
             'profile_image' => null,
             'description' => $this->faker->sentence(),
             'status' => random_int(0, 1)
