@@ -114,10 +114,14 @@ const breadcrumbs: BreadcrumbItem[] = [
 ];
 
 export default function PublicationsPage() {
-    const { props } = usePage<{ publications: Paginated<BackendPublication>; presets: Preset[] }>();
+    const { props } = usePage<{
+        publications: Paginated<BackendPublication>;
+        presets: Preset[];
+    }>();
     const page = usePage<SharedData>();
     const { auth, flash } = page.props;
-    const { data: backendPubs, current_page, last_page, per_page, total } = props.publications;
+    const { data: backendPubs, current_page, last_page, per_page, total } =
+        props.publications;
     const presets = props.presets;
 
     const [localPublications, setLocalPublications] = useState<Publication[]>([]);
@@ -229,6 +233,35 @@ export default function PublicationsPage() {
     const indexOfFirstItem = (current_page - 1) * per_page + 1;
     const indexOfLastItem = Math.min(current_page * per_page, total);
 
+    // → NUEVO MÉTODO store
+    const handleCreatePublication = (data: {
+        title: string;
+        content: string;
+        preset_id?: number;
+        images: File[];
+        hashtags: string[];
+    }) => {
+        const formData = new FormData();
+        formData.append("title", data.title);
+        formData.append("content", data.content);
+        if (data.preset_id) formData.append("preset_id", data.preset_id.toString());
+        data.images.forEach((file) => formData.append("images[]", file));
+        formData.append("hashtags", JSON.stringify(data.hashtags));
+
+        router.post(route("publications.store"), formData, {
+            preserveState: true,
+            preserveScroll: true,
+            onSuccess: (resp) => {
+                toast.success(resp.props.flash.message || "¡Publicación creada!");
+                setCreateOpen(false);
+                // Opcional: recargar o actualizar estado
+            },
+            onError: (errors) => {
+                console.error(errors);
+            },
+        });
+    };
+
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Publicaciones" />
@@ -245,7 +278,7 @@ export default function PublicationsPage() {
                         }
                         open={createOpen}
                         onOpenChange={setCreateOpen}
-                        onSubmit={() => { }}
+                        onSubmit={handleCreatePublication}
                         userRole_id={auth.user.role_id}
                         presets={presets}
                     />

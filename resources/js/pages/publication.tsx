@@ -19,7 +19,6 @@ import {
     MoreHorizontal,
     ChevronLeft,
     ChevronRight,
-    ArrowLeft,
 } from "lucide-react"
 import AppLayout from "@/layouts/app-layout"
 import type { BreadcrumbItem } from "@/types"
@@ -27,34 +26,12 @@ import { PlaceholderPattern } from "@/components/ui/placeholder-pattern"
 import { toast } from "sonner"
 import { PostDialog } from "@/components/publication-dialog"
 
-interface BackendImage {
-    id: number
-    url: string
-    // otros campos si los hubiera...
-}
-
-interface BackendUser {
-    id: number
-    name: string
-    username: string
-    profile_image_url?: string
-}
-
-interface BackendPreset {
-    id: number
-    name: string
-    price: number
-    description: string
-}
-
-interface BackendHashtag {
-    id: number
-    name: string
-}
-
+interface BackendImage { id: number; url: string }
+interface BackendUser { id: number; name: string; username: string; profile_image_url?: string }
+interface BackendPreset { id: number; name: string; price: number; description: string }
+interface BackendHashtag { id: number; name: string }
 interface BackendPublication {
     id: number
-    user_id: number
     title: string
     description: string
     created_at: string
@@ -64,16 +41,17 @@ interface BackendPublication {
     hashtags: BackendHashtag[]
     likes_count: number
     liked: boolean
-    saved: boolean          // <-- añadido
+    saved: boolean
 }
 
 export default function PublicationShow() {
     const {
-        props: { publication: pub, auth, flash },
+        props: { publication: pub, auth, flash, presets },
     } = usePage<{
         publication: BackendPublication
         auth: { user: BackendUser }
         flash: { success?: string }
+        presets: BackendPreset[]
     }>()
 
     const loggedUser = auth.user
@@ -85,14 +63,12 @@ export default function PublicationShow() {
 
     // Determinar si el usuario actual es el creador
     const isOwner = useMemo(
-        () => Number(pub.user.id) === Number(loggedUser.id),
+        () => pub.user.id === loggedUser.id,
         [pub.user.id, loggedUser.id]
     )
 
-    // Control del diálogo de edición
     const [isEditOpen, setIsEditOpen] = useState(false)
 
-    // Valores iniciales para el formulario de edición
     const initialPostValues = useMemo(
         () => ({
             id: String(pub.id),
@@ -100,7 +76,8 @@ export default function PublicationShow() {
             content: pub.description,
             featured_image: null as File | null,
             images: [] as File[],
-            hashtags: pub.hashtags.map((h) => h.name),
+            hashtags: pub.hashtags.map(h => h.name),
+            preset_id: pub.preset?.id,
         }),
         [pub]
     )
@@ -117,7 +94,7 @@ export default function PublicationShow() {
             {
                 preserveState: true,
                 preserveScroll: true,
-                onSuccess: (page) => {
+                onSuccess: page => {
                     const updated: BackendPublication = page.props.publication
                     setLiked(updated.liked)
                     setLikesCount(updated.likes_count)
@@ -133,15 +110,14 @@ export default function PublicationShow() {
             {
                 preserveState: true,
                 preserveScroll: true,
-                onSuccess: (page) => {
+                onSuccess: page => {
                     const updated: BackendPublication = page.props.publication
-                    setSaved(updated.saved)     // <-- actualizar estado
+                    setSaved(updated.saved)
                 },
             }
         )
     }
 
-    // Handler para enviar la actualización
     const handleUpdatePublication = (data: {
         id?: string
         title: string
@@ -149,28 +125,25 @@ export default function PublicationShow() {
         featured_image: File | null
         images: File[]
         hashtags: string[]
+        preset_id?: number
     }) => {
-        router.post(
-            route("publications.update", pub.id),
-            {
-                _method: "patch",
-                title: data.title,
-                content: data.content,
-                hashtags: data.hashtags,
+        const form = new FormData()
+        form.append("_method", "patch")
+        form.append("title", data.title)
+        form.append("content", data.content)
+        if (data.preset_id) form.append("preset_id", data.preset_id.toString())
+        form.append("hashtags", JSON.stringify(data.hashtags))
+
+        router.post(route("publications.update", pub.id), form, {
+            forceFormData: true,
+            preserveScroll: true,
+            onSuccess: () => {
+                toast.success("Publicación actualizada con éxito")
+                setIsEditOpen(false)
+                router.reload()
             },
-            {
-                forceFormData: true,
-                preserveScroll: true,
-                onSuccess: () => {
-                    toast.success("Publicación actualizada con éxito")
-                    setIsEditOpen(false)
-                    router.reload()
-                },
-                onError: () => {
-                    toast.error("Error al actualizar la publicación")
-                },
-            }
-        )
+            onError: () => toast.error("Error al actualizar la publicación"),
+        })
     }
 
     // Breadcrumbs
@@ -182,8 +155,8 @@ export default function PublicationShow() {
     // Carrusel de imágenes
     const [currentImageIndex, setCurrentImageIndex] = useState(0)
     const totalImages = pub.images.length
-    const nextImage = () => setCurrentImageIndex((i) => (i + 1) % totalImages)
-    const prevImage = () => setCurrentImageIndex((i) => (i - 1 + totalImages) % totalImages)
+    const nextImage = () => setCurrentImageIndex(i => (i + 1) % totalImages)
+    const prevImage = () => setCurrentImageIndex(i => (i - 1 + totalImages) % totalImages)
 
     return (
         <AppLayout breadcrumbs={pageBreadcrumbs}>
@@ -207,7 +180,7 @@ export default function PublicationShow() {
                             <div className="flex items-center gap-3">
                                 <Link
                                     href={route("profile.user", pub.user.username)}
-                                    onClick={(e) => e.stopPropagation()}
+                                    onClick={e => e.stopPropagation()}
                                 >
                                     <Avatar className="h-10 w-10">
                                         <AvatarImage
@@ -236,7 +209,7 @@ export default function PublicationShow() {
                                 <DropdownMenuContent align="end">
                                     <Link
                                         href={route("profile.user", pub.user.username)}
-                                        onClick={(e) => e.stopPropagation()}
+                                        onClick={e => e.stopPropagation()}
                                     >
                                         <DropdownMenuItem className="cursor-pointer">Ver perfil</DropdownMenuItem>
                                     </Link>
@@ -349,7 +322,7 @@ export default function PublicationShow() {
 
                         {pub.hashtags.length > 0 && (
                             <div className="flex flex-wrap gap-2">
-                                {pub.hashtags.map((h) => (
+                                {pub.hashtags.map(h => (
                                     <Badge key={h.id} variant="default">
                                         #{h.name}
                                     </Badge>
@@ -364,7 +337,6 @@ export default function PublicationShow() {
                                         Preset aplicado
                                     </Badge>
                                 </CardHeader>
-
                                 <CardContent className="pb-4">
                                     <h3 className="text-lg font-semibold text-foreground mb-2 group-hover:text-primary transition-colors duration-200">
                                         {pub.preset.name}
@@ -373,12 +345,11 @@ export default function PublicationShow() {
                                         {pub.preset.description}
                                     </p>
                                 </CardContent>
-
                                 <CardFooter className="pt-4 border-t bg-muted/30">
                                     <div className="flex items-center justify-between w-full">
                                         <span className="text-sm text-muted-foreground">Precio</span>
                                         <div className="flex items-center gap-1 text-lg font-semibold text-foreground">
-                                            <Badge>{pub.preset.price} €</Badge>
+                                        <Badge>{pub.preset.price} €</Badge>
                                         </div>
                                     </div>
                                 </CardFooter>
@@ -395,6 +366,7 @@ export default function PublicationShow() {
                     initialData={initialPostValues}
                     onSubmit={handleUpdatePublication}
                     userRole_id={loggedUser.role_id}
+                    presets={presets}
                 />
             </div>
         </AppLayout>

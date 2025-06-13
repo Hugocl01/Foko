@@ -3,8 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Models\Publication;
+use App\Models\Hashtag;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
+use Intervention\Image\Laravel\Facades\Image;
+use Illuminate\Support\Str;
 use Inertia\Inertia;
 
 class PublicationController extends Controller
@@ -99,13 +104,13 @@ class PublicationController extends Controller
     }
 
     /**
-     * Mostrar detalle de una sola publicación con conteos y estado de "like".
+     * Mostrar detalle de una sola publicación con conteos, estado de “like” y lista de presets del usuario.
      */
     public function show(Publication $publication)
     {
-        $userId = Auth::user()->id;
+        $userId = Auth::id();
 
-        // 1) Carga eager de todas las relaciones y conteos, incluyendo saves
+        // 1) Carga eager de relaciones y conteos (likes, comments, saves)
         $publication->load([
             'user:id,name,username,profile_image',
             'images',
@@ -114,37 +119,53 @@ class PublicationController extends Controller
         ])
             ->loadCount(['likes', 'comments'])
             ->loadCount([
-                // ¿Le ha gustado?
                 'likes as liked_by_user_count' => function ($q) use ($userId) {
                     $q->where('user_id', $userId);
                 },
-                // ¿La tiene guardada?
                 'saveds as saved_by_user_count' => function ($q) use ($userId) {
                     $q->where('user_id', $userId);
                 },
             ]);
 
-        // 2) Añadir URL a cada imagen
+        // 2) Agregar URL completa a cada imagen
         $publication->images->transform(function ($img) {
             $img->url = $img->getImageUrlAttribute();
             return $img;
         });
 
-        // 3) Preparar payload replicando la estructura de index()
+        // 3) Obtener todos los presets del usuario autenticado
+        $userPresets = Auth::user()->presets()
+            ->orderBy('created_at', 'desc')
+            ->get()
+            ->map(function ($p) {
+                return [
+                    'id' => $p->id,
+                    'name' => $p->name,
+                    'description' => $p->description,
+                    'price' => $p->price,
+                    'before_image_url' => $p->before_image_url,
+                    'after_image_url' => $p->after_image_url,
+                ];
+            })->toArray();
+
+        // 4) Preparar payload de la publicación
         $item = [
             'id' => $publication->id,
             'user' => [
                 'id' => $publication->user->id,
                 'name' => $publication->user->name,
                 'username' => $publication->user->username,
-                'avatar' => $publication->user->profile_image_url,
+                'avatar' => $publication->user->getProfileImageUrlAttribute(),
             ],
             'images' => $publication->images->map(fn($img) => [
                 'id' => $img->id,
                 'url' => $img->url,
             ])->all(),
             'preset' => $publication->preset
-                ? ['id' => $publication->preset->id, 'name' => $publication->preset->name]
+                ? [
+                    'id' => $publication->preset->id,
+                    'name' => $publication->preset->name,
+                ]
                 : null,
             'hashtags' => $publication->hashtags->map(fn($tag) => [
                 'id' => $tag->id,
@@ -153,16 +174,16 @@ class PublicationController extends Controller
             'likes_count' => $publication->likes_count,
             'comments_count' => $publication->comments_count,
             'liked' => $publication->liked_by_user_count > 0,
-            // Nuevo campo “saved”
             'saved' => $publication->saved_by_user_count > 0,
             'title' => $publication->title,
             'description' => $publication->description,
             'created_at' => $publication->created_at->toDateTimeString(),
         ];
 
-        // 4) Renderizar con Inertia
+        // 5) Enviar a Inertia incluyendo los presets
         return Inertia::render('publication', [
             'publication' => $item,
+            'presets' => $userPresets,
         ]);
     }
 
@@ -209,5 +230,91 @@ class PublicationController extends Controller
         }
 
         return redirect()->back()->with('success', $message);
+    }
+
+    /**
+     * Guarda una nueva publicación con sus imágenes y hashtags.
+     */
+    public function store(Request $request)
+    {
+        // 1) Validar todos los campos
+        $validated = $request->validate([
+            'title' => 'required|string|max:255',
+            'content' => 'required|string',
+            'preset_id' => 'nullable|exists:presets,id',
+            'images' => 'required|array|min:1',
+            'images.*' => 'image|max:5120',    // cada imagen hasta 5 MB
+            'hashtags' => 'nullable',
+            'hashtags.*' => 'string|max:255',
+        ]);
+
+        $createdFiles = [];
+
+        DB::beginTransaction();
+        try {
+            // 2) Instanciar y guardar la publicación
+            $pub = new Publication();
+            $pub->title = $validated['title'];
+            $pub->description = $validated['description'];
+            $pub->preset_id = $validated['preset_id'] ?? null;
+            $pub->user_id = Auth::id();
+            $pub->save();
+
+            // 3) Procesar “images[]”
+            foreach ($request->file('images') as $upload) {
+                // Usamos Image::read() igual que en presets
+                $img = Image::read($upload->getRealPath())
+                    ->encodeByExtension('webp', 80);
+                $filename = Str::uuid() . '.webp';
+
+                Storage::disk('images')->put($filename, (string) $img);
+                $createdFiles[] = $filename;
+
+                $pub->images()->create([
+                    'url' => $filename,
+                ]);
+            }
+
+            // 4) Sincronizar hashtags
+            if ($request->filled('hashtags')) {
+                $names = is_array($validated['hashtags'])
+                    ? $validated['hashtags']
+                    : json_decode($validated['hashtags'], true);
+
+                $tagIds = [];
+                foreach ($names as $raw) {
+                    $clean = ltrim(trim($raw), '#');
+                    if (empty($clean)) {
+                        continue;
+                    }
+                    $tag = Hashtag::firstOrCreate(
+                        ['slug' => Str::slug($clean)],
+                        ['name' => $clean]
+                    );
+                    $tagIds[] = $tag->id;
+                }
+                $pub->hashtags()->sync($tagIds);
+            }
+
+            DB::commit();
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            // 5) Limpiar archivos en disco si algo falla
+            foreach ($createdFiles as $f) {
+                Storage::disk('publication_images')->delete($f);
+            }
+
+            return back()
+                ->withInput()
+                ->withErrors(['error' => 'Error al crear publicación: ' . $e->getMessage()]);
+        }
+
+        // 6) Responder con JSON (para AJAX/Inertia)
+        return response()->json([
+            'message' => 'Publicación creada correctamente',
+            'publication' => $pub->load(['images', 'hashtags', 'user']),
+        ]);
     }
 }

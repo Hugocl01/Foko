@@ -32,6 +32,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('publications/{publication}/like', [PublicationController::class, 'toggleLike'])
         ->name('publications.toggleLike');
 
+    Route::post('/publications', [PublicationController::class, 'store'])
+        ->name('publications.store');
+
+    Route::patch('/publications/{publication}', [PublicationController::class, 'update'])
+        ->name('publications.update');
+
     Route::post('publications/{publication}/save', [PublicationController::class, 'toggleSave'])
         ->name('publications.toggleSave');
 

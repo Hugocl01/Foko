@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useMemo, useRef } from "react"
 import { X, ImageIcon, Plus } from "lucide-react"
-import { router } from "@inertiajs/react"
 
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
