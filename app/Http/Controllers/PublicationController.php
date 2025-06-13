@@ -155,7 +155,7 @@ class PublicationController extends Controller
                 'id' => $publication->user->id,
                 'name' => $publication->user->name,
                 'username' => $publication->user->username,
-                'avatar' => $publication->user->getProfileImageUrlAttribute(),
+                'profile_image_url' => $publication->user->getProfileImageUrlAttribute(),
             ],
             'images' => $publication->images->map(fn($img) => [
                 'id' => $img->id,

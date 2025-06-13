@@ -158,7 +158,6 @@ export default function PublicationShow() {
     const nextImage = () => setCurrentImageIndex(i => (i + 1) % totalImages)
     const prevImage = () => setCurrentImageIndex(i => (i - 1 + totalImages) % totalImages)
 
-    console.log(pub)
     return (
         <AppLayout breadcrumbs={pageBreadcrumbs}>
             <Head title={pub.title} />
