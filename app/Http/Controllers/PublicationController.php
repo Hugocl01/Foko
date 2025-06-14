@@ -124,7 +124,7 @@ class PublicationController extends Controller
             'preset:id,name,description,price',
             'hashtags:id,name',
             'comments' => function ($q) {
-                $q->with('user:id,name,username,profile_image')
+                $q->with('user:id,name,username,profile_image,plan_id')
                     ->orderBy('created_at', 'asc');
             },
         ])
