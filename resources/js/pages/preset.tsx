@@ -213,7 +213,6 @@ export default function PresetDetailPage() {
                 },
                 onError: (errors) => {
                     toast.error("Error al actualizar")
-                    console.log(errors)
                 },
             }
         )
