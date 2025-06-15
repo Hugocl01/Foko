@@ -2,51 +2,37 @@
 
 namespace Database\Seeders;
 
-
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Faker\Factory as Faker;
 use Carbon\Carbon;
-use Illuminate\Support\Testing\Fakes\Fake;
 
 class NotificationSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
     public function run(): void
     {
         $faker = Faker::create();
 
-        // Obtener los IDs de las tablas relacionadas
-        $userIds = DB::table('users')->pluck('id')->toArray();
+        $users = DB::table('users')->select('id', 'name')->get()->keyBy('id');
+        $userIds = $users->keys()->toArray();
         $publicationIds = DB::table('publications')->pluck('id')->toArray();
         $commentIds = DB::table('comments')->pluck('id')->toArray();
         $presetIds = DB::table('presets')->pluck('id')->toArray();
 
-        $types = ['like', 'comment', 'follow', 'message', 'purchase', 'report'];
-
-        // Construir dinámicamente una lista de entity_types válidos
-        $entityTypes = [];
-        if (!empty($publicationIds)) {
-            $entityTypes[] = 'publication';
-        }
-        if (!empty($commentIds)) {
-            $entityTypes[] = 'comment';
-        }
-        if (!empty($presetIds)) {
-            $entityTypes[] = 'preset';
-        }
-        if (!empty($userIds)) {
-            $entityTypes[] = 'user';
-        }
-
-        if (empty($entityTypes)) {
-            $this->command->error("No hay ninguna entidad disponible para entity_type. Asegúrate de tener al menos un usuario en la tabla 'users'.");
+        if (count($userIds) < 3) {
+            $this->command->error("Se necesitan al menos 3 usuarios para generar notificaciones válidas.");
             return;
         }
 
-        // Crear 50 notificaciones de prueba
+        $notificationsMap = [
+            'like' => ['publication'],
+            'comment' => ['publication'],
+            'follow' => ['user'],
+            'message' => ['user'],
+            'purchase' => ['preset'],
+            'report' => ['publication', 'preset'],
+        ];
+
         for ($i = 0; $i < 50; $i++) {
             // Elegir actor y destinatario distintos
             $actorId = $faker->randomElement($userIds);
@@ -54,40 +40,53 @@ class NotificationSeeder extends Seeder
                 $recipientId = $faker->randomElement($userIds);
             } while ($recipientId === $actorId);
 
-            $type = $faker->randomElement($types);
-            $entityType = $faker->randomElement($entityTypes);
+            $actorUsername = $users[$actorId]->username;
 
-            // Determinar entity_id según el entity_type
+            $type = $faker->randomElement(array_keys($notificationsMap));
+            $possibleEntities = $notificationsMap[$type];
+            $entityType = $faker->randomElement($possibleEntities);
+
+            // Asignar un entity_id válido según entity_type
             switch ($entityType) {
                 case 'publication':
-                    // Aquí nunca ocurre si publicationIds está vacío
+                    if (empty($publicationIds))
+                        continue 2;
                     $entityId = $faker->randomElement($publicationIds);
                     break;
-
                 case 'comment':
+                    if (empty($commentIds))
+                        continue 2;
                     $entityId = $faker->randomElement($commentIds);
                     break;
-
                 case 'preset':
+                    if (empty($presetIds))
+                        continue 2;
                     $entityId = $faker->randomElement($presetIds);
                     break;
-
                 case 'user':
-                    // Asignar otro user distinto de actor y recipient
                     do {
                         $entityId = $faker->randomElement($userIds);
-                    } while ($entityId === $actorId || $entityId === $recipientId);
+                    } while (in_array($entityId, [$actorId, $recipientId]));
                     break;
-
                 default:
-                    // Nunca debería llegar aquí porque entityType sale de $entityTypes
-                    $entityId = null;
+                    continue 2;
             }
+
+            // Mensaje con nombre del actor
+            $message = match ($type) {
+                'like' => "{$actorUsername} le dio like a tu {$entityType}.",
+                'comment' => "{$actorUsername} comentó en tu publicación.",
+                'follow' => "{$actorUsername} comenzó a seguirte.",
+                'message' => "Has recibido un mensaje de {$actorUsername}.",
+                'purchase' => "{$actorUsername} compró tu preset.",
+                'report' => "{$actorUsername} reportó tu {$entityType}.",
+                default => "{$actorUsername} realizó una acción.",
+            };
 
             DB::table('notifications')->insert([
                 'recipient_id' => $recipientId,
                 'actor_id' => $actorId,
-                'message' => $faker->sentence(),
+                'message' => $message,
                 'type' => $type,
                 'entity_type' => $entityType,
                 'entity_id' => $entityId,
