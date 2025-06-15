@@ -266,6 +266,8 @@ class PublicationSeeder extends Seeder
                     'user_id' => $commentUserId,
                     'publication_id' => $publication->id,
                     'content' => $faker->sentence(8, true), // frase de 8 palabras aprox.
+                    'created_at' => $now,
+                    'updated_at' => $now,
                 ]);
             }
         }

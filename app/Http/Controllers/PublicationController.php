@@ -141,7 +141,7 @@ class PublicationController extends Controller
         $comments = $publication->comments->map(fn($c) => [
             'id' => $c->id,
             'body' => $c->content,
-            'created_at' => optional($c->created_at)->toDateTimeString(),
+            'created_at' => $c->created_at,
             'user' => [
                 'id' => $c->user->id,
                 'name' => $c->user->name,
