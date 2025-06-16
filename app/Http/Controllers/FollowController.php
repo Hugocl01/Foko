@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
+use App\Models\Notification;
+use Illuminate\Support\Facades\Date;
 
 class FollowController extends Controller
 {
@@ -20,6 +22,17 @@ class FollowController extends Controller
 
         $attached = $me->following()->syncWithoutDetaching([$target->id]);
         if (count($attached['attached']) > 0) {
+            // Grabar notificación manualmente
+            Notification::create([
+                'recipient_id' => $target->id,
+                'actor_id' => $me->id,
+                'message' => "{$me->username} ha empezado a seguirte.",
+                'type' => 'follow',
+                'entity_type' => 'user',
+                'entity_id' => $me->id,
+                'created_at' => Date::now(),
+            ]);
+
             return back()->with('message', "Ahora sigues a {$target->username}");
         }
 
