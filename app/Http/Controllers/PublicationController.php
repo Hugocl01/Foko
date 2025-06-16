@@ -4,8 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Models\Publication;
 use App\Models\Hashtag;
+use App\Models\Notification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Intervention\Image\Laravel\Facades\Image;
@@ -219,10 +221,23 @@ class PublicationController extends Controller
         } else {
             // Si no, lo creamos
             $publication->likes()->create(['user_id' => $userId]);
+
+            // Solo notificar si no te estás dando like a ti mismo
+            if ($userId !== $publication->user_id) {
+                Notification::create([
+                    'recipient_id' => $publication->user_id,
+                    'actor_id' => $userId,
+                    'message' => Auth::user()->username . ' le ha dado like a tu publicación.',
+                    'type' => 'like',
+                    'entity_type' => 'publication',
+                    'entity_id' => $publication->id,
+                    'created_at' => Date::now(),
+                ]);
+            }
+
             $message = 'Like agregado';
         }
 
-        // Redirigir a la misma página sin perder parámetros
         return redirect()
             ->back()
             ->with('success', $message);

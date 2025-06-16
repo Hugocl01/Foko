@@ -82,7 +82,6 @@ class PurchaseController extends Controller
         return back()->with('flash', '¡Compra registrada con éxito!');
     }
 
-
     public function download(Request $request, Preset $preset)
     {
         $user = $request->user();

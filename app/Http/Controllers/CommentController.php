@@ -3,9 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\Publication;
-use App\Models\Comment;
+use App\Models\Notification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Date;
 
 class CommentController extends Controller
 {
@@ -26,16 +27,28 @@ class CommentController extends Controller
             'content' => $validated['body'],
         ]);
 
-        // 3) Responder según el tipo de petición
+        // 3) Solo notificar si comentas en una publicación de otro usuario
+        if (Auth::id() !== $publication->user_id) {
+            dd('hola');
+            Notification::create([
+                'recipient_id' => $publication->user_id,
+                'actor_id' => Auth::id(),
+                'message' => Auth::user()->username . ' ha comentado tu publicación.',
+                'type' => 'comment',
+                'entity_type' => 'publication',
+                'entity_id' => $publication->id,
+                'created_at' => Date::now(),
+            ]);
+        }
+
+        // 4) Responder según el tipo de petición
         if ($request->wantsJson()) {
-            // Devolvemos el comentario recién creado (puedes añadir relaciones si lo necesitas)
             return response()->json([
                 'message' => 'Comentario añadido correctamente',
                 'comment' => $comment->load('user'),
             ]);
         }
 
-        // Para peticiones normales redirigimos de vuelta con mensaje
         return back()->with('success', 'Comentario publicado con éxito.');
     }
 }
