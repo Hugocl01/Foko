@@ -11,8 +11,6 @@ use App\Http\Controllers\PresetController;
 use App\Http\Controllers\PurchaseController;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
-use App\Models\Publication;
-use App\Models\Preset;
 
 // Ruta raíz: protegida con 'guest' para que sólo la vean usuarios NO autenticados
 Route::middleware('guest')->get('/', [PlanController::class, 'index'])
@@ -49,9 +47,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/publications/{publication}/comments', [CommentController::class, 'store'])
         ->name('publications.comments.store');
 
-
     Route::get('/user-presets', [PresetController::class, 'userPresets'])
         ->name('user.presets');
+
+    Route::get('/publications/search/{query}', [PublicationController::class, 'search'])
+        ->name('publications.search');
 
     // Presets
     Route::get('/presets', [PresetController::class, 'index'])
@@ -68,6 +68,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::delete('/presets/{preset}', [PresetController::class, 'destroy'])
         ->name('presets.destroy');
+
+    Route::get('/presets/search/{query}', [PresetController::class, 'search'])
+        ->name('presets.search');
 
     // Compras
     Route::get('/purchases', [PurchaseController::class, 'index'])
@@ -94,18 +97,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::delete('/notifications/{notification}', [NotificationController::class, 'destroyNotification'])
         ->name('notifications.destroy');
-
-
-        Route::get('/search', function(Request $request) {
-    $q = $request->query('q', '');
-    $publications = Publication::where('title', 'like', "%{$q}%")
-                      ->take(10)
-                      ->get(['id','title','slug']);
-    $presets = Preset::where('name', 'like', "%{$q}%")
-                  ->take(10)
-                  ->get(['id','name','slug']);
-    return response()->json(compact('publications','presets'));
-});
 });
 
 // Para mostrar la pagina de error 404

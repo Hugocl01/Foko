@@ -5,13 +5,7 @@ import { Input } from '@/components/ui/input'
 import { Search, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useIsMobile } from '@/hooks/use-mobile'
-
-interface SearchResult {
-    id: string
-    title: string
-    type: 'publication' | 'preset' | 'chat'
-    url: string
-}
+import { router } from '@inertiajs/react'
 
 interface SearchDialogProps {
     open: boolean
@@ -20,92 +14,46 @@ interface SearchDialogProps {
 
 export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
     const [searchQuery, setSearchQuery] = React.useState('')
-    const [results, setResults] = React.useState<SearchResult[]>([])
-    const [isLoading, setIsLoading] = React.useState(false)
     const inputRef = React.useRef<HTMLInputElement>(null)
     const isMobile = useIsMobile()
 
-    // Focus input when dialog opens
+    // Focus input when dialog/sheet opens
     React.useEffect(() => {
-        if (open) {
-            setTimeout(() => {
-                inputRef.current?.focus()
-            }, 100)
-        }
+        if (open) setTimeout(() => inputRef.current?.focus(), 100)
     }, [open])
 
-    // Mock search function - replace with actual API call
-    const handleSearch = React.useCallback(
-        async (query: string) => {
-            if (!query.trim()) {
-                setResults([])
-                return
-            }
-
-            setIsLoading(true)
-
-            // Simulate API call with timeout
-            setTimeout(() => {
-                // Mock results - replace with actual API response
-                const mockResults: SearchResult[] = [
-                    {
-                        id: '1',
-                        title: 'Landscape Photography',
-                        type: 'publication',
-                        url: '/publications/1',
-                    },
-                    {
-                        id: '2',
-                        title: 'Summer Vibes',
-                        type: 'preset',
-                        url: '/presets/2',
-                    },
-                    {
-                        id: '3',
-                        title: 'Photography Discussion',
-                        type: 'chat',
-                        url: '/chats/3',
-                    },
-                ].filter(item =>
-                    item.title.toLowerCase().includes(query.toLowerCase())
-                )
-
-                setResults(mockResults)
-                setIsLoading(false)
-            }, 500)
-        },
-        []
-    )
-
-    React.useEffect(() => {
-        const handler = setTimeout(() => {
-            handleSearch(searchQuery)
-        }, 300)
-
-        return () => {
-            clearTimeout(handler)
-        }
-    }, [searchQuery, handleSearch])
-
+    // Close on Escape
     const handleKeyDown = (e: React.KeyboardEvent) => {
-        // Close on escape
-        if (e.key === 'Escape') {
-            onOpenChange(false)
-        }
+        if (e.key === 'Escape') onOpenChange(false)
     }
 
-    const getResultIcon = (type: string) => {
-        switch (type) {
-            case 'publication':
-                return <div className="flex h-6 w-6 items-center justify-center rounded bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300">P</div>
-            case 'preset':
-                return <div className="flex h-6 w-6 items-center justify-center rounded bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300">Pr</div>
-            case 'chat':
-                return <div className="flex h-6 w-6 items-center justify-center rounded bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300">C</div>
-            default:
-                return null
-        }
+    // Clear the current search
+    const clearSearch = () => {
+        setSearchQuery('')
+        inputRef.current?.focus()
     }
+
+    // Perform search navigation using correct route param 'query'
+    const performSearch = (type: 'publications' | 'presets') => {
+        const q = searchQuery.trim()
+        if (!q) return
+        onOpenChange(false)
+        // Use 'query' key to satisfy Ziggy
+        const url = route(`${type}.search`, { query: q })
+        router.get(url)
+    }
+
+    // Buttons for choosing search type
+    const options = (
+        <div className="mt-4 flex flex-col space-y-2">
+            <Button onClick={() => performSearch('publications')} disabled={!searchQuery.trim()}>
+                🔍 Buscar en Publicaciones
+            </Button>
+            <Button onClick={() => performSearch('presets')} disabled={!searchQuery.trim()}>
+                🔍 Buscar en Presets
+            </Button>
+        </div>
+    )
 
     const searchContent = (
         <div className="flex flex-col space-y-4">
@@ -114,17 +62,18 @@ export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
                 <Input
                     ref={inputRef}
                     value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
+                    onChange={e => setSearchQuery(e.target.value)}
                     onKeyDown={handleKeyDown}
-                    placeholder="Buscar publicaciones o presets"
+                    placeholder="Escribe al menos 2 caracteres…"
                     className="pl-10 pr-10"
+                    autoFocus
                 />
                 {searchQuery && (
                     <Button
                         variant="ghost"
                         size="icon"
                         className="absolute right-1 top-1/2 h-7 w-7 -translate-y-1/2 rounded-full p-0"
-                        onClick={() => setSearchQuery('')}
+                        onClick={clearSearch}
                     >
                         <X className="h-4 w-4" />
                         <span className="sr-only">Limpiar búsqueda</span>
@@ -132,34 +81,11 @@ export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
                 )}
             </div>
 
-            <div className="max-h-[60vh] overflow-y-auto">
-                {isLoading ? (
-                    <div className="flex items-center justify-center py-8">
-                        <div className="h-6 w-6 animate-spin rounded-full border-2 border-muted-foreground border-t-transparent"></div>
-                    </div>
-                ) : results.length > 0 ? (
-                    <div className="space-y-1">
-                        {results.map((result) => (
-                            <a
-                                key={result.id}
-                                href={result.url}
-                                className="flex items-center space-x-3 rounded-md p-2 hover:bg-accent"
-                                onClick={() => onOpenChange(false)}
-                            >
-                                {getResultIcon(result.type)}
-                                <div className="flex flex-col">
-                                    <span className="text-sm font-medium">{result.title}</span>
-                                    <span className="text-xs text-muted-foreground capitalize">{result.type}</span>
-                                </div>
-                            </a>
-                        ))}
-                    </div>
-                ) : searchQuery ? (
-                    <div className="py-6 text-center text-sm text-muted-foreground">
-                        No se encontraron resultados para "{searchQuery}"
-                    </div>
-                ) : null}
-            </div>
+            {searchQuery.length >= 2 ? (
+                options
+            ) : searchQuery.length > 0 ? (
+                <p className="text-sm text-muted-foreground">Necesitas al menos 2 caracteres.</p>
+            ) : null}
         </div>
     )
 

@@ -502,4 +502,80 @@ class PublicationController extends Controller
             ->route('publications.index')
             ->with('success', 'Publicación eliminada con éxito.');
     }
+
+    public function search(Request $request, string $query)
+    {
+        $user = Auth::user();
+        $userId = $user->id;
+
+        // 1) Presets del usuario
+        $allPresets = $user->presets()
+            ->orderBy('created_at', 'desc')
+            ->get()
+            ->map(fn($preset) => [
+                'id' => $preset->id,
+                'name' => $preset->name,
+            ])->toArray();
+
+        // 2) Consulta de publicaciones filtrada por título usando $query
+        $paginator = Publication::with(['user', 'images', 'preset', 'hashtags'])
+            ->withCount(['likes', 'comments'])
+            ->withCount([
+                'likes as liked_by_user_count' => fn($q) => $q->where('user_id', $userId),
+                'saveds as saved_by_user_count' => fn($q) => $q->where('user_id', $userId),
+            ])
+            ->where('title', 'like', "%{$query}%")
+            ->orderBy('created_at', 'desc')
+            ->paginate(10)
+            // para mantener el segment `/{query}` en los enlaces de paginación,
+            // usamos appends con la clave 'query'
+            ->appends(['query' => $query]);
+
+        // 3) Reordenamiento y formateo idéntico al de index
+        $reordered = $paginator->getCollection()
+            ->sortBy(fn($pub) => $pub->user->plan_id == 2 ? 1 : 0)
+            ->values()
+            ->map(function ($pub) use ($userId) {
+                $pub->images->transform(fn($img) => tap($img, fn($i) => $i->url = $i->getImageUrlAttribute()));
+
+                return [
+                    'id' => $pub->id,
+                    'user' => [
+                        'id' => $pub->user->id,
+                        'name' => $pub->user->name,
+                        'username' => $pub->user->username,
+                        'profile_image' => $pub->user->getProfileImageUrlAttribute(),
+                        'plan_id' => $pub->user->plan_id,
+                    ],
+                    'images' => $pub->images->map(fn($img) => [
+                        'id' => $img->id,
+                        'url' => $img->url,
+                    ])->all(),
+                    'preset' => $pub->preset
+                        ? ['id' => $pub->preset->id, 'name' => $pub->preset->name]
+                        : null,
+                    'hashtags' => $pub->hashtags->map(fn($tag) => [
+                        'id' => $tag->id,
+                        'name' => $tag->name,
+                    ])->all(),
+                    'likes_count' => $pub->likes_count,
+                    'comments_count' => $pub->comments_count,
+                    'liked' => $pub->liked_by_user_count > 0,
+                    'saved' => $pub->saved_by_user_count > 0,
+                    'title' => $pub->title,
+                    'description' => $pub->description,
+                    'created_at' => $pub->created_at->toDateTimeString(),
+                ];
+            });
+
+        // 4) Sustituimos la colección y devolvemos la vista
+        $paginator->setCollection($reordered);
+
+        return Inertia::render('publications', [
+            'publications' => $paginator,
+            'presets' => $allPresets,
+            // pasamos el término para que el input lo muestre
+            'query' => $query,
+        ]);
+    }
 }
