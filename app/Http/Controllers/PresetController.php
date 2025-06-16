@@ -418,4 +418,53 @@ class PresetController extends Controller
             ->route('presets.index')
             ->with('success', 'Preset eliminado correctamente.');
     }
+
+    public function search(Request $request, string $query)
+    {
+        // 1) Consulta base: eager‐load y filtro por nombre
+        $paginator = Preset::with([
+            'user:id,name,username,profile_image,plan_id',
+            'hashtags:id,name'
+        ])
+            ->where('name', 'like', "%{$query}%")
+            ->latest()
+            ->paginate(12)
+            // para que la paginación mantenga el segmento /search/{query}
+            ->appends(['query' => $query]);
+
+        // 2) Reordenamos solo los 12 items de esta página:
+        //    plan_id != 2 → premium → prioridad 0
+        //    plan_id == 2 → normal  → prioridad 1
+        $reordered = $paginator->getCollection()
+            ->sortBy(fn($preset) => $preset->user->plan_id == 2 ? 1 : 0)
+            ->values();
+
+        // 3) Transformamos cada preset al formato que espera Inertia
+        $mapped = $reordered->map(fn($preset) => [
+            'id' => $preset->id,
+            'name' => $preset->name,
+            'description' => $preset->description,
+            'price' => $preset->price,
+            'before_image' => $preset->getBeforeImageUrlAttribute(),
+            'after_image' => $preset->getAfterImageUrlAttribute(),
+            'user' => [
+                'id' => $preset->user->id,
+                'name' => $preset->user->name,
+                'username' => $preset->user->username,
+                'profile_image' => $preset->user->getProfileImageUrlAttribute(),
+                'plan_id' => $preset->user->plan_id,
+            ],
+            'hashtags' => $preset->hashtags->pluck('name')->all(),
+            'created_at' => $preset->created_at->format('Y-m-d'),
+        ]);
+
+        // 4) Sustituimos la colección original por la transformada
+        $paginator->setCollection($mapped);
+
+        // 5) Renderizamos la misma vista que en index, pasando además 'query'
+        return Inertia::render('presets', [
+            'presets' => $paginator,
+            'query' => $query,
+        ]);
+    }
 }
