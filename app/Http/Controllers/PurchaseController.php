@@ -6,8 +6,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 use App\Models\Preset;
+use App\Models\Notification;
 use Illuminate\Support\Facades\Storage;
-
+use Illuminate\Support\Facades\Date;
 class PurchaseController extends Controller
 {
     /**
@@ -53,20 +54,34 @@ class PurchaseController extends Controller
             ->exists();
 
         if ($yaComprado) {
-            // Vuelve a la misma página con el error en el campo "preset"
             return back()->withErrors([
                 'preset' => 'Ya has comprado este preset.',
             ]);
         }
 
         // 2. Crear la compra
-        $user->purchases()->create([
+        $purchase = $user->purchases()->create([
             'preset_id' => $preset->id,
         ]);
 
-        // 3. Vuelve a la misma página con un mensaje de éxito
+        // 3. Grabar la notificación para el autor del preset
+        // Solo si quien compra no es el mismo autor
+        if ($preset->user_id !== $user->id) {
+            Notification::create([
+                'recipient_id' => $preset->user_id,
+                'actor_id' => $user->id,
+                'message' => "{$user->username} ha comprado tu preset '{$preset->name}'.",
+                'type' => 'purchase',
+                'entity_type' => 'preset',
+                'entity_id' => $preset->id,
+                'created_at' => Date::now(),
+            ]);
+        }
+
+        // 4. Vuelve con mensaje de éxito
         return back()->with('flash', '¡Compra registrada con éxito!');
     }
+
 
     public function download(Request $request, Preset $preset)
     {
