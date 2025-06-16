@@ -3,7 +3,7 @@
 use App\Http\Controllers\FeedController;
 use App\Http\Controllers\PublicationController;
 use App\Http\Controllers\Settings\PlanController;
-use App\Http\Controllers\UserController;
+use App\Http\Controllers\CommentController;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 use App\Http\Controllers\NotificationController;
@@ -11,6 +11,8 @@ use App\Http\Controllers\PresetController;
 use App\Http\Controllers\PurchaseController;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
+use App\Models\Publication;
+use App\Models\Preset;
 
 // Ruta raíz: protegida con 'guest' para que sólo la vean usuarios NO autenticados
 Route::middleware('guest')->get('/', [PlanController::class, 'index'])
@@ -43,6 +45,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::post('publications/{publication}/save', [PublicationController::class, 'toggleSave'])
         ->name('publications.toggleSave');
+
+    Route::post('/publications/{publication}/comments', [CommentController::class, 'store'])
+        ->name('publications.comments.store');
+
 
     Route::get('/user-presets', [PresetController::class, 'userPresets'])
         ->name('user.presets');
@@ -88,6 +94,18 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::delete('/notifications/{notification}', [NotificationController::class, 'destroyNotification'])
         ->name('notifications.destroy');
+
+
+        Route::get('/search', function(Request $request) {
+    $q = $request->query('q', '');
+    $publications = Publication::where('title', 'like', "%{$q}%")
+                      ->take(10)
+                      ->get(['id','title','slug']);
+    $presets = Preset::where('name', 'like', "%{$q}%")
+                  ->take(10)
+                  ->get(['id','name','slug']);
+    return response()->json(compact('publications','presets'));
+});
 });
 
 // Para mostrar la pagina de error 404
