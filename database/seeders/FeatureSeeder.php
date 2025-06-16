@@ -15,7 +15,6 @@ class FeatureSeeder extends Seeder
     {
         $features = [
             ['name' => 'Subir publicaciones con 1 imágen', 'description' => 'Límite de 1 imágen por publicación.'],
-            ['name' => 'Interacción social básica', 'description' => 'Likes, comentarios y seguir usuarios.'],
             ['name' => 'Subir publicaciones con hasta 3 imágenes', 'description' => 'Límite de 3 imágenes por publicación.'],
             ['name' => 'Publicaciones semanales limitadas', 'description' => 'Restricción de publicaciones por semana.'],
             ['name' => 'Subidas y publicaciones ilimitadas', 'description' => 'Sin límite en cantidad de publicaciones.'],

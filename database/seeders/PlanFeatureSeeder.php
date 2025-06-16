@@ -15,8 +15,7 @@ class PlanFeatureSeeder extends Seeder
         $planFeatures = [
             'Básico' => [
                 'Subir publicaciones con 1 imágen',
-                'Interacción social básica',
-                'Publicaciones semanales limitadas',
+                'Venta de presets',
             ],
             'Premium' => [
                 'Subir publicaciones con hasta 3 imágenes',
