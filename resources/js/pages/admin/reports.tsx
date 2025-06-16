@@ -10,20 +10,23 @@ import {
     TooltipProvider,
     TooltipTrigger,
 } from "@/components/ui/tooltip"
-import { Trash2 } from "lucide-react"
+import { Trash2, ArrowUpRight, UserRound } from "lucide-react"
 import { toast } from "sonner"
+
+type User = {
+    id: number
+    name: string
+    username: string
+    profile_image_url: string | null
+}
 
 type Report = {
     id: number
     message: string
     entity_type: string
     entity_id: number
-    actor: {
-        id: number
-        name: string
-        username: string
-        profile_image_url: string | null
-    }
+    actor: User
+    reported_user: User | null
     created_at: string
 }
 
@@ -37,9 +40,6 @@ const breadcrumbs: BreadcrumbItem[] = [
 export default function Reports({ reports: initialReports }: { reports: Report[] }) {
     const [reports, setReports] = useState<Report[]>(initialReports)
 
-    /**
-     * Elimina un reporte por ID, muestra un toast con el mensaje de sesión y actualiza el estado.
-     */
     const destroyReport = (id: number) => {
         router.delete(route("reports.destroy", id), {
             preserveScroll: true,
@@ -49,6 +49,23 @@ export default function Reports({ reports: initialReports }: { reports: Report[]
                 setReports((prev) => prev.filter((r) => r.id !== id))
             },
         })
+    }
+
+    const goToUser = (username: string) => {
+        router.visit(`/profile/${username}`)
+    }
+
+    const goToEntity = (type: string, id: number) => {
+        const paths: Record<string, string> = {
+            publication: "publications",
+            preset: "presets",
+            user: "users",
+            comment: "comments",
+        }
+        const path = paths[type] || ""
+        if (path) {
+            router.visit(`/${path}/${id}`)
+        }
     }
 
     return (
@@ -76,26 +93,86 @@ export default function Reports({ reports: initialReports }: { reports: Report[]
                                     <p className="text-card-foreground">
                                         <strong>Reportado por:</strong> {report.actor.name} ({report.actor.username})
                                     </p>
+                                    {report.reported_user && (
+                                        <p className="text-card-foreground">
+                                            <strong>Usuario reportado:</strong> {report.reported_user.name} ({report.reported_user.username})
+                                        </p>
+                                    )}
                                     <span className="text-sm text-muted-foreground">
                                         {new Date(report.created_at).toLocaleString()}
                                     </span>
                                 </div>
-                                <TooltipProvider>
-                                    <Tooltip>
-                                        <TooltipTrigger asChild>
-                                            <Button
-                                                variant="destructive"
-                                                size="icon"
-                                                onClick={() => destroyReport(report.id)}
-                                            >
-                                                <Trash2 className="w-5 h-5" />
-                                            </Button>
-                                        </TooltipTrigger>
-                                        <TooltipContent>
-                                            <p>Eliminar reporte</p>
-                                        </TooltipContent>
-                                    </Tooltip>
-                                </TooltipProvider>
+                                <div className="flex gap-2">
+                                    <TooltipProvider>
+                                        <Tooltip>
+                                            <TooltipTrigger asChild>
+                                                <Button
+                                                    size="icon"
+                                                    variant="secondary"
+                                                    onClick={() => goToUser(report.actor.username)}
+                                                >
+                                                    <UserRound className="w-4 h-4" />
+                                                </Button>
+                                            </TooltipTrigger>
+                                            <TooltipContent>
+                                                <p>Ver perfil del usuario que reportó</p>
+                                            </TooltipContent>
+                                        </Tooltip>
+                                    </TooltipProvider>
+
+                                    {report.reported_user && (
+                                        <TooltipProvider>
+                                            <Tooltip>
+                                                <TooltipTrigger asChild>
+                                                    <Button
+                                                        size="icon"
+                                                        variant="secondary"
+                                                        onClick={() => goToUser(report.reported_user!.username)}
+                                                    >
+                                                        <UserRound className="w-4 h-4" />
+                                                    </Button>
+                                                </TooltipTrigger>
+                                                <TooltipContent>
+                                                    <p>Ver perfil del usuario reportado</p>
+                                                </TooltipContent>
+                                            </Tooltip>
+                                        </TooltipProvider>
+                                    )}
+
+                                    <TooltipProvider>
+                                        <Tooltip>
+                                            <TooltipTrigger asChild>
+                                                <Button
+                                                    size="icon"
+                                                    variant="outline"
+                                                    onClick={() => goToEntity(report.entity_type, report.entity_id)}
+                                                >
+                                                    <ArrowUpRight className="w-4 h-4" />
+                                                </Button>
+                                            </TooltipTrigger>
+                                            <TooltipContent>
+                                                <p>Ver entidad reportada</p>
+                                            </TooltipContent>
+                                        </Tooltip>
+                                    </TooltipProvider>
+
+                                    <TooltipProvider>
+                                        <Tooltip>
+                                            <TooltipTrigger asChild>
+                                                <Button
+                                                    variant="destructive"
+                                                    size="icon"
+                                                    onClick={() => destroyReport(report.id)}
+                                                >
+                                                    <Trash2 className="w-5 h-5" />
+                                                </Button>
+                                            </TooltipTrigger>
+                                            <TooltipContent>
+                                                <p>Eliminar reporte</p>
+                                            </TooltipContent>
+                                        </Tooltip>
+                                    </TooltipProvider>
+                                </div>
                             </div>
                         ))}
                         {reports.length === 0 && (

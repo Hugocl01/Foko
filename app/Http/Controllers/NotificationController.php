@@ -53,7 +53,58 @@ class NotificationController extends Controller
                 'entity_id',
                 'actor_id',
                 'created_at',
-            ]);
+            ])
+            ->map(function ($notification) {
+                $reportedUser = null;
+
+                switch ($notification->entity_type) {
+                    case 'publication':
+                        $entity = \App\Models\Publication::find($notification->entity_id);
+                        break;
+                    case 'preset':
+                        $entity = \App\Models\Preset::find($notification->entity_id);
+                        break;
+                    case 'comment':
+                        $entity = \App\Models\Comment::find($notification->entity_id);
+                        break;
+                    case 'user':
+                        $entity = \App\Models\User::find($notification->entity_id);
+                        break;
+                    default:
+                        $entity = null;
+                }
+
+                if ($entity && $notification->entity_type !== 'user') {
+                    $user = $entity->user ?? null;
+                } else {
+                    // Si la entidad es directamente un usuario (ej. tipo 'user')
+                    $user = $entity;
+                }
+
+                if ($user) {
+                    $reportedUser = [
+                        'id' => $user->id,
+                        'name' => $user->name,
+                        'username' => $user->username,
+                        'profile_image_url' => $user->profile_image_url,
+                    ];
+                }
+
+                return [
+                    'id' => $notification->id,
+                    'message' => $notification->message,
+                    'entity_type' => $notification->entity_type,
+                    'entity_id' => $notification->entity_id,
+                    'created_at' => $notification->created_at,
+                    'actor' => [
+                        'id' => $notification->actor->id,
+                        'name' => $notification->actor->name,
+                        'username' => $notification->actor->username,
+                        'profile_image_url' => $notification->actor->profile_image_url,
+                    ],
+                    'reported_user' => $reportedUser,
+                ];
+            });
 
         return Inertia::render('admin/reports', [
             'reports' => $reports,

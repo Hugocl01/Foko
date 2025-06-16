@@ -13,7 +13,7 @@ class NotificationSeeder extends Seeder
     {
         $faker = Faker::create();
 
-        $users = DB::table('users')->select('id', 'name')->get()->keyBy('id');
+        $users = DB::table('users')->select('id', 'name', 'username')->get()->keyBy('id');
         $userIds = $users->keys()->toArray();
         $publicationIds = DB::table('publications')->pluck('id')->toArray();
         $commentIds = DB::table('comments')->pluck('id')->toArray();
@@ -33,7 +33,7 @@ class NotificationSeeder extends Seeder
             'report' => ['publication', 'preset'],
         ];
 
-        for ($i = 0; $i < 50; $i++) {
+        for ($i = 0; $i < 250; $i++) {
             // Elegir actor y destinatario distintos
             $actorId = $faker->randomElement($userIds);
             do {
@@ -79,7 +79,7 @@ class NotificationSeeder extends Seeder
                 'follow' => "{$actorUsername} comenzó a seguirte.",
                 'message' => "Has recibido un mensaje de {$actorUsername}.",
                 'purchase' => "{$actorUsername} compró tu preset.",
-                'report' => "{$actorUsername} reportó tu {$entityType}.",
+                'report' => "{$actorUsername} reportó {$entityType}.",
                 default => "{$actorUsername} realizó una acción.",
             };
 

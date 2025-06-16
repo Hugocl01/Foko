@@ -9,13 +9,16 @@ import {
     TooltipProvider,
     TooltipTrigger,
 } from '@/components/ui/tooltip';
-import { Trash2 } from 'lucide-react';
+import { Trash2, ArrowUpRight, UserRound } from 'lucide-react';
 
 type Notification = {
     id: number;
     message: string;
     is_read: boolean;
     created_at: string;
+    actor_id: number;
+    entity_type: 'publication' | 'preset' | 'user' | 'comment';
+    entity_id: number;
 };
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -37,6 +40,23 @@ export default function Notifications({ notifications: initialNotifications }: {
         });
     };
 
+    const goToUser = (userId: number) => {
+        router.visit(`/users/${userId}`);
+    };
+
+    const goToEntity = (type: string, id: number) => {
+        const basePaths: Record<string, string> = {
+            publication: 'publications',
+            preset: 'presets',
+            user: 'users',
+            comment: 'comments',
+        };
+        const path = basePaths[type] || '';
+        if (path) {
+            router.visit(`/${path}/${id}`);
+        }
+    };
+
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
             <Head title="Notificaciones" />
@@ -54,22 +74,58 @@ export default function Notifications({ notifications: initialNotifications }: {
                                     {new Date(notif.created_at).toLocaleString()}
                                 </span>
                             </div>
-                            <TooltipProvider>
-                                <Tooltip>
-                                    <TooltipTrigger asChild>
-                                        <Button
-                                            variant="destructive"
-                                            size="icon"
-                                            onClick={() => handleDelete(notif.id)}
-                                        >
-                                            <Trash2 className="w-5 h-5" />
-                                        </Button>
-                                    </TooltipTrigger>
-                                    <TooltipContent>
-                                        <p>Borrar</p>
-                                    </TooltipContent>
-                                </Tooltip>
-                            </TooltipProvider>
+                            <div className="flex gap-2">
+                                <TooltipProvider>
+                                    <Tooltip>
+                                        <TooltipTrigger asChild>
+                                            <Button
+                                                size="icon"
+                                                variant="secondary"
+                                                onClick={() => goToUser(notif.actor_id)}
+                                            >
+                                                <UserRound className="h-4 w-4" />
+                                            </Button>
+                                        </TooltipTrigger>
+                                        <TooltipContent>
+                                            <p>Ver perfil del usuario</p>
+                                        </TooltipContent>
+                                    </Tooltip>
+                                </TooltipProvider>
+
+                                <TooltipProvider>
+                                    <Tooltip>
+                                        <TooltipTrigger asChild>
+                                            <Button
+                                                size="icon"
+                                                variant="outline"
+                                                onClick={() => goToEntity(notif.entity_type, notif.entity_id)}
+                                            >
+                                                <ArrowUpRight className="h-4 w-4" />
+                                            </Button>
+                                        </TooltipTrigger>
+                                        <TooltipContent>
+                                            <p>Ir a la entidad</p>
+                                        </TooltipContent>
+                                    </Tooltip>
+                                </TooltipProvider>
+
+                                <TooltipProvider>
+                                    <Tooltip>
+                                        <TooltipTrigger asChild>
+                                            <Button
+                                                variant="destructive"
+                                                size="icon"
+                                                onClick={() => handleDelete(notif.id)}
+                                            >
+                                                <Trash2 className="w-5 h-5" />
+                                            </Button>
+                                        </TooltipTrigger>
+                                        <TooltipContent>
+                                            <p>Borrar</p>
+                                        </TooltipContent>
+                                    </Tooltip>
+                                </TooltipProvider>
+                            </div>
                         </div>
                     ))}
                     {notifications.length === 0 && (
