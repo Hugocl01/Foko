@@ -404,7 +404,7 @@ export default function Home() {
                                         </div>
                                     </CardContent>
 
-                                    <CardFooter className="flex flex-col gap-3 p-4">
+                                    <CardFooter className="flex flex-col items-start gap-3 p-4">
                                         <div className="font-semibold">{preset.name}</div>
                                         <div className="text-sm text-muted-foreground line-clamp-2">
                                             {preset.description}
