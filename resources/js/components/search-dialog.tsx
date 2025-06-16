@@ -17,33 +17,38 @@ export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
     const inputRef = React.useRef<HTMLInputElement>(null)
     const isMobile = useIsMobile()
 
-    // Focus input when dialog/sheet opens
     React.useEffect(() => {
-        if (open) setTimeout(() => inputRef.current?.focus(), 100)
+        if (open) {
+            setTimeout(() => inputRef.current?.focus(), 100)
+        }
     }, [open])
 
-    // Close on Escape
     const handleKeyDown = (e: React.KeyboardEvent) => {
-        if (e.key === 'Escape') onOpenChange(false)
+        if (e.key === 'Escape') {
+            onOpenChange(false)
+        }
     }
 
-    // Clear the current search
     const clearSearch = () => {
         setSearchQuery('')
         inputRef.current?.focus()
     }
 
-    // Perform search navigation using correct route param 'query'
+    /**
+     * Reemplaza espacios por guiones bajos antes de navegar.
+     */
     const performSearch = (type: 'publications' | 'presets') => {
-        const q = searchQuery.trim()
-        if (!q) return
+        const raw = searchQuery.trim()
+        if (!raw) {
+            return
+        }
+        // Sustituir todos los espacios por '_'
+        const queryParam = raw.replace(/\s+/g, '_')
         onOpenChange(false)
-        // Use 'query' key to satisfy Ziggy
-        const url = route(`${type}.search`, { query: q })
+        const url = route(`${type}.search`, { query: queryParam })
         router.get(url)
     }
 
-    // Buttons for choosing search type
     const options = (
         <div className="mt-4 flex flex-col space-y-2">
             <Button onClick={() => performSearch('publications')} disabled={!searchQuery.trim()}>
