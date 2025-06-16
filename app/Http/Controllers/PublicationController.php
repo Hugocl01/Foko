@@ -574,7 +574,6 @@ class PublicationController extends Controller
         return Inertia::render('publications', [
             'publications' => $paginator,
             'presets' => $allPresets,
-            // pasamos el término para que el input lo muestre
             'query' => $query,
         ]);
     }
