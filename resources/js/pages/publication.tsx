@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo, useEffect, useRef, useLayoutEffect } from "react";
 import { Head, usePage, Link, router } from "@inertiajs/react";
 import {
     Avatar,
@@ -142,6 +142,14 @@ export default function Publication() {
         }),
         [pub]
     );
+
+    const textareaRef = useRef<HTMLTextAreaElement>(null);
+    useLayoutEffect(() => {
+        const ta = textareaRef.current;
+        if (!ta) return;
+        ta.style.height = 'auto';
+        ta.style.height = `${ta.scrollHeight}px`;
+    }, [newComment]);
 
     const totalImages = pub.images.length;
     const nextImage = () => setCurrentImageIndex((i) => (i + 1) % totalImages);
@@ -314,9 +322,6 @@ export default function Publication() {
                                     <Heart className={`h-6 w-6 ${liked ? "fill-destructive" : ""}`} />
                                 </Button>
                                 <Button variant="ghost" size="icon">
-                                    <MessageCircle className="h-6 w-6" />
-                                </Button>
-                                <Button variant="ghost" size="icon">
                                     <Share2 className="h-6 w-6" />
                                 </Button>
                             </div>
@@ -385,16 +390,23 @@ export default function Publication() {
 
                     {/* Formulario de nuevo comentario */}
                     {loggedUser && (
-                        <form onSubmit={handleCommentSubmit} className="space-y-2">
+                        <form onSubmit={handleCommentSubmit} className="flex items-start space-x-2">
                             <Textarea
+                                ref={textareaRef}
                                 value={newComment}
-                                onChange={(e) => setNewComment(e.target.value)}
+                                onChange={e => setNewComment(e.target.value)}
                                 placeholder="Escribe un comentario..."
-                                rows={3}
+                                className="flex-1 resize-none overflow-hidden min-h-[2.5rem]"
+                                rows={1}
                                 required
                             />
-                            <Button type="submit" disabled={!newComment.trim()}>
-                                Publicar comentario
+                            <Button
+                                type="submit"
+                                disabled={!newComment.trim()}
+                                className="flex items-center space-x-1"
+                            >
+                                <MessageCircle />
+                                <span>Comentar</span>
                             </Button>
                         </form>
                     )}
