@@ -29,7 +29,6 @@ class CommentController extends Controller
 
         // 3) Solo notificar si comentas en una publicación de otro usuario
         if (Auth::id() !== $publication->user_id) {
-            dd('hola');
             Notification::create([
                 'recipient_id' => $publication->user_id,
                 'actor_id' => Auth::id(),
