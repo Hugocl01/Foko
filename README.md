@@ -14,7 +14,9 @@ La aplicación permite a los fotógrafos crear un portafolio en línea, donde pu
 
 Antes de comenzar asegúrate de tener instalado:
 
-+ PHP >= 8.2
++ PHP >= 8.2, ademas de las extensiones:
+  + `php-zip`
+  + `php-gd`
 + Composer
 + Node.js >= 18.x
 + MySQL o MariaDB
