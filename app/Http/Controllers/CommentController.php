@@ -25,6 +25,8 @@ class CommentController extends Controller
             'user_id' => Auth::id(),
             'publication_id' => $publication->id,
             'content' => $validated['body'],
+            'created_at' => Date::now(),
+            'updated_at' => Date::now(),
         ]);
 
         // 3) Solo notificar si comentas en una publicación de otro usuario

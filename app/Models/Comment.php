@@ -13,7 +13,9 @@ class Comment extends Model
         'user_id',
         'publication_id',
         'content',
-        'comment_date'
+        'comment_date',
+        'created_at',
+        'updated_at',
     ];
 
     /**
