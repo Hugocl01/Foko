@@ -18,16 +18,17 @@ class IsAdmin
     {
         // 1. Si no hay usuario autenticado, redirige al login.
         if (!$request->user()) {
-            return redirect()->route('login');
+            return redirect()->route('home');
         }
 
         // 2. Obtén el modelo Role desde la relación del usuario.
         //    NOTA: asume que en User.php existe:
         //    public function role() { return $this->belongsTo(Role::class); }
-        $role = $request->user()->role;
+        $role_id = $request->user()->role_id;
         //dd($role->name);
         // 3. Si no hay rol asociado o su name no es "admin", aborta con 403.
-        if (!$role || $role->name !== 'Admin') {
+        if (!$role_id || $role_id !== 1) {
+            dd($role_id);
             abort(403, 'Acceso denegado. Se requiere rol de administrador.');
         }
 
