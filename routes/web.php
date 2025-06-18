@@ -47,6 +47,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/publications/{publication}/comments', [CommentController::class, 'store'])
         ->name('publications.comments.store');
 
+    Route::post('/publications/{publication}/report', [PublicationController::class, 'report'])
+        ->name('publications.report');
+
+
     Route::get('/user-presets', [PresetController::class, 'userPresets'])
         ->name('user.presets');
 

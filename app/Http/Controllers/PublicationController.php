@@ -595,4 +595,27 @@ class PublicationController extends Controller
             'query' => $query,
         ]);
     }
+
+    public function report(Request $request, Publication $publication)
+    {
+        $user = $request->user();
+
+        // 1) Crear la notificación para el autor de la publicación
+        Notification::create([
+            'recipient_id' => $publication->user_id,
+            'actor_id' => $user->id,
+            'message' => "{$user->name} ha reportado tu publicación.",
+            'type' => 'report',
+            'entity_type' => 'publication',
+            'entity_id' => $publication->id,
+            'created_at' => Date::now(),
+            'updated_at' => Date::now(),
+        ]);
+
+        // 2) (Opcional) Si quieres llevar un registro de reportes independientes,
+        //    aquí podrías guardar en otra tabla Report::create([...]);
+
+        // 3) Flash y redirección de vuelta
+        return back()->with('success', '¡Gracias! Hemos recibido tu reporte.');
+    }
 }

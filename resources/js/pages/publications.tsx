@@ -344,7 +344,27 @@ export default function PublicationsPage() {
                                                 </Link>
                                                 <DropdownMenuItem>Copiar enlace</DropdownMenuItem>
                                                 <DropdownMenuSeparator />
-                                                <DropdownMenuItem className="text-destructive">
+                                                <DropdownMenuItem
+                                                    className="text-destructive"
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        router.post(
+                                                            route("publications.report", pub.id),
+                                                            {},
+                                                            {
+                                                                preserveState: true,
+                                                                preserveScroll: true,
+                                                                onSuccess: (page) => {
+                                                                    toast.success("¡Gracias! Hemos recibido tu reporte.");
+                                                                },
+                                                                onError: (errors) => {
+                                                                    toast.error("Algo salió mal al enviar el reporte.");
+                                                                    console.error(errors);
+                                                                },
+                                                            }
+                                                        );
+                                                    }}
+                                                >
                                                     Reportar
                                                 </DropdownMenuItem>
                                             </DropdownMenuContent>
