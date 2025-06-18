@@ -1,7 +1,7 @@
 import { usePage, Link, Head } from "@inertiajs/react"
 import { Camera } from "lucide-react"
 import { Breadcrumb, type BreadcrumbItem } from "@/components/ui/breadcrumb"
-import ProfileLayout, { User, Publication } from "@/Layouts/profile/layout"
+import ProfileLayout, { User, Publication } from "./../../layouts/profile/layout"
 import { userInfo } from "os"
 
 type Props = {

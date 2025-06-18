@@ -2,7 +2,7 @@ import React, { useEffect } from "react"
 import { usePage, router, Link, Head } from "@inertiajs/react"
 import { Bookmark } from "lucide-react"
 import { Breadcrumb, type BreadcrumbItem } from "@/components/ui/breadcrumb"
-import ProfileLayout, { User, SavedPublication } from "@/Layouts/profile/layout"
+import ProfileLayout, { User, SavedPublication } from "./../../layouts/profile/layout"
 
 type Props = {
     user: {
