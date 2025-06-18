@@ -307,7 +307,28 @@ export default function PresetDetailPage() {
                                             </Link>
                                             <DropdownMenuItem className="cursor-pointer">Copiar enlace</DropdownMenuItem>
                                             <DropdownMenuSeparator />
-                                            <DropdownMenuItem className="text-destructive cursor-pointer">Reportar</DropdownMenuItem>
+                                            <DropdownMenuItem
+                                                className="text-destructive cursor-pointer"
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    router.post(
+                                                        route("presets.report", preset.id),
+                                                        {},
+                                                        {
+                                                            preserveState: true,
+                                                            preserveScroll: true,
+                                                            onSuccess: () => {
+                                                                toast.success("¡Gracias! Hemos recibido tu reporte.");
+                                                            },
+                                                            onError: () => {
+                                                                toast.error("Error al enviar el reporte.");
+                                                            },
+                                                        }
+                                                    );
+                                                }}
+                                            >
+                                                Reportar
+                                            </DropdownMenuItem>
                                         </DropdownMenuContent>
                                     </DropdownMenu>
                                 </div>

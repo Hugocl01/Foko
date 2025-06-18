@@ -50,7 +50,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/publications/{publication}/report', [PublicationController::class, 'report'])
         ->name('publications.report');
 
-
     Route::get('/user-presets', [PresetController::class, 'userPresets'])
         ->name('user.presets');
 
@@ -72,6 +71,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::delete('/presets/{preset}', [PresetController::class, 'destroy'])
         ->name('presets.destroy');
+
+    Route::post('/presets/{preset}/report', [PresetController::class, 'report'])
+        ->name('presets.report');
 
     Route::get('/presets/search/{query}', [PresetController::class, 'search'])
         ->name('presets.search');

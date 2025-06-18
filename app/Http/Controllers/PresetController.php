@@ -4,9 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Models\Preset;
 use App\Models\Hashtag;
-use App\Models\Publication;
+use App\Models\Notification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Intervention\Image\Laravel\Facades\Image;
@@ -466,5 +467,27 @@ class PresetController extends Controller
             'presets' => $paginator,
             'query' => $query,
         ]);
+    }
+
+    /**
+     * Reportar un preset y notificar al autor.
+     */
+    public function report(Request $request, Preset $preset)
+    {
+        $user = $request->user();
+
+        // Guarda notificación para el autor del preset
+        Notification::create([
+            'recipient_id' => $preset->user_id,
+            'actor_id' => $user->id,
+            'message' => "{$user->name} ha reportado tu preset.",
+            'type' => 'report',
+            'entity_type' => 'preset',
+            'entity_id' => $preset->id,
+            'created_at' => Date::now(),
+            'updated_at' => Date::now(),
+        ]);
+
+        return back()->with('success', '¡Gracias! Hemos recibido tu reporte.');
     }
 }

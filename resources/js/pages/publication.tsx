@@ -290,7 +290,7 @@ export default function Publication() {
                                     <DropdownMenuItem>Copiar enlace</DropdownMenuItem>
                                     <DropdownMenuSeparator />
                                     <DropdownMenuItem
-                                        className="text-destructive"
+                                        className="text-destructive cursor-pointer"
                                         onClick={(e) => {
                                             e.stopPropagation();
                                             router.post(

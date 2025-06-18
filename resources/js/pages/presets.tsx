@@ -24,6 +24,7 @@ import { Badge } from "@/components/ui/badge"
 import AppLayout from "@/layouts/app-layout"
 import { PresetDialog } from "@/components/preset-dialog"
 import { usePage, Head, router, Link } from "@inertiajs/react"
+import { toast } from "sonner";
 import type { BreadcrumbItem } from "@/types"
 
 interface Preset {
@@ -195,7 +196,26 @@ export default function PresetsPage() {
                                                         </Link>
                                                         <DropdownMenuItem>Copiar enlace</DropdownMenuItem>
                                                         <DropdownMenuSeparator />
-                                                        <DropdownMenuItem className="text-destructive">
+                                                        <DropdownMenuItem
+                                                            className="text-destructive cursor-pointer"
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                router.post(
+                                                                    route("presets.report", preset.id),
+                                                                    {},
+                                                                    {
+                                                                        preserveState: true,
+                                                                        preserveScroll: true,
+                                                                        onSuccess: () => {
+                                                                            toast.success("¡Gracias! Hemos recibido tu reporte.");
+                                                                        },
+                                                                        onError: () => {
+                                                                            toast.error("Error al enviar el reporte.");
+                                                                        },
+                                                                    }
+                                                                );
+                                                            }}
+                                                        >
                                                             Reportar
                                                         </DropdownMenuItem>
                                                     </DropdownMenuContent>
@@ -440,7 +460,26 @@ export default function PresetsPage() {
                                                         </Link>
                                                         <DropdownMenuItem>Copiar enlace</DropdownMenuItem>
                                                         <DropdownMenuSeparator />
-                                                        <DropdownMenuItem className="text-destructive">
+                                                        <DropdownMenuItem
+                                                            className="text-destructive cursor-pointer"
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                router.post(
+                                                                    route("presets.report", preset.id),
+                                                                    {},
+                                                                    {
+                                                                        preserveState: true,
+                                                                        preserveScroll: true,
+                                                                        onSuccess: () => {
+                                                                            toast.success("¡Gracias! Hemos recibido tu reporte.");
+                                                                        },
+                                                                        onError: () => {
+                                                                            toast.error("Error al enviar el reporte.");
+                                                                        },
+                                                                    }
+                                                                );
+                                                            }}
+                                                        >
                                                             Reportar
                                                         </DropdownMenuItem>
                                                     </DropdownMenuContent>
