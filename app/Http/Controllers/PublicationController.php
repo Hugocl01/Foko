@@ -119,9 +119,9 @@ class PublicationController extends Controller
     {
         $userId = Auth::id();
 
-        // 1) Eager load de relaciones y conteos
+        // 1) Eager load de relaciones y conteos, incluyendo plan_id en user
         $publication->load([
-            'user:id,name,username,profile_image',
+            'user:id,name,username,profile_image,plan_id', // ← agregamos plan_id aquí
             'images',
             'preset:id,name,description,price',
             'hashtags:id,name',
@@ -149,6 +149,7 @@ class PublicationController extends Controller
                 'name' => $c->user->name,
                 'username' => $c->user->username,
                 'profile_image_url' => $c->user->getProfileImageUrlAttribute(),
+                'plan_id' => $c->user->plan_id, // ← aseguramos plan_id aquí también
             ],
         ])->all();
 
@@ -173,6 +174,7 @@ class PublicationController extends Controller
                 'name' => $publication->user->name,
                 'username' => $publication->user->username,
                 'profile_image_url' => $publication->user->getProfileImageUrlAttribute(),
+                'plan_id' => $publication->user->plan_id, // ← ahora disponible
             ],
             'images' => $publication->images->map(fn($img) => [
                 'id' => $img->id,
@@ -205,6 +207,7 @@ class PublicationController extends Controller
             'presets' => $userPresets,
         ]);
     }
+
 
     /**
      * Toggle "like" para la publicación: crea o elimina el registro en BD.

@@ -41,10 +41,10 @@ class FeedController extends Controller
             ->toArray();
 
         //
-        // 3) TOP 5 PUBLICACIONES PREMIUM (plan_id != 2), por likes y fecha
+        // 2) TOP 5 PUBLICACIONES PREMIUM (plan_id != 2) por likes y fecha
         //
         $premiumPubsQ = Publication::with(['user', 'images', 'hashtags'])
-            ->withCount('likes')
+            ->withCount(['likes', 'comments'])
             ->whereIn('user_id', $followed)
             ->whereHas('user', fn($q) => $q->where('plan_id', '!=', 2))
             ->orderBy('likes_count', 'desc')
@@ -52,10 +52,11 @@ class FeedController extends Controller
 
         $topPubs = $premiumPubsQ->take(5)->get();
 
-        // Rellenar si hay menos de 5
+        // Rellenar si hay menos de 5 (manteniendo los counts)
         if ($topPubs->count() < 5) {
             $fillCount = 5 - $topPubs->count();
             $fill = Publication::with(['user', 'images', 'hashtags'])
+                ->withCount(['likes', 'comments'])
                 ->whereIn('user_id', $followed)
                 ->whereNotIn('id', $topPubs->pluck('id'))
                 ->orderBy('created_at', 'desc')
@@ -64,9 +65,10 @@ class FeedController extends Controller
             $topPubs = $topPubs->concat($fill);
         }
 
-        // 4) Transformación para Inertia, incluyendo liked y saved
+        //
+        // 3) Transformación para Inertia
+        //
         $topPublications = $topPubs->map(function ($pub) use ($likedIds, $savedIds) {
-            // Generar URL de cada imagen
             $pub->images->transform(fn($img) => tap($img, fn($i) => $i->url = $i->getImageUrlAttribute()));
 
             return [
@@ -98,7 +100,7 @@ class FeedController extends Controller
         });
 
         //
-        // 5) TOP 5 PRESETS PREMIUM (plan_id != 2) por fecha
+        // 4) Top presets y render (sin cambios)
         //
         $premiumPresetsQ = Preset::with(['user', 'hashtags'])
             ->whereIn('user_id', $followed)
@@ -107,7 +109,6 @@ class FeedController extends Controller
 
         $presets = $premiumPresetsQ->take(5)->get();
 
-        // Rellenar si hay menos de 5
         if ($presets->count() < 5) {
             $fillCount = 5 - $presets->count();
             $fillPresets = Preset::with(['user', 'hashtags'])
@@ -119,7 +120,6 @@ class FeedController extends Controller
             $presets = $presets->concat($fillPresets);
         }
 
-        // Transformación para Inertia
         $premiumPresets = $presets->map(fn($preset) => [
             'id' => $preset->id,
             'name' => $preset->name,
@@ -142,7 +142,6 @@ class FeedController extends Controller
             'created_at' => $preset->created_at->toDateTimeString(),
         ]);
 
-        // 6) Renderizar con las props para React
         return Inertia::render('home', [
             'topPublications' => $topPublications,
             'premiumPresets' => $premiumPresets,
