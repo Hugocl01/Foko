@@ -25,6 +25,7 @@ import {
     EyeOff,
 } from "lucide-react";
 import type { BreadcrumbItem } from "@/types";
+import { toast } from "sonner";
 
 type Image = { id: number; url: string };
 type User = {
@@ -85,16 +86,46 @@ export default function Home() {
 
     // Like / save handlers
     const toggleLike = (id: number) => {
-        router.post(route("publications.toggleLike", id), {}, {
-            preserveState: true,
-            preserveScroll: true,
-        });
+        router.post(
+            route("publications.toggleLike", id),
+            {},
+            {
+                preserveState: true,
+                preserveScroll: true,
+                onSuccess: (page) => {
+                    // Buscamos la publicación actualizada en props
+                    const updated = page.props.topPublications.find(p => p.id === id);
+                    if (updated) {
+                        toast.success(
+                            updated.liked
+                                ? "¡Has dado me gusta!"
+                                : "Me gusta eliminado"
+                        );
+                    }
+                },
+            }
+        );
     };
+
     const toggleSave = (id: number) => {
-        router.post(route("publications.toggleSave", id), {}, {
-            preserveState: true,
-            preserveScroll: true,
-        });
+        router.post(
+            route("publications.toggleSave", id),
+            {},
+            {
+                preserveState: true,
+                preserveScroll: true,
+                onSuccess: (page) => {
+                    const updated = page.props.topPublications.find(p => p.id === id);
+                    if (updated) {
+                        toast.success(
+                            updated.saved
+                                ? "¡Guardado!"
+                                : "Guardado eliminado"
+                        );
+                    }
+                },
+            }
+        );
     };
 
     return (
@@ -251,12 +282,10 @@ export default function Home() {
                                                     e.stopPropagation();
                                                     toggleSave(pub.id);
                                                 }}
+                                                className={pub.saved ? "text-primary" : "text-muted-foreground"}
                                             >
                                                 <Bookmark
-                                                    className={`h-6 w-6 ${pub.saved
-                                                        ? "fill-primary"
-                                                        : "fill-none stroke-current text-muted-foreground"
-                                                        }`}
+                                                    className={`h-6 w-6 ${pub.saved ? "fill-current" : "stroke-current"}`}
                                                 />
                                                 <span className="sr-only">Guardar</span>
                                             </Button>
