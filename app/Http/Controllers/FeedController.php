@@ -21,56 +21,42 @@ class FeedController extends Controller
         $user = Auth::user();
         $followed = $user->following()->pluck('id')->toArray();
 
-        if (empty($followed)) {
-            return Inertia::render('home', [
-                'topPublications' => collect(),
-                'premiumPresets' => collect(),
-            ]);
-        }
+        // 1) Obtener likes y guardados del usuario
+        $likedIds = DB::table('likes')->where('user_id', $user->id)->pluck('publication_id')->toArray();
+        $savedIds = DB::table('saveds')->where('user_id', $user->id)->pluck('publication_id')->toArray();
 
-        // 1) Obtener IDs de publicaciones que el usuario ya ha marcado como "like"
-        $likedIds = DB::table('likes')
-            ->where('user_id', $user->id)
-            ->pluck('publication_id')
-            ->toArray();
-
-        // 2) Obtener IDs de publicaciones que el usuario ya ha "guardado"
-        $savedIds = DB::table('saveds')
-            ->where('user_id', $user->id)
-            ->pluck('publication_id')
-            ->toArray();
-
-        //
-        // 2) TOP 5 PUBLICACIONES PREMIUM (plan_id != 2) por likes y fecha
-        //
-        $premiumPubsQ = Publication::with(['user', 'images', 'hashtags'])
+        // 2) Definir query base para publicaciones
+        $pubsQuery = Publication::with(['user', 'images', 'hashtags'])
             ->withCount(['likes', 'comments'])
-            ->whereIn('user_id', $followed)
-            ->whereHas('user', fn($q) => $q->where('plan_id', '!=', 2))
+            ->whereHas('user', fn($q) => $q->where('plan_id', '!=', 2)) // Solo usuarios premium
             ->orderBy('likes_count', 'desc')
             ->orderBy('created_at', 'desc');
 
-        $topPubs = $premiumPubsQ->take(5)->get();
+        // Si sigue a alguien, filtramos por seguidos primero
+        if (!empty($followed)) {
+            $pubsQuery->whereIn('user_id', $followed);
+        }
 
-        // Rellenar si hay menos de 5 (manteniendo los counts)
+        $topPubs = $pubsQuery->take(5)->get();
+
+        // Si no hay suficientes, rellenamos con otros premium
         if ($topPubs->count() < 5) {
             $fillCount = 5 - $topPubs->count();
-            $fill = Publication::with(['user', 'images', 'hashtags'])
+            $excludedIds = $topPubs->pluck('id');
+            $extra = Publication::with(['user', 'images', 'hashtags'])
                 ->withCount(['likes', 'comments'])
-                ->whereIn('user_id', $followed)
-                ->whereNotIn('id', $topPubs->pluck('id'))
+                ->whereHas('user', fn($q) => $q->where('plan_id', '!=', 2))
+                ->whereNotIn('id', $excludedIds)
+                ->orderBy('likes_count', 'desc')
                 ->orderBy('created_at', 'desc')
                 ->take($fillCount)
                 ->get();
-            $topPubs = $topPubs->concat($fill);
+
+            $topPubs = $topPubs->concat($extra);
         }
 
-        //
-        // 3) Transformación para Inertia
-        //
         $topPublications = $topPubs->map(function ($pub) use ($likedIds, $savedIds) {
             $pub->images->transform(fn($img) => tap($img, fn($i) => $i->url = $i->getImageUrlAttribute()));
-
             return [
                 'id' => $pub->id,
                 'user' => [
@@ -99,25 +85,26 @@ class FeedController extends Controller
             ];
         });
 
-        //
-        // 4) Top presets y render (sin cambios)
-        //
-        $premiumPresetsQ = Preset::with(['user', 'hashtags'])
-            ->whereIn('user_id', $followed)
-            ->whereHas('user', fn($q) => $q->where('plan_id', '!=', 2))
+        // 3) Presets Premium recientes
+        $presetQuery = Preset::with(['user', 'hashtags'])
+            ->whereHas('user', fn($q) => $q->where('plan_id', '!=', 2)) // Solo premium
             ->orderBy('created_at', 'desc');
 
-        $presets = $premiumPresetsQ->take(5)->get();
+        if (!empty($followed)) {
+            $presetQuery->whereIn('user_id', $followed);
+        }
+
+        $presets = $presetQuery->take(5)->get();
 
         if ($presets->count() < 5) {
             $fillCount = 5 - $presets->count();
-            $fillPresets = Preset::with(['user', 'hashtags'])
-                ->whereIn('user_id', $followed)
+            $extraPresets = Preset::with(['user', 'hashtags'])
+                ->whereHas('user', fn($q) => $q->where('plan_id', '!=', 2))
                 ->whereNotIn('id', $presets->pluck('id'))
                 ->orderBy('created_at', 'desc')
                 ->take($fillCount)
                 ->get();
-            $presets = $presets->concat($fillPresets);
+            $presets = $presets->concat($extraPresets);
         }
 
         $premiumPresets = $presets->map(fn($preset) => [
