@@ -222,9 +222,9 @@ export default function Publication() {
         router.post(route("publications.comments.store", pub.id), { body: newComment }, {
             preserveScroll: true,
             onSuccess: () => {
-                // toast.success("Comentario añadido");
-                // setNewComment("");
-                // router.reload();
+                setNewComment("");
+                toast.success("Comentario añadido");
+                router.reload();
             },
             onError: () => {
                 toast.error("Error al enviar el comentario");
