@@ -39,11 +39,15 @@ export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
      */
     const performSearch = (type: 'publications' | 'presets') => {
         const raw = searchQuery.trim()
-        if (!raw) {
-            return
+        if (!raw) return
+
+        let queryParam = raw.replace(/\s+/g, '_') // espacios a guiones bajos
+
+        // Si empieza con # lo convertimos a formato slug con `hashtag=...`
+        if (queryParam.startsWith('#')) {
+            queryParam = `hashtag=${encodeURIComponent(queryParam.slice(1))}`
         }
-        // Sustituir todos los espacios por '_'
-        const queryParam = raw.replace(/\s+/g, '_')
+
         onOpenChange(false)
         const url = route(`${type}.search`, { query: queryParam })
         router.get(url)
