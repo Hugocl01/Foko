@@ -194,7 +194,7 @@ export default function Publication() {
             forceFormData: true,
             preserveScroll: true,
             onSuccess: () => {
-                toast.success("Publicación actualizada con éxito");
+                // toast.success("Publicación actualizada con éxito");
                 setIsEditOpen(false);
                 router.reload();
             },
