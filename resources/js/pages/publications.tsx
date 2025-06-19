@@ -472,27 +472,15 @@ export default function PublicationsPage() {
                                         <div>{pub.description}</div>
                                         <div className="flex flex-wrap gap-1 mb-3">
                                             {pub.hashtags.map((tag) => (
-                                                <a
+                                                <Link
                                                     key={tag}
-                                                    href={`/publications?hashtag=${encodeURIComponent(
-                                                        tag
-                                                    )}`}
-                                                    onClick={(e) => {
-                                                        e.stopPropagation()
-                                                        router.get(
-                                                            `/publications?hashtag=${encodeURIComponent(
-                                                                tag
-                                                            )}`
-                                                        )
-                                                    }}
+                                                    href={route("publications.search", `hashtag=${encodeURIComponent(tag)}`)}
+                                                    onClick={(e) => e.stopPropagation()}
                                                 >
-                                                    <Badge
-                                                        variant="default"
-                                                        className="cursor-pointer"
-                                                    >
+                                                    <Badge variant="default" className="cursor-pointer">
                                                         #{tag}
                                                     </Badge>
-                                                </a>
+                                                </Link>
                                             ))}
                                         </div>
                                         <div className="text-xs text-muted-foreground mt-2">

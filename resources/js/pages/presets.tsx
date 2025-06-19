@@ -288,27 +288,13 @@ export default function PresetsPage() {
                                                 </div>
                                                 <div className="flex flex-wrap gap-1 mb-3">
                                                     {preset.hashtags.map((tag) => (
-                                                        <a
+                                                        <Link
                                                             key={tag}
-                                                            href={`/presets?hashtag=${encodeURIComponent(
-                                                                tag
-                                                            )}`}
-                                                            onClick={(e) => {
-                                                                e.stopPropagation()
-                                                                router.get(
-                                                                    `/presets?hashtag=${encodeURIComponent(
-                                                                        tag
-                                                                    )}`
-                                                                )
-                                                            }}
+                                                            href={route("presets.search", `hashtag=${encodeURIComponent(tag)}`)}
+                                                            onClick={(e) => e.stopPropagation()}
                                                         >
-                                                            <Badge
-                                                                variant="default"
-                                                                className="cursor-pointer"
-                                                            >
-                                                                #{tag}
-                                                            </Badge>
-                                                        </a>
+                                                            <Badge variant="default" className="cursor-pointer">#{tag}</Badge>
+                                                        </Link>
                                                     ))}
                                                 </div>
                                             </div>
@@ -505,25 +491,13 @@ export default function PresetsPage() {
                                             </p>
                                             <div className="flex flex-wrap gap-2 mb-4">
                                                 {preset.hashtags.map((tag) => (
-                                                    <a
+                                                    <Link
                                                         key={tag}
-                                                        href={`/presets?hashtag=${encodeURIComponent(
-                                                            tag
-                                                        )}`}
-                                                        onClick={(e) => {
-                                                            e.stopPropagation()
-                                                            router.get(
-                                                                `/presets?hashtag=${encodeURIComponent(tag)}`
-                                                            )
-                                                        }}
+                                                        href={route("presets.search", `hashtag=${encodeURIComponent(tag)}`)}
+                                                        onClick={(e) => e.stopPropagation()}
                                                     >
-                                                        <Badge
-                                                            variant="default"
-                                                            className="cursor-pointer"
-                                                        >
-                                                            #{tag}
-                                                        </Badge>
-                                                    </a>
+                                                        <Badge variant="default" className="cursor-pointer">#{tag}</Badge>
+                                                    </Link>
                                                 ))}
                                             </div>
                                         </div>

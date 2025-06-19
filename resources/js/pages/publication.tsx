@@ -354,7 +354,10 @@ export default function Publication() {
                             <div>{pub.description}</div>
                             <div className="flex flex-wrap gap-1">
                                 {pub.hashtags.map((hashtag) => (
-                                    <Link key={hashtag.name} href={`/publications?hashtag=${encodeURIComponent(hashtag.name)}`}>
+                                    <Link
+                                        key={hashtag.name}
+                                        href={route("publications.search", `hashtag=${encodeURIComponent(hashtag.name)}`)}
+                                    >
                                         <Badge variant="default">#{hashtag.name}</Badge>
                                     </Link>
                                 ))}

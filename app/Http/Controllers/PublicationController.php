@@ -501,22 +501,34 @@ class PublicationController extends Controller
                 'name' => $preset->name,
             ])->toArray();
 
-        // 2) Consulta de publicaciones filtrada por título o descripción
-        $paginator = Publication::with(['user', 'images', 'preset', 'hashtags'])
+        // 2) Verifica si el query es del tipo hashtag=...
+        $publicationsQuery = Publication::with(['user', 'images', 'preset', 'hashtags'])
             ->withCount(['likes', 'comments'])
             ->withCount([
                 'likes as liked_by_user_count' => fn($q) => $q->where('user_id', $userId),
                 'saveds as saved_by_user_count' => fn($q) => $q->where('user_id', $userId),
             ])
-            ->where(function ($q) use ($query) {
+            ->orderBy('created_at', 'desc');
+
+        if (str_starts_with($query, 'hashtag=')) {
+            $hashtagSlug = substr($query, strlen('hashtag='));
+
+            $publicationsQuery->whereHas('hashtags', function ($q) use ($hashtagSlug) {
+                $q->where('slug', $hashtagSlug);
+            });
+        } else {
+            $publicationsQuery->where(function ($q) use ($query) {
                 $q->where('title', 'like', "%{$query}%")
                     ->orWhere('description', 'like', "%{$query}%");
-            })
-            ->orderBy('created_at', 'desc')
+            });
+        }
+
+        // 3) Paginación
+        $paginator = $publicationsQuery
             ->paginate(10)
             ->appends(['query' => $query]);
 
-        // 3) Reordenamiento y formateo
+        // 4) Reordenamiento y formateo
         $reordered = $paginator->getCollection()
             ->sortBy(fn($pub) => $pub->user->plan_id == 2 ? 1 : 0)
             ->values()
@@ -553,7 +565,6 @@ class PublicationController extends Controller
                 ];
             });
 
-        // 4) Reemplazar resultados paginados y renderizar vista
         $paginator->setCollection($reordered);
 
         return Inertia::render('publications', [

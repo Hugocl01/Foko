@@ -249,7 +249,11 @@ export default function Home() {
                                                 <div>{pub.description}</div>
                                                 <div className="flex flex-wrap gap-1 mb-3">
                                                     {pub.hashtags.map((tag) => (
-                                                        <Link key={tag.id} href={`/publications?hashtag=${encodeURIComponent(tag.slug)}`} onClick={(e) => { e.stopPropagation(); }}>
+                                                        <Link
+                                                            key={tag.id}
+                                                            href={route("publications.search", `hashtag=${encodeURIComponent(tag.slug)}`)}
+                                                            onClick={(e) => e.stopPropagation()}
+                                                        >
                                                             <Badge variant="default">#{tag.name}</Badge>
                                                         </Link>
                                                     ))}
@@ -372,7 +376,11 @@ export default function Home() {
                                             <div className="text-sm text-muted-foreground line-clamp-2">{preset.description}</div>
                                             <div className="flex flex-wrap gap-1">
                                                 {preset.hashtags.map((tag) => (
-                                                    <Link key={tag.id} href={`/presets?hashtag=${encodeURIComponent(tag.slug)}`} onClick={(e) => { e.stopPropagation(); }}>
+                                                    <Link
+                                                        key={tag.id}
+                                                        href={route("presets.search", `hashtag=${encodeURIComponent(tag.slug)}`)}
+                                                        onClick={(e) => e.stopPropagation()}
+                                                    >
                                                         <Badge variant="default">#{tag.name}</Badge>
                                                     </Link>
                                                 ))}

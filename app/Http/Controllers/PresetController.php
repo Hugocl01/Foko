@@ -422,25 +422,39 @@ class PresetController extends Controller
 
     public function search(Request $request, string $query)
     {
-        // 1) Consulta base: eager-load y filtro por nombre o descripción
-        $paginator = Preset::with([
+        // Consulta base: eager-load relaciones
+        $presetQuery = Preset::with([
             'user:id,name,username,profile_image,plan_id',
-            'hashtags:id,name'
+            'hashtags:id,name,slug'
         ])
-            ->where(function ($q) use ($query) {
+            ->latest();
+
+        // ¿Es una búsqueda por hashtag?
+        if (str_starts_with($query, 'hashtag=')) {
+            $hashtagSlug = substr($query, strlen('hashtag='));
+
+            $presetQuery->whereHas('hashtags', function ($q) use ($hashtagSlug) {
+                $q->where('slug', $hashtagSlug);
+            });
+        } else {
+            // Búsqueda por nombre o descripción
+            $presetQuery->where(function ($q) use ($query) {
                 $q->where('name', 'like', "%{$query}%")
                     ->orWhere('description', 'like', "%{$query}%");
-            })
-            ->latest()
+            });
+        }
+
+        // Paginación
+        $paginator = $presetQuery
             ->paginate(12)
             ->appends(['query' => $query]);
 
-        // 2) Reordenar: premium primero
+        // Reordenar: premium primero
         $reordered = $paginator->getCollection()
             ->sortBy(fn($preset) => $preset->user->plan_id == 2 ? 1 : 0)
             ->values();
 
-        // 3) Formato para Inertia
+        // Mapear formato
         $mapped = $reordered->map(fn($preset) => [
             'id' => $preset->id,
             'name' => $preset->name,
@@ -455,14 +469,14 @@ class PresetController extends Controller
                 'profile_image' => $preset->user->getProfileImageUrlAttribute(),
                 'plan_id' => $preset->user->plan_id,
             ],
-            'hashtags' => $preset->hashtags->pluck('name')->all(),
+            'hashtags' => $preset->hashtags->map(fn($h) => $h->name)->all(),
             'created_at' => $preset->created_at->format('Y-m-d'),
         ]);
 
-        // 4) Reemplazar colección paginada
+        // Reemplazar resultados
         $paginator->setCollection($mapped);
 
-        // 5) Render con query
+        // Render
         return Inertia::render('presets', [
             'presets' => $paginator,
             'query' => $query,
