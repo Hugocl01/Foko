@@ -2,13 +2,14 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use App\Models\Publication;
 use App\Models\User;
 use App\Models\Comment;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Faker\Factory as Faker;
 
 class PublicationSeeder extends Seeder
@@ -20,6 +21,7 @@ class PublicationSeeder extends Seeder
     {
         $userIds = User::pluck('id')->toArray();
         $faker = Faker::create();
+        $imageSourcePath = database_path('seeders/images/images');
 
         $publicationsData = [
             [
@@ -128,18 +130,14 @@ class PublicationSeeder extends Seeder
             $randomUserId = Arr::random($userIds);
             $user = User::find($randomUserId);
 
-            // Obtener presets del usuario
             $userPresetIds = $user->presets()->pluck('id')->toArray();
 
-            // Omitir publicación si el usuario no tiene presets
             if (empty($userPresetIds)) {
                 continue;
             }
 
-            // Seleccionar preset del mismo usuario
             $presetId = Arr::random($userPresetIds);
 
-            // Crear publicación
             $publication = Publication::create([
                 'user_id' => $randomUserId,
                 'title' => $data['title'],
@@ -147,16 +145,20 @@ class PublicationSeeder extends Seeder
                 'preset_id' => $presetId,
             ]);
 
-            // Determinar cantidad de imágenes por plan
             $plan = strtolower($user->plan->name);
             $numImages = ($plan === 'básico') ? 1 : rand(1, 3);
 
             for ($i = 0; $i < $numImages; $i++) {
-                $filename = "prueba" . rand(1, 10) . ".jpg";
-                $publication->images()->create(['url' => $filename]);
+                $originalFilename = "image" . rand(1, 24) . ".webp";
+                $fullSourcePath = $imageSourcePath . '/' . $originalFilename;
+
+                if (file_exists($fullSourcePath)) {
+                    $newFilename = Str::uuid() . '.webp';
+                    Storage::disk('images')->put($newFilename, file_get_contents($fullSourcePath));
+                    $publication->images()->create(['url' => $newFilename]);
+                }
             }
 
-            // Likes
             $likesCount = rand(0, count($userIds));
             $likeUserIds = Arr::random($userIds, $likesCount);
             $likeUserIds = is_array($likeUserIds) ? $likeUserIds : [$likeUserIds];
@@ -175,7 +177,6 @@ class PublicationSeeder extends Seeder
                 DB::table('likes')->insert($likes);
             }
 
-            // Saveds
             $savedCount = rand(0, count($userIds));
             $savedUserIds = Arr::random($userIds, $savedCount);
             $savedUserIds = is_array($savedUserIds) ? $savedUserIds : [$savedUserIds];
@@ -193,7 +194,6 @@ class PublicationSeeder extends Seeder
                 DB::table('saveds')->insert($saveds);
             }
 
-            // Comments
             $commentsCount = rand(0, 5);
             for ($j = 0; $j < $commentsCount; $j++) {
                 $commentUserId = Arr::random(array_diff($userIds, [$randomUserId]));
