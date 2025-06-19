@@ -278,7 +278,7 @@ class PublicationController extends Controller
             'description' => 'required|string',
             'preset_id' => 'nullable|exists:presets,id',
             'images' => 'required|array|min:1',
-            'images.*' => 'image|max:5120',    // cada imagen hasta 5 MB
+            'images.*' => 'image|max:10240',    // cada imagen hasta 10 MB
             'hashtags' => 'nullable',
             'hashtags.*' => 'string|max:255',
         ]);
