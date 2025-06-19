@@ -350,7 +350,7 @@ class PublicationController extends Controller
         }
     }
 
-        /**
+    /**
      * Actualiza una publicación existente, gestionando featured_image,
      * galería y hashtags, con flash de éxito o error.
      */
@@ -358,69 +358,50 @@ class PublicationController extends Controller
     {
         // 1) Validar campos
         $validated = $request->validate([
-            'preset_id'      => 'nullable|integer|exists:presets,id',
-            'title'          => 'required|string|max:255',
-            'description'    => 'required|string',
-            'featured_image' => 'nullable|image',
-            'images'         => 'nullable|array|max:3',
-            'images.*'       => 'image|max:10240', // hasta 10 MB cada una
-            'hashtags'       => 'nullable|array',
-            'hashtags.*'     => 'string|max:255',
+            'preset_id' => 'nullable|integer|exists:presets,id',
+            'title' => 'required|string|max:255',
+            'description' => 'required|string',
+            'images' => 'nullable|array|max:3',
+            'images.*' => 'image|max:10240', // hasta 10 MB cada una
+            'hashtags' => 'nullable|array',
+            'hashtags.*' => 'string|max:255',
         ]);
 
-        // Para revertir si hay error
-        $newFiles     = [];
-        $newFeatured  = null;
-        $oldFeatured  = $publication->featured_image;
-        $oldImages    = [];
-
-        // Capturamos las imágenes existentes
-        foreach ($publication->images as $imgModel) {
-            $oldImages[] = $imgModel;
-        }
+        $newFiles = [];
+        $oldImages = $publication->images;
 
         DB::beginTransaction();
         try {
-            // 2) Actualizar datos básicos
-            $publication->preset_id   = $validated['preset_id'] ?? null;
-            $publication->title       = $validated['title'];
+            // 2) Actualizar campos básicos
+            $publication->preset_id = $validated['preset_id'] ?? null;
+            $publication->title = $validated['title'];
             $publication->description = $validated['description'];
-
-            // 3) Procesar featured_image (solo subir, no borrar vieja aún)
-            if ($request->hasFile('featured_image')) {
-                $file           = $request->file('featured_image');
-                $img            = Image::make($file->getRealPath())->encode('webp', 90);
-                $newFeatured    = Str::uuid() . '.webp';
-                Storage::disk('images')->put($newFeatured, (string) $img);
-                $publication->featured_image = $newFeatured;
-            }
-
-            // Guardar cambios básicos
             $publication->save();
 
-            // 4) Procesar imágenes adicionales (reemplazo completo)
+            // 3) Procesar nuevas imágenes (si hay)
             if ($request->hasFile('images')) {
-                // 4a) Subir nuevas imágenes
                 foreach ($request->file('images') as $file) {
-                    $img   = Image::make($file->getRealPath())->encode('webp', 90);
-                    $name  = Str::uuid() . '.webp';
+                    $img = Image::read($file->getRealPath())->encodeByExtension('webp', 90);
+                    $name = Str::uuid() . '.webp';
                     Storage::disk('images')->put($name, (string) $img);
                     $newFiles[] = $name;
                 }
-                // 4b) Crear registros nuevos
-                // primero borrar registros antiguos en BD (pero no archivos)
+
+                // Reemplazar registros en BD
                 $publication->images()->delete();
                 foreach ($newFiles as $name) {
                     $publication->images()->create(['url' => $name]);
                 }
             }
 
-            // 5) Hashtags
+            // 4) Hashtags
             if (!empty($validated['hashtags'])) {
                 $tagIds = [];
                 foreach ($validated['hashtags'] as $raw) {
                     $clean = trim($raw, "# \t\n\r\0\x0B");
-                    if ($clean === '') continue;
+                    if ($clean === '')
+                        continue;
+
                     $tag = Hashtag::firstOrCreate(
                         ['slug' => Str::slug($clean)],
                         ['name' => $clean]
@@ -434,24 +415,11 @@ class PublicationController extends Controller
 
             DB::commit();
 
-            // 6) Eliminar archivos viejos (solo si todo fue exitoso)
-            if ($newFeatured && $oldFeatured && Storage::disk('images')->exists($oldFeatured)) {
-                Storage::disk('images')->delete($oldFeatured);
-            }
-            if (!empty($newFiles)) {
-                foreach ($oldImages as $old) {
-                    if (Storage::disk('images')->exists($old->url)) {
-                        Storage::disk('images')->delete($old->url);
-                    }
+            // 5) Borrar archivos antiguos
+            foreach ($oldImages as $old) {
+                if (Storage::disk('images')->exists($old->url)) {
+                    Storage::disk('images')->delete($old->url);
                 }
-            }
-
-            // 7) Responder
-            if ($request->wantsJson()) {
-                return response()->json([
-                    'message' => 'Publicación actualizada correctamente',
-                    'post'    => $publication->load('hashtags'),
-                ]);
             }
 
             return redirect()
@@ -460,10 +428,7 @@ class PublicationController extends Controller
 
         } catch (\Throwable $e) {
             DB::rollBack();
-            // Limpiar archivos nuevos si hubo error
-            if ($newFeatured && Storage::disk('images')->exists($newFeatured)) {
-                Storage::disk('images')->delete($newFeatured);
-            }
+
             foreach ($newFiles as $file) {
                 if (Storage::disk('images')->exists($file)) {
                     Storage::disk('images')->delete($file);

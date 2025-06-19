@@ -98,7 +98,6 @@ interface PostFormData {
     preset_id?: number;
     title: string;
     description: string;
-    featured_image: File | null;
     images: File[];
     hashtags: string[];
 }
@@ -135,7 +134,6 @@ export default function Publication() {
             id: String(pub.id),
             title: pub.title,
             description: pub.description,
-            featured_image: null,
             images: [],
             hashtags: pub.hashtags.map((h) => h.name),
             preset_id: pub.preset?.id,
@@ -187,7 +185,6 @@ export default function Publication() {
             preset_id: data.preset_id,
         };
 
-        if (data.featured_image) payload.featured_image = data.featured_image;
         if (data.images.length > 0) payload.images = data.images;
 
         router.post(route("publications.update", pub.id), payload, {
