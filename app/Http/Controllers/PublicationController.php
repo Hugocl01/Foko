@@ -298,7 +298,7 @@ class PublicationController extends Controller
             // 3) Procesar “images[]”
             foreach ($request->file('images') as $upload) {
                 $img = Image::read($upload->getRealPath())
-                    ->encodeByExtension('webp', 80);
+                    ->encodeByExtension('webp', 90);
                 $filename = Str::uuid() . '.webp';
 
                 Storage::disk('images')->put($filename, (string) $img);
@@ -350,85 +350,77 @@ class PublicationController extends Controller
         }
     }
 
+        /**
+     * Actualiza una publicación existente, gestionando featured_image,
+     * galería y hashtags, con flash de éxito o error.
+     */
     public function update(Request $request, Publication $publication)
     {
-        // 1) Validar todos los campos
+        // 1) Validar campos
         $validated = $request->validate([
-            'preset_id' => 'nullable|integer|exists:presets,id',
-            'title' => 'required|string|max:255',
-            'description' => 'required|string',
+            'preset_id'      => 'nullable|integer|exists:presets,id',
+            'title'          => 'required|string|max:255',
+            'description'    => 'required|string',
             'featured_image' => 'nullable|image',
-            'images' => 'nullable|array|max:3',
-            'images.*' => 'image',
-            'hashtags' => 'nullable|array',
-            'hashtags.*' => 'string|max:255',
+            'images'         => 'nullable|array|max:3',
+            'images.*'       => 'image|max:10240', // hasta 10 MB cada una
+            'hashtags'       => 'nullable|array',
+            'hashtags.*'     => 'string|max:255',
         ]);
 
-        $createdImages = [];
-        $createdFeatured = null;
+        // Para revertir si hay error
+        $newFiles     = [];
+        $newFeatured  = null;
+        $oldFeatured  = $publication->featured_image;
+        $oldImages    = [];
+
+        // Capturamos las imágenes existentes
+        foreach ($publication->images as $imgModel) {
+            $oldImages[] = $imgModel;
+        }
 
         DB::beginTransaction();
-
         try {
-            // 2) Actualizar campos básicos
-            $publication->preset_id = $validated['preset_id'] ?? null;
-            $publication->title = $validated['title'];
+            // 2) Actualizar datos básicos
+            $publication->preset_id   = $validated['preset_id'] ?? null;
+            $publication->title       = $validated['title'];
             $publication->description = $validated['description'];
 
-            // 3) Procesar featured_image (disco "images")
+            // 3) Procesar featured_image (solo subir, no borrar vieja aún)
             if ($request->hasFile('featured_image')) {
-                $uploaded = $request->file('featured_image');
-                $img = Image::make($uploaded->getRealPath())->encode('webp', 80);
-                $name = Str::uuid() . '.webp';
-
-                Storage::disk('images')->put($name, (string) $img);
-                $createdFeatured = $name;
-
-                // Borrar la anterior si existía
-                if (
-                    $publication->featured_image
-                    && Storage::disk('images')->exists($publication->featured_image)
-                ) {
-                    Storage::disk('images')->delete($publication->featured_image);
-                }
-
-                $publication->featured_image = $name;
+                $file           = $request->file('featured_image');
+                $img            = Image::make($file->getRealPath())->encode('webp', 90);
+                $newFeatured    = Str::uuid() . '.webp';
+                Storage::disk('images')->put($newFeatured, (string) $img);
+                $publication->featured_image = $newFeatured;
             }
 
-            // 4) Procesar imágenes adicionales (disco "images")
-            if ($request->hasFile('images')) {
-                // Borrar todas las antiguas
-                if (is_array($publication->images)) {
-                    foreach ($publication->images as $old) {
-                        if (Storage::disk('images')->exists($old)) {
-                            Storage::disk('images')->delete($old);
-                        }
-                    }
-                }
-
-                $newNames = [];
-                foreach ($request->file('images') as $file) {
-                    $imgName = Str::uuid() . '.webp';
-                    $img = Image::make($file->getRealPath())->encode('webp', 80);
-
-                    Storage::disk('images')->put($imgName, (string) $img);
-                    $createdImages[] = $imgName;
-                    $newNames[] = $imgName;
-                }
-                $publication->images = $newNames;
-            }
-
-            // 5) Guardar cambios en la tabla
+            // Guardar cambios básicos
             $publication->save();
 
-            // 6) Sincronizar hashtags
+            // 4) Procesar imágenes adicionales (reemplazo completo)
+            if ($request->hasFile('images')) {
+                // 4a) Subir nuevas imágenes
+                foreach ($request->file('images') as $file) {
+                    $img   = Image::make($file->getRealPath())->encode('webp', 90);
+                    $name  = Str::uuid() . '.webp';
+                    Storage::disk('images')->put($name, (string) $img);
+                    $newFiles[] = $name;
+                }
+                // 4b) Crear registros nuevos
+                // primero borrar registros antiguos en BD (pero no archivos)
+                $publication->images()->delete();
+                foreach ($newFiles as $name) {
+                    $publication->images()->create(['url' => $name]);
+                }
+            }
+
+            // 5) Hashtags
             if (!empty($validated['hashtags'])) {
                 $tagIds = [];
-                foreach ($validated['hashtags'] as $nombre) {
-                    $clean = trim($nombre, "# \t\n\r\0\x0B");
-                    if ($clean === "") {
-                        continue;
-                    }
+                foreach ($validated['hashtags'] as $raw) {
+                    $clean = trim($raw, "# \t\n\r\0\x0B");
+                    if ($clean === '') continue;
                     $tag = Hashtag::firstOrCreate(
                         ['slug' => Str::slug($clean)],
                         ['name' => $clean]
@@ -441,35 +433,47 @@ class PublicationController extends Controller
             }
 
             DB::commit();
+
+            // 6) Eliminar archivos viejos (solo si todo fue exitoso)
+            if ($newFeatured && $oldFeatured && Storage::disk('images')->exists($oldFeatured)) {
+                Storage::disk('images')->delete($oldFeatured);
+            }
+            if (!empty($newFiles)) {
+                foreach ($oldImages as $old) {
+                    if (Storage::disk('images')->exists($old->url)) {
+                        Storage::disk('images')->delete($old->url);
+                    }
+                }
+            }
+
+            // 7) Responder
+            if ($request->wantsJson()) {
+                return response()->json([
+                    'message' => 'Publicación actualizada correctamente',
+                    'post'    => $publication->load('hashtags'),
+                ]);
+            }
+
+            return redirect()
+                ->route('publications.show', $publication->id)
+                ->with('success', 'Publicación actualizada con éxito.');
+
         } catch (\Throwable $e) {
             DB::rollBack();
-
-            // 7) Limpiar archivos subidos si algo falló
-            if ($createdFeatured) {
-                Storage::disk('images')->delete($createdFeatured);
+            // Limpiar archivos nuevos si hubo error
+            if ($newFeatured && Storage::disk('images')->exists($newFeatured)) {
+                Storage::disk('images')->delete($newFeatured);
             }
-            foreach ($createdImages as $img) {
-                Storage::disk('images')->delete($img);
+            foreach ($newFiles as $file) {
+                if (Storage::disk('images')->exists($file)) {
+                    Storage::disk('images')->delete($file);
+                }
             }
 
             return back()
                 ->withInput()
-                ->withErrors([
-                    'error' => 'Error al actualizar la publicación: ' . $e->getMessage()
-                ]);
+                ->withErrors(['error' => 'Error al actualizar publicación: ' . $e->getMessage()]);
         }
-
-        // 8) Responder según el tipo de petición
-        if ($request->wantsJson()) {
-            return response()->json([
-                'message' => 'Publicación actualizada correctamente',
-                'post' => $publication->load('hashtags'),
-            ]);
-        }
-
-        return redirect()
-            ->route('publications.show', $publication->id)
-            ->with('success', 'Publicación actualizada con éxito.');
     }
 
     public function destroy(Request $request, Publication $publication)

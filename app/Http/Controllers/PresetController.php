@@ -118,7 +118,7 @@ class PresetController extends Controller
             if ($request->hasFile('before_image')) {
                 $beforeUploaded = $request->file('before_image');
                 $imgBefore = Image::read($beforeUploaded->getRealPath())
-                    ->encodeByExtension('webp', 80);
+                    ->encodeByExtension('webp', 90);
                 $beforeName = Str::uuid() . '.webp';
                 Storage::disk('preset_images')->put($beforeName, (string) $imgBefore);
                 $preset->before_image = $beforeName;
@@ -129,7 +129,7 @@ class PresetController extends Controller
             if ($request->hasFile('after_image')) {
                 $afterUploaded = $request->file('after_image');
                 $imgAfter = Image::read($afterUploaded->getRealPath())
-                    ->encodeByExtension('webp', 80);
+                    ->encodeByExtension('webp', 90);
                 $afterName = Str::uuid() . '.webp';
                 Storage::disk('preset_images')->put($afterName, (string) $imgAfter);
                 $preset->after_image = $afterName;
@@ -279,7 +279,7 @@ class PresetController extends Controller
                 // Guardar nuevo
                 $beforeUploaded = $request->file('before_image');
                 $imgBefore = Image::read($beforeUploaded->getRealPath())
-                    ->encodeByExtension('webp', 80);
+                    ->encodeByExtension('webp', 90);
                 $beforeName = Str::uuid()->toString() . '.webp';
                 Storage::disk('preset_images')->put($beforeName, (string) $imgBefore);
                 $createdImages[] = $beforeName;
@@ -300,7 +300,7 @@ class PresetController extends Controller
                 // Guardar nuevo
                 $afterUploaded = $request->file('after_image');
                 $imgAfter = Image::read($afterUploaded->getRealPath())
-                    ->encodeByExtension('webp', 80);
+                    ->encodeByExtension('webp', 90);
                 $afterName = Str::uuid()->toString() . '.webp';
                 Storage::disk('preset_images')->put($afterName, (string) $imgAfter);
                 $createdImages[] = $afterName;

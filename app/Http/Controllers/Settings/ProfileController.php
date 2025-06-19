@@ -49,10 +49,10 @@ class ProfileController extends Controller
             // Guardamos el nombre antiguo para borrarlo luego
             $old = $user->getOriginal('profile_image');
 
-            // Leer, recortar+redimensionar a 300×300 y convertir a WebP (80%)
+            // Leer, recortar+redimensionar a 300×300 y convertir a WebP (90%)
             $img = Image::read($request->file('profile_image')->getRealPath())
                 ->cover(300, 300)
-                ->encodeByExtension('webp', 80);
+                ->encodeByExtension('webp', 90);
 
             // Generar nombre único y guardar
             $filename = Str::uuid() . '.webp';
