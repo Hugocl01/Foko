@@ -179,7 +179,28 @@ export default function Home() {
                                                         </Link>
                                                         <DropdownMenuItem>Copiar enlace</DropdownMenuItem>
                                                         <DropdownMenuSeparator />
-                                                        <DropdownMenuItem className="text-destructive">Reportar</DropdownMenuItem>
+                                                        <DropdownMenuItem
+                                                            className="text-destructive cursor-pointer"
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                router.post(
+                                                                    route("publications.report", pub.id),
+                                                                    {},
+                                                                    {
+                                                                        preserveState: true,
+                                                                        preserveScroll: true,
+                                                                        onSuccess: () => {
+                                                                            toast.success("¡Gracias! Hemos recibido tu reporte.");
+                                                                        },
+                                                                        onError: () => {
+                                                                            toast.error("Error al enviar el reporte.");
+                                                                        },
+                                                                    }
+                                                                );
+                                                            }}
+                                                        >
+                                                            Reportar
+                                                        </DropdownMenuItem>
                                                     </DropdownMenuContent>
                                                 </DropdownMenu>
                                             </div>
@@ -304,7 +325,28 @@ export default function Home() {
                                                         </Link>
                                                         <DropdownMenuItem>Copiar enlace</DropdownMenuItem>
                                                         <DropdownMenuSeparator />
-                                                        <DropdownMenuItem className="text-destructive">Reportar</DropdownMenuItem>
+                                                        <DropdownMenuItem
+                                                            className="text-destructive cursor-pointer"
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                router.post(
+                                                                    route("presets.report", preset.id),
+                                                                    {},
+                                                                    {
+                                                                        preserveState: true,
+                                                                        preserveScroll: true,
+                                                                        onSuccess: () => {
+                                                                            toast.success("¡Gracias! Hemos recibido tu reporte.");
+                                                                        },
+                                                                        onError: () => {
+                                                                            toast.error("Error al enviar el reporte.");
+                                                                        },
+                                                                    }
+                                                                );
+                                                            }}
+                                                        >
+                                                            Reportar
+                                                        </DropdownMenuItem>
                                                     </DropdownMenuContent>
                                                 </DropdownMenu>
                                             </div>
