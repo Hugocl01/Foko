@@ -284,6 +284,12 @@ export default function PublicationsPage() {
                     />
                 </div>
 
+                {localPublications.length === 0 && (
+                    <div className="text-center text-muted-foreground py-8">
+                        No se encontraron publicaciones que coincidan con tu búsqueda.
+                    </div>
+                )}
+
                 <div className="max-w-xl mx-auto grid grid-cols-1 gap-4">
                     {localPublications.map((pub) => {
                         const isPremium = pub.user.plan_id !== 2;

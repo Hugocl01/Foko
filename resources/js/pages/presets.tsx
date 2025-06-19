@@ -129,6 +129,12 @@ export default function PresetsPage() {
                     {/* VISTA GRID */}
                     <TabsContent value="grid" className="mt-4">
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                            {presets.length === 0 && (
+                                <div className="text-center text-muted-foreground col-span-full py-8">
+                                    No se encontraron presets que coincidan con tu búsqueda.
+                                </div>
+                            )}
+
                             {presets.map((preset) => {
                                 const isPremium = preset.user.plan_id !== 2
 
@@ -354,6 +360,12 @@ export default function PresetsPage() {
 
                     {/* VISTA LIST */}
                     <TabsContent value="list" className="mt-4 space-y-4">
+                        {presets.length === 0 && (
+                            <div className="text-center text-muted-foreground py-8">
+                                No se encontraron presets que coincidan con tu búsqueda.
+                            </div>
+                        )}
+
                         {presets.map((preset) => {
                             const isPremium = preset.user.plan_id !== 2
 
