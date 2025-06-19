@@ -297,7 +297,6 @@ class PublicationController extends Controller
 
             // 3) Procesar “images[]”
             foreach ($request->file('images') as $upload) {
-                // Usamos Image::read() igual que en presets
                 $img = Image::read($upload->getRealPath())
                     ->encodeByExtension('webp', 80);
                 $filename = Str::uuid() . '.webp';
@@ -305,9 +304,7 @@ class PublicationController extends Controller
                 Storage::disk('images')->put($filename, (string) $img);
                 $createdFiles[] = $filename;
 
-                $pub->images()->create([
-                    'url' => $filename,
-                ]);
+                $pub->images()->create(['url' => $filename]);
             }
 
             // 4) Sincronizar hashtags
@@ -319,9 +316,9 @@ class PublicationController extends Controller
                 $tagIds = [];
                 foreach ($names as $raw) {
                     $clean = ltrim(trim($raw), '#');
-                    if (empty($clean)) {
+                    if (empty($clean))
                         continue;
-                    }
+
                     $tag = Hashtag::firstOrCreate(
                         ['slug' => Str::slug($clean)],
                         ['name' => $clean]
@@ -333,24 +330,24 @@ class PublicationController extends Controller
 
             DB::commit();
 
+            // 5) Redirigir con mensaje de éxito
+            return redirect()
+                ->route('publications.show', $pub->id)
+                ->with('success', 'Publicación creada correctamente');
+
         } catch (\Exception $e) {
             DB::rollBack();
 
-            // 5) Limpiar archivos en disco si algo falla
+            // 6) Limpiar archivos en disco si algo falla
             foreach ($createdFiles as $f) {
-                Storage::disk('publication_images')->delete($f);
+                Storage::disk('images')->delete($f);
             }
 
-            return back()
+            return redirect()
+                ->back()
                 ->withInput()
                 ->withErrors(['error' => 'Error al crear publicación: ' . $e->getMessage()]);
         }
-
-        // 6) Responder con JSON (para AJAX/Inertia)
-        return response()->json([
-            'message' => 'Publicación creada correctamente',
-            'publication' => $pub->load(['images', 'hashtags', 'user']),
-        ]);
     }
 
     public function update(Request $request, Publication $publication)
