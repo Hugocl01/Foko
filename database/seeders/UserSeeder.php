@@ -3,9 +3,10 @@
 namespace Database\Seeders;
 
 use App\Models\User;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class UserSeeder extends Seeder
 {
@@ -23,7 +24,7 @@ class UserSeeder extends Seeder
                 'plan_id' => 1,
                 'role_id' => 1,
                 'description' => 'Hola soy Hugo, el creador de esta web, espero que os guste.',
-                'profile_image' => '9f9ccbf3-ec69-47a7-9a6b-86f8bf4856d9.webp',
+                'profile_image' => 'hugo.webp',
             ],
             [
                 'name' => 'Admin',
@@ -33,7 +34,7 @@ class UserSeeder extends Seeder
                 'plan_id' => 1,
                 'role_id' => 1,
                 'description' => 'Administrador de la plataforma.',
-                'profile_image' => '96e3abca-8ed6-446a-bff3-618acd8cf6a2.webp',
+                'profile_image' => 'admin.webp',
             ],
             [
                 'name' => 'Sara Ortega',
@@ -67,7 +68,22 @@ class UserSeeder extends Seeder
             ],
         ];
 
+        $imagePath = database_path('seeders/images/profile_images');
+
         foreach ($users as $userData) {
+            $originalFile = $userData['profile_image'];
+            $extension = pathinfo($originalFile, PATHINFO_EXTENSION);
+            $newFileName = (string) Str::uuid() . '.' . $extension;
+
+            $sourcePath = $imagePath . '/' . $originalFile;
+
+            if (file_exists($sourcePath)) {
+                Storage::disk('profile_images')->put($newFileName, file_get_contents($sourcePath));
+            } else {
+                // Si no existe, usar una imagen por defecto
+                $newFileName = null;
+            }
+
             User::create([
                 'name' => $userData['name'],
                 'username' => $userData['username'],
@@ -76,7 +92,7 @@ class UserSeeder extends Seeder
                 'plan_id' => $userData['plan_id'],
                 'role_id' => $userData['role_id'],
                 'description' => $userData['description'],
-                'profile_image' => $userData['profile_image'],
+                'profile_image' => $newFileName,
             ]);
         }
 
