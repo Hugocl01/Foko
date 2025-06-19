@@ -200,7 +200,6 @@ export default function PresetsPage() {
                                                         >
                                                             <DropdownMenuItem>Ver perfil</DropdownMenuItem>
                                                         </Link>
-                                                        <DropdownMenuItem>Copiar enlace</DropdownMenuItem>
                                                         <DropdownMenuSeparator />
                                                         <DropdownMenuItem
                                                             className="text-destructive cursor-pointer"
@@ -456,7 +455,6 @@ export default function PresetsPage() {
                                                         >
                                                             <DropdownMenuItem>Ver perfil</DropdownMenuItem>
                                                         </Link>
-                                                        <DropdownMenuItem>Copiar enlace</DropdownMenuItem>
                                                         <DropdownMenuSeparator />
                                                         <DropdownMenuItem
                                                             className="text-destructive cursor-pointer"

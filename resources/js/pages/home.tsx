@@ -177,7 +177,6 @@ export default function Home() {
                                                         <Link href={route("profile.user", pub.user.username)} onClick={(e) => e.stopPropagation()}>
                                                             <DropdownMenuItem>Ver perfil</DropdownMenuItem>
                                                         </Link>
-                                                        <DropdownMenuItem>Copiar enlace</DropdownMenuItem>
                                                         <DropdownMenuSeparator />
                                                         <DropdownMenuItem
                                                             className="text-destructive cursor-pointer"
@@ -327,7 +326,6 @@ export default function Home() {
                                                         <Link href={route("profile.user", preset.user.username!)} onClick={(e) => e.stopPropagation()}>
                                                             <DropdownMenuItem>Ver perfil</DropdownMenuItem>
                                                         </Link>
-                                                        <DropdownMenuItem>Copiar enlace</DropdownMenuItem>
                                                         <DropdownMenuSeparator />
                                                         <DropdownMenuItem
                                                             className="text-destructive cursor-pointer"

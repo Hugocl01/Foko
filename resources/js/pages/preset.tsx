@@ -305,7 +305,6 @@ export default function PresetDetailPage() {
                                             <Link href={route("profile.user", { user: preset.user.username })}>
                                                 <DropdownMenuItem className="cursor-pointer">Ver perfil</DropdownMenuItem>
                                             </Link>
-                                            <DropdownMenuItem className="cursor-pointer">Copiar enlace</DropdownMenuItem>
                                             <DropdownMenuSeparator />
                                             <DropdownMenuItem
                                                 className="text-destructive cursor-pointer"
@@ -370,13 +369,6 @@ export default function PresetDetailPage() {
                                                 Después
                                             </ToggleGroupItem>
                                         </ToggleGroup>
-                                    </div>
-
-                                    {/* Compartir */}
-                                    <div className="absolute top-2 right-2 flex gap-2">
-                                        <Button variant="default" size="icon" onClick={handleShare}>
-                                            <Share2 className="h-4 w-4" />
-                                        </Button>
                                     </div>
 
                                     {/* Precio */}

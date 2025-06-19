@@ -348,7 +348,6 @@ export default function PublicationsPage() {
                                                 >
                                                     <DropdownMenuItem>Ver perfil</DropdownMenuItem>
                                                 </Link>
-                                                <DropdownMenuItem>Copiar enlace</DropdownMenuItem>
                                                 <DropdownMenuSeparator />
                                                 <DropdownMenuItem
                                                     className="text-destructive cursor-pointer"

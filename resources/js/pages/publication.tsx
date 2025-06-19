@@ -284,7 +284,6 @@ export default function Publication() {
                                     <Link href={route("profile.user", pub.user.username)} onClick={(e) => e.stopPropagation()}>
                                         <DropdownMenuItem>Ver perfil</DropdownMenuItem>
                                     </Link>
-                                    <DropdownMenuItem>Copiar enlace</DropdownMenuItem>
                                     <DropdownMenuSeparator />
                                     <DropdownMenuItem
                                         className="text-destructive cursor-pointer"
@@ -338,9 +337,6 @@ export default function Publication() {
                             <div className="flex gap-4">
                                 <Button variant="ghost" size="icon" onClick={toggleLike} className={liked ? "text-destructive" : ""}>
                                     <Heart className={`h-6 w-6 ${liked ? "fill-destructive" : ""}`} />
-                                </Button>
-                                <Button variant="ghost" size="icon">
-                                    <Share2 className="h-6 w-6" />
                                 </Button>
                             </div>
                             <Button variant="ghost" size="icon" onClick={toggleSave} className={saved ? "text-primary" : ""}>
