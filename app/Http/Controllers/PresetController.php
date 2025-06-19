@@ -422,25 +422,25 @@ class PresetController extends Controller
 
     public function search(Request $request, string $query)
     {
-        // 1) Consulta base: eager‐load y filtro por nombre
+        // 1) Consulta base: eager-load y filtro por nombre o descripción
         $paginator = Preset::with([
             'user:id,name,username,profile_image,plan_id',
             'hashtags:id,name'
         ])
-            ->where('name', 'like', "%{$query}%")
+            ->where(function ($q) use ($query) {
+                $q->where('name', 'like', "%{$query}%")
+                    ->orWhere('description', 'like', "%{$query}%");
+            })
             ->latest()
             ->paginate(12)
-            // para que la paginación mantenga el segmento /search/{query}
             ->appends(['query' => $query]);
 
-        // 2) Reordenamos solo los 12 items de esta página:
-        //    plan_id != 2 → premium → prioridad 0
-        //    plan_id == 2 → normal  → prioridad 1
+        // 2) Reordenar: premium primero
         $reordered = $paginator->getCollection()
             ->sortBy(fn($preset) => $preset->user->plan_id == 2 ? 1 : 0)
             ->values();
 
-        // 3) Transformamos cada preset al formato que espera Inertia
+        // 3) Formato para Inertia
         $mapped = $reordered->map(fn($preset) => [
             'id' => $preset->id,
             'name' => $preset->name,
@@ -459,10 +459,10 @@ class PresetController extends Controller
             'created_at' => $preset->created_at->format('Y-m-d'),
         ]);
 
-        // 4) Sustituimos la colección original por la transformada
+        // 4) Reemplazar colección paginada
         $paginator->setCollection($mapped);
 
-        // 5) Renderizamos la misma vista que en index, pasando además 'query'
+        // 5) Render con query
         return Inertia::render('presets', [
             'presets' => $paginator,
             'query' => $query,

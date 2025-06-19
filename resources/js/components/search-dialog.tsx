@@ -52,10 +52,12 @@ export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
     const options = (
         <div className="mt-4 flex flex-col space-y-2">
             <Button onClick={() => performSearch('publications')} disabled={!searchQuery.trim()}>
-                🔍 Buscar en Publicaciones
+                <Search />
+                Buscar en Publicaciones
             </Button>
             <Button onClick={() => performSearch('presets')} disabled={!searchQuery.trim()}>
-                🔍 Buscar en Presets
+                <Search />
+                Buscar en Presets
             </Button>
         </div>
     )

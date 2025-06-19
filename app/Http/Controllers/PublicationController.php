@@ -501,21 +501,22 @@ class PublicationController extends Controller
                 'name' => $preset->name,
             ])->toArray();
 
-        // 2) Consulta de publicaciones filtrada por título usando $query
+        // 2) Consulta de publicaciones filtrada por título o descripción
         $paginator = Publication::with(['user', 'images', 'preset', 'hashtags'])
             ->withCount(['likes', 'comments'])
             ->withCount([
                 'likes as liked_by_user_count' => fn($q) => $q->where('user_id', $userId),
                 'saveds as saved_by_user_count' => fn($q) => $q->where('user_id', $userId),
             ])
-            ->where('title', 'like', "%{$query}%")
+            ->where(function ($q) use ($query) {
+                $q->where('title', 'like', "%{$query}%")
+                    ->orWhere('description', 'like', "%{$query}%");
+            })
             ->orderBy('created_at', 'desc')
             ->paginate(10)
-            // para mantener el segment `/{query}` en los enlaces de paginación,
-            // usamos appends con la clave 'query'
             ->appends(['query' => $query]);
 
-        // 3) Reordenamiento y formateo idéntico al de index
+        // 3) Reordenamiento y formateo
         $reordered = $paginator->getCollection()
             ->sortBy(fn($pub) => $pub->user->plan_id == 2 ? 1 : 0)
             ->values()
@@ -552,7 +553,7 @@ class PublicationController extends Controller
                 ];
             });
 
-        // 4) Sustituimos la colección y devolvemos la vista
+        // 4) Reemplazar resultados paginados y renderizar vista
         $paginator->setCollection($reordered);
 
         return Inertia::render('publications', [
