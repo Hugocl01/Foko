@@ -34,7 +34,23 @@ class NotificationController extends Controller
                 'entity_id',
                 'actor_id',
                 'created_at',
-            ]);
+            ])
+            ->map(function ($notification) {
+                return [
+                    'id' => $notification->id,
+                    'message' => $notification->message,
+                    'type' => $notification->type,
+                    'entity_type' => $notification->entity_type,
+                    'entity_id' => $notification->entity_id,
+                    'created_at' => $notification->created_at,
+                    'actor' => [
+                        'id' => $notification->actor->id ?? null,
+                        'name' => $notification->actor->name ?? null,
+                        'username' => $notification->actor->username ?? null,
+                        'profile_image_url' => $notification->actor->profile_image_url ?? null,
+                    ],
+                ];
+            });
 
         return Inertia::render('notifications', [
             'notifications' => $notifications,

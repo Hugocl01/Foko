@@ -11,14 +11,21 @@ import {
 } from '@/components/ui/tooltip';
 import { Trash2, ArrowUpRight, UserRound } from 'lucide-react';
 
+type Actor = {
+    id: number;
+    name: string;
+    username: string;
+    profile_image_url: string;
+};
+
 type Notification = {
     id: number;
     message: string;
-    is_read: boolean;
+    is_read?: boolean;
     created_at: string;
-    actor_id: number;
     entity_type: 'publication' | 'preset' | 'user' | 'comment';
     entity_id: number;
+    actor: Actor | null;
 };
 
 const breadcrumbs: BreadcrumbItem[] = [
@@ -41,7 +48,7 @@ export default function Notifications({ notifications: initialNotifications }: {
     };
 
     const goToUser = (userId: number) => {
-        router.visit(`/users/${userId}`);
+        router.visit(`/profile/${userId}`);
     };
 
     const goToEntity = (type: string, id: number) => {
@@ -75,22 +82,24 @@ export default function Notifications({ notifications: initialNotifications }: {
                                 </span>
                             </div>
                             <div className="flex gap-2">
-                                <TooltipProvider>
-                                    <Tooltip>
-                                        <TooltipTrigger asChild>
-                                            <Button
-                                                size="icon"
-                                                variant="secondary"
-                                                onClick={() => goToUser(notif.actor_id)}
-                                            >
-                                                <UserRound className="h-4 w-4" />
-                                            </Button>
-                                        </TooltipTrigger>
-                                        <TooltipContent>
-                                            <p>Ver perfil del usuario</p>
-                                        </TooltipContent>
-                                    </Tooltip>
-                                </TooltipProvider>
+                                {notif.actor && (
+                                    <TooltipProvider>
+                                        <Tooltip>
+                                            <TooltipTrigger asChild>
+                                                <Button
+                                                    size="icon"
+                                                    variant="secondary"
+                                                    onClick={() => goToUser(notif.actor?.username)}
+                                                >
+                                                    <UserRound className="h-4 w-4" />
+                                                </Button>
+                                            </TooltipTrigger>
+                                            <TooltipContent>
+                                                <p>Perfil de {notif.actor.name || notif.actor.username}</p>
+                                            </TooltipContent>
+                                        </Tooltip>
+                                    </TooltipProvider>
+                                )}
 
                                 <TooltipProvider>
                                     <Tooltip>
