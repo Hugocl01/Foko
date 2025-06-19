@@ -97,6 +97,6 @@ class UserSeeder extends Seeder
         }
 
         // Usuarios de prueba adicionales
-        User::factory(95)->create();
+        User::factory(25)->create();
     }
 }
