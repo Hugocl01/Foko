@@ -18,254 +18,189 @@ class PublicationSeeder extends Seeder
      */
     public function run(): void
     {
-        // Obtenemos todos los IDs de usuario
         $userIds = User::pluck('id')->toArray();
-
-        // Inicializamos Faker para generar comentarios
         $faker = Faker::create();
 
         $publicationsData = [
             [
                 'title' => 'Atardecer en la playa',
-                'description' => 'Captura cálida con tonos dorados.',
-                'preset_id' => 1,
+                'description' => 'Captura cálida con tonos dorados.'
             ],
             [
                 'title' => 'Luces de ciudad',
-                'description' => 'Fotografía nocturna urbana.',
-                'preset_id' => 2,
+                'description' => 'Fotografía nocturna urbana.'
             ],
             [
                 'title' => 'Montañas nevadas',
-                'description' => 'Vista panorámica de picos cubiertos de nieve.',
-                'preset_id' => 3,
+                'description' => 'Vista panorámica de picos cubiertos de nieve.'
             ],
             [
                 'title' => 'Bosque en otoño',
-                'description' => 'Colores rojizos y anaranjados en las hojas.',
-                'preset_id' => 4,
+                'description' => 'Colores rojizos y anaranjados en las hojas.'
             ],
             [
                 'title' => 'Café retro',
-                'description' => 'Ambiente vintage con sillones de cuero.',
-                'preset_id' => 5,
+                'description' => 'Ambiente vintage con sillones de cuero.'
             ],
             [
                 'title' => 'Calle empedrada',
-                'description' => 'Textura de piedras iluminadas por faroles.',
-                'preset_id' => 2,
+                'description' => 'Textura de piedras iluminadas por faroles.'
             ],
             [
                 'title' => 'Desierto al amanecer',
-                'description' => 'Sombras largas y tonos rosados en la arena.',
-                'preset_id' => 3,
+                'description' => 'Sombras largas y tonos rosados en la arena.'
             ],
             [
                 'title' => 'Mar en calma',
-                'description' => 'Reflejo del cielo azul en aguas tranquilas.',
-                'preset_id' => 1,
+                'description' => 'Reflejo del cielo azul en aguas tranquilas.'
             ],
             [
                 'title' => 'Edificio histórico',
-                'description' => 'Fachada con detalles arquitectónicos clásicos.',
-                'preset_id' => 4,
+                'description' => 'Fachada con detalles arquitectónicos clásicos.'
             ],
             [
                 'title' => 'Río serpenteante',
-                'description' => 'Agua cristalina rodeada de vegetación.',
-                'preset_id' => 5,
+                'description' => 'Agua cristalina rodeada de vegetación.'
             ],
             [
                 'title' => 'Jardín Zen',
-                'description' => 'Rocas y arena rastrillada en patrones simétricos.',
-                'preset_id' => 3,
+                'description' => 'Rocas y arena rastrillada en patrones simétricos.'
             ],
             [
                 'title' => 'Puente iluminado',
-                'description' => 'Estructura metálica con luces de neón.',
-                'preset_id' => 2,
+                'description' => 'Estructura metálica con luces de neón.'
             ],
             [
                 'title' => 'Mercado local',
-                'description' => 'Puestos coloridos de frutas y verduras.',
-                'preset_id' => 1,
+                'description' => 'Puestos coloridos de frutas y verduras.'
             ],
             [
                 'title' => 'Cascada escondida',
-                'description' => 'Agua cayendo entre rocas cubiertas de musgo.',
-                'preset_id' => 4,
+                'description' => 'Agua cayendo entre rocas cubiertas de musgo.'
             ],
             [
                 'title' => 'Arte callejero',
-                'description' => 'Mural urbano con grafitis vibrantes.',
-                'preset_id' => 5,
+                'description' => 'Mural urbano con grafitis vibrantes.'
             ],
             [
                 'title' => 'Camino rural',
-                'description' => 'Sendero de tierra rodeado de campos verdes.',
-                'preset_id' => 2,
+                'description' => 'Sendero de tierra rodeado de campos verdes.'
             ],
             [
                 'title' => 'Lago alpino',
-                'description' => 'Espejo de agua reflejando montañas.',
-                'preset_id' => 3,
+                'description' => 'Espejo de agua reflejando montañas.'
             ],
             [
                 'title' => 'Catedral gótica',
-                'description' => 'Arcos apuntados y vitrales coloridos.',
-                'preset_id' => 4,
+                'description' => 'Arcos apuntados y vitrales coloridos.'
             ],
             [
                 'title' => 'Noche estrellada',
-                'description' => 'Cielo despejado lleno de estrellas.',
-                'preset_id' => 1,
+                'description' => 'Cielo despejado lleno de estrellas.'
             ],
             [
                 'title' => 'Plantación de café',
-                'description' => 'Filas de arbustos con granos maduros.',
-                'preset_id' => 5,
+                'description' => 'Filas de arbustos con granos maduros.'
             ],
             [
                 'title' => 'Faro en la costa',
-                'description' => 'Estructura blanca sobre acantilados rocosos.',
-                'preset_id' => 2,
+                'description' => 'Estructura blanca sobre acantilados rocosos.'
             ],
             [
                 'title' => 'Plaza colonial',
-                'description' => 'Fuente central rodeada de edificios antiguos.',
-                'preset_id' => 3,
+                'description' => 'Fuente central rodeada de edificios antiguos.'
             ],
             [
                 'title' => 'Viñedos de la Toscana',
-                'description' => 'Hileras verdes de uvas y colinas onduladas.',
-                'preset_id' => 4,
+                'description' => 'Hileras verdes de uvas y colinas onduladas.'
             ],
             [
                 'title' => 'Puesta de sol en el desierto',
-                'description' => 'Cielo rojizo sobre dunas doradas.',
-                'preset_id' => 1,
+                'description' => 'Cielo rojizo sobre dunas doradas.'
             ],
             [
                 'title' => 'Templo budista',
-                'description' => 'Estructura con tejados curvos y decoración dorada.',
-                'preset_id' => 5,
+                'description' => 'Estructura con tejados curvos y decoración dorada.'
             ],
         ];
 
         foreach ($publicationsData as $data) {
-            // Elegimos un usuario aleatorio como autor de la publicación
             $randomUserId = Arr::random($userIds);
             $user = User::find($randomUserId);
 
-            // Creamos la publicación
+            // Obtener presets del usuario
+            $userPresetIds = $user->presets()->pluck('id')->toArray();
+
+            // Omitir publicación si el usuario no tiene presets
+            if (empty($userPresetIds)) {
+                continue;
+            }
+
+            // Seleccionar preset del mismo usuario
+            $presetId = Arr::random($userPresetIds);
+
+            // Crear publicación
             $publication = Publication::create([
                 'user_id' => $randomUserId,
                 'title' => $data['title'],
                 'description' => $data['description'],
-                'preset_id' => $data['preset_id'],
+                'preset_id' => $presetId,
             ]);
 
-            // Determinamos cuántas imágenes agregar según el plan del usuario
+            // Determinar cantidad de imágenes por plan
             $plan = strtolower($user->plan->name);
-            if ($plan === 'básico') {
-                $numImages = 1;
-            } elseif (in_array($plan, ['premium', 'ilimitado'])) {
-                $numImages = rand(1, 3);
-            } else {
-                $numImages = 1;
-            }
+            $numImages = ($plan === 'básico') ? 1 : rand(1, 3);
 
-            // Creamos imágenes con nombres aleatorios (prueba1.jpg … prueba10.jpg)
             for ($i = 0; $i < $numImages; $i++) {
-                $randomNumber = rand(1, 10);
-                $filename = "prueba{$randomNumber}.jpg";
-
-                $publication->images()->create([
-                    'url' => $filename,
-                ]);
+                $filename = "prueba" . rand(1, 10) . ".jpg";
+                $publication->images()->create(['url' => $filename]);
             }
 
-            // ---------------------------------------------------
-            // Generar registros aleatorios en la tabla `likes`
-            // ---------------------------------------------------
+            // Likes
             $likesCount = rand(0, count($userIds));
-            if ($likesCount > 0) {
-                $likeUserIds = Arr::random($userIds, $likesCount);
-                if (!is_array($likeUserIds)) {
-                    $likeUserIds = [$likeUserIds];
-                }
+            $likeUserIds = Arr::random($userIds, $likesCount);
+            $likeUserIds = is_array($likeUserIds) ? $likeUserIds : [$likeUserIds];
+            $now = now();
 
-                $likesInserts = [];
-                $now = now();
-                foreach ($likeUserIds as $likeUserId) {
-                    // Evitar que el autor de la publicación se marque a sí mismo (opcional)
-                    if ($likeUserId === $randomUserId) {
-                        continue;
-                    }
-                    $likesInserts[] = [
-                        'user_id' => $likeUserId,
-                        'publication_id' => $publication->id,
-                        'created_at' => $now,
-                        'updated_at' => $now,
-                    ];
-                }
+            $likes = collect($likeUserIds)
+                ->filter(fn($id) => $id !== $randomUserId)
+                ->map(fn($id) => [
+                    'user_id' => $id,
+                    'publication_id' => $publication->id,
+                    'created_at' => $now,
+                    'updated_at' => $now,
+                ])->toArray();
 
-                if (!empty($likesInserts)) {
-                    DB::table('likes')->insert($likesInserts);
-                }
+            if (!empty($likes)) {
+                DB::table('likes')->insert($likes);
             }
 
-            // ------------------------------------------------------
-            // Generar registros aleatorios en la tabla `saveds`
-            // ------------------------------------------------------
+            // Saveds
             $savedCount = rand(0, count($userIds));
-            if ($savedCount > 0) {
-                $savedUserIds = Arr::random($userIds, $savedCount);
-                if (!is_array($savedUserIds)) {
-                    $savedUserIds = [$savedUserIds];
-                }
+            $savedUserIds = Arr::random($userIds, $savedCount);
+            $savedUserIds = is_array($savedUserIds) ? $savedUserIds : [$savedUserIds];
 
-                $savedInserts = [];
-                $now = now();
-                foreach ($savedUserIds as $savedUserId) {
-                    // Evitar que el autor se guarde a sí mismo (opcional)
-                    if ($savedUserId === $randomUserId) {
-                        continue;
-                    }
-                    $savedInserts[] = [
-                        'user_id' => $savedUserId,
-                        'publication_id' => $publication->id,
-                        'created_at' => $now,
-                        'updated_at' => $now,
-                    ];
-                }
+            $saveds = collect($savedUserIds)
+                ->filter(fn($id) => $id !== $randomUserId)
+                ->map(fn($id) => [
+                    'user_id' => $id,
+                    'publication_id' => $publication->id,
+                    'created_at' => $now,
+                    'updated_at' => $now,
+                ])->toArray();
 
-                if (!empty($savedInserts)) {
-                    DB::table('saveds')->insert($savedInserts);
-                }
+            if (!empty($saveds)) {
+                DB::table('saveds')->insert($saveds);
             }
 
-            // ------------------------------------------------------
-            // Generar comentarios aleatorios para esta publicación
-            // ------------------------------------------------------
-            // Decidimos cuántos comentarios tendrá (0 a 5)
+            // Comments
             $commentsCount = rand(0, 5);
             for ($j = 0; $j < $commentsCount; $j++) {
-                // Elegimos un usuario aleatorio para el comentario,
-                // evitando (opcionalmente) que sea el mismo autor de la publicación:
-                $commentUserId = Arr::random($userIds);
-                if ($commentUserId === $randomUserId) {
-                    // Si coincide, lo ignoramos y tomamos otro distinto
-                    $possible = array_diff($userIds, [$randomUserId]);
-                    if (!empty($possible)) {
-                        $commentUserId = Arr::random($possible);
-                    }
-                }
-
+                $commentUserId = Arr::random(array_diff($userIds, [$randomUserId]));
                 Comment::create([
                     'user_id' => $commentUserId,
                     'publication_id' => $publication->id,
-                    'content' => $faker->sentence(8, true), // frase de 8 palabras aprox.
+                    'content' => $faker->sentence(8, true),
                     'created_at' => $now,
                     'updated_at' => $now,
                 ]);
