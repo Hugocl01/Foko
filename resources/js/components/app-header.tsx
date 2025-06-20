@@ -209,7 +209,6 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
                 </div>
             </div>
 
-            {/* Opcional: también puedes fijar el breadcrumb si quieres */}
             {breadcrumbs.length > 1 && (
                 <div className="mt-16 border-sidebar-border/70 flex w-full border-b bg-background z-40">
                     <div className="mx-auto flex h-12 w-full items-center justify-start px-4 text-neutral-500 md:max-w-7xl">
