@@ -43,9 +43,9 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
 
     return (
         <>
-            {/* Fijo arriba */}
-            <div className="fixed top-0 left-0 right-0 z-50 bg-background border-sidebar-border/80 border-b">
+            <div className="border-sidebar-border/80 border-b">
                 <div className="mx-auto flex h-16 items-center justify-between px-4 md:max-w-7xl">
+                    {/* Mobile Menu */}
                     {isLogged && (
                         <div className="lg:hidden">
                             <Sheet>
@@ -96,10 +96,12 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
                         </div>
                     )}
 
+                    {/* Logo */}
                     <Link href={'/'} className="flex items-center space-x-2" draggable={false}>
                         <AppLogo />
                     </Link>
 
+                    {/* Desktop Navigation */}
                     {isLogged && (
                         <div className="ml-6 hidden h-full items-center space-x-6 lg:flex">
                             <NavigationMenu className="flex h-full items-stretch">
@@ -208,9 +210,8 @@ export function AppHeader({ breadcrumbs = [] }: AppHeaderProps) {
                     </div>
                 </div>
             </div>
-
             {breadcrumbs.length > 1 && (
-                <div className="mt-16 border-sidebar-border/70 flex w-full border-b bg-background z-40">
+                <div className="border-sidebar-border/70 flex w-full border-b">
                     <div className="mx-auto flex h-12 w-full items-center justify-start px-4 text-neutral-500 md:max-w-7xl">
                         <Breadcrumbs breadcrumbs={breadcrumbs} />
                     </div>
