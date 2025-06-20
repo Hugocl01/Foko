@@ -149,7 +149,7 @@ class PublicationSeeder extends Seeder
             $numImages = ($plan === 'básico') ? 1 : rand(1, 3);
 
             for ($i = 0; $i < $numImages; $i++) {
-                $originalFilename = "image" . rand(1, 24) . ".webp";
+                $originalFilename = "image" . rand(1, 27) . ".webp";
                 $fullSourcePath = $imageSourcePath . '/' . $originalFilename;
 
                 if (file_exists($fullSourcePath)) {
