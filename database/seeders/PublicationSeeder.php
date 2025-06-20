@@ -131,7 +131,6 @@ class PublicationSeeder extends Seeder
             $user = User::find($randomUserId);
 
             $userPresetIds = $user->presets()->pluck('id')->toArray();
-
             if (empty($userPresetIds)) {
                 continue;
             }
@@ -145,12 +144,18 @@ class PublicationSeeder extends Seeder
                 'preset_id' => $presetId,
             ]);
 
+            // Cargar imágenes sin duplicadas
             $plan = strtolower($user->plan->name);
             $numImages = ($plan === 'básico') ? 1 : rand(1, 3);
 
+            $usedImages = []; // ← Para evitar duplicadas
             for ($i = 0; $i < $numImages; $i++) {
-                $originalFilename = "image" . rand(1, 27) . ".webp";
-                $fullSourcePath = $imageSourcePath . '/' . $originalFilename;
+                do {
+                    $randomImage = "image" . rand(1, 27) . ".webp";
+                } while (in_array($randomImage, $usedImages));
+                $usedImages[] = $randomImage;
+
+                $fullSourcePath = $imageSourcePath . '/' . $randomImage;
 
                 if (file_exists($fullSourcePath)) {
                     $newFilename = Str::uuid() . '.webp';
