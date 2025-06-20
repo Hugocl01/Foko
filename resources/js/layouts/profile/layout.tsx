@@ -155,7 +155,7 @@ export default function ProfileLayout({
                         <div className="flex flex-col md:flex-row gap-8">
                             {/* Avatar */}
                             <div className="flex justify-center md:justify-start">
-                                <Avatar className="w-32 h-32 md:w-48 md:h-48 bg-gradient-to-br from-pink-500 via-purple-500 to-blue-500">
+                                <Avatar className="w-32 h-32 md:w-48 md:h-48">
                                     <AvatarImage
                                         src={user.profile_image_url || "/placeholder.svg?height=192&width=192"}
                                         alt={user.name}
